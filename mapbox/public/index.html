@@ -17,90 +17,125 @@
 
 
 
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: sans-serif;
-        }
-
-        #banner {
-            background-color: rgba(217, 107, 39, 1);
-            z-index: 1000;
-        }
-
-        #dcplogo {
-            height: 2rem;
-        }
-
-        .navbar-brand {
-            margin-left: 1rem;
-            margin-right: 1rem;
-            margin-top: 1rem;
-            margin-bottom: 1rem;
-        }
-
-        .navbar-toggler {
-            border-width: 0.2rem;
-            padding: 0.1rem;
-            margin-right: 1rem;
-        }
-
-        .nav-link {
-            font-size: 1rem;
-            font-weight: bold;
-            padding: 0.5rem 0.5rem 0.5rem 0.5rem;
-            margin-left: 0.5rem;
-            margin-right: 0.5rem;
-        }
-
-        #main {
-            position: absolute;
-            top: 5rem;
-            padding-bottom: 5rem;
-            padding-left: 20%;
-            padding-right: 20%;
-            z-index: -1000;
-        }
-
-        h1 {
-            font-size: 1.5rem;
-            font-weight: bold;
-        }
-
-        a {
-            color: rgba(217, 107, 39, 1);
-            text-decoration: none;
-        }
-
-        a:hover {
-            color: rgba(217, 107, 39, 1);
-        }
-    </style>
+        <style>
+            body {
+                margin: 0;
+                padding: 0;
+                font-family: sans-serif;
+            }
+    
+            #banner {
+                background-color: rgba(0, 51, 133, 1);
+                z-index: 1000;
+            }
+    
+            #dc_logo {
+                height: 4rem;
+            }
+    
+            .navbar-brand {
+                margin-left: 1rem;
+                margin-right: 1rem;
+                margin-top: 1rem;
+                margin-bottom: 1rem;
+            }
+    
+            .navbar-toggler {
+                border-width: 0.2rem;
+                padding: 0.1rem;
+                margin-right: 1rem;
+            }
+    
+            .nav-link {
+                font-size: 1rem;
+                font-weight: bold;
+                padding: 0.5rem 0.5rem 0.5rem 0.5rem;
+                margin-left: 0.5rem;
+                margin-right: 0.5rem;
+            }
+    
+            #mainmap {
+                position: absolute;
+                top: 4rem;
+                bottom: 0;
+                width: 100%;
+                height: auto;
+                z-index: -1000;
+            }
+    
+            #legend {
+                position: absolute;
+                top: 5rem;
+                right: 1rem;
+                width: auto;
+                height: auto;
+                max-height: 90%;
+                padding-top: 0rem;
+                padding-right: 1rem;
+                padding-left: 1rem;
+                padding-bottom: 0rem;
+                color: rgba(0, 0, 0, 0.9);
+                background-color: rgba(255, 255, 255, 0.9);
+                font-size: 0.9rem;
+                overflow: auto;
+                box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
+                border-radius: 4px;
+            }
+    
+            .row {
+                margin-top: 1rem;
+            }
+    
+            #header {
+                font-weight: bold;
+            }
+    
+            .form-select {
+                font-size: 0.9rem;
+            }
+    
+            #colorbar {
+                width: 15rem;
+            }
+    
+            .btn {
+                background-color: rgba(229, 38, 38, 0.9);
+                border-style: none;
+                margin-bottom: 1rem;
+                width: 8rem;
+            }
+    
+            .btn:hover {
+                background-color: rgba(229, 38, 38, 1);
+            }
+    
+            .btn:focus {
+                background-color: rgba(229, 38, 38, 1);
+            }
+    
+            .btn:active {
+                background-color: rgba(229, 38, 38, 1);
+            }
+        </style>
 </head>
 
 
 
 <body>
-    <nav class="navbar navbar-expand-lg fixed-top navbar-dark g-0 p-0 m-0" id="banner">
-        <a class="navbar-brand p-0" href="http://www1.nyc.gov/site/planning/index.page">
-            <img src="https://raw.githubusercontent.com/NYCPlanning/dcp-logo/master/dcp_logo_white_772.png"
-                id="dcplogo">
-            <sup> Beta </sup>
+    <nav class="navbar navbar-expand-lg navbar-dark g-0 p-0 m-0" id="banner">
+        <a class="navbar-brand p-0" href="https://www.dallascollege.edu/business-industry/lmic/pages/default.aspx">
+            <img src="https://raw.githubusercontent.com/Dallas-College-LMIC/spatial-jobs-index/e8094a75034b8627e629a350e0f1a2a81a0f468a/DCLOGO_RGB_MASTER_MARK-V-WHITE.png"
+                id="dc_logo">
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#bannertoggle">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse p-0 justify-content-start" id="bannertoggle">
             <ul class="navbar-nav p-0">
-                <a class="nav-link active" href="index.html">
-                    Home </a>
-                <a class="nav-link" href="from.html">
-                    Transit Travelshed FROM a Census Tract </a>
-                <a class="nav-link" href="to.html">
-                    Transit Travelshed TO a Census Tract </a>
-                <a class="nav-link" href="tti.html">
-                    Transit Travelshed Index </a>
+                <a class="nav-link" href="index.html">
+                    Project Home </a>
+                <a class="nav-link active" href="tti.html">
+                    Travelshed Index </a>
             </ul>
         </div>
     </nav>
@@ -109,12 +144,10 @@
         <div class="row justify-content-start">
             <div class="col-12">
                 <h1>
-                    What Is a Travelshed?
+                    Dallas-Ft. Worth Spatial Jobs Index Project
                 </h1>
                 <p>
-                    Access to public transportation is often thought of as a binary – either you have it, or you don’t –
-                    but we know it’s more complicated than that. The number of stations and types of transportation you
-                    can use, where they take you and how fast they get you there, are what really matter.
+                    Access to jobs (or the inverse, access to workforce) is a critical question. This project helps answer it through use of travelshed analysis.
                 </p>
                 <p>
                     A travelshed is the geographic area that can be reached from a specific point, within a specific
@@ -124,25 +157,10 @@
             </div>
             <div class="col-12">
                 <h1>
-                    About the Transit Travelshed
+                    About the Travelshed Index
                 </h1>
                 <p>
-                    The Department of City Planning (DCP) Transit Travelshed shows the areas a New Yorker can reach by
-                    transit within one hour. It uses schedules of various public transit services, such as the subway,
-                    to provide a measure of transit accessibility for any location in New York City.
-                </p>
-                <p>
-                    For example, it can demonstrate how connected a neighborhood is to jobs, or how much commuting time
-                    a proposed transit improvement could save.
-                </p>
-                <p>
-                    Pick a Census tract in New York City in the next two tabs to see your transit
-                    travelshed. View the <b><a href="from.html">Transit Travelshed FROM a Census Tract</a></b> to see
-                    how many jobs can be accessed from the selected Census tract within 10-minute travel increments. The
-                    <b><a href="to.html">Transit Travelshed TO a Census Tract</a></b> shows the total population and
-                    number of workers who can travel to the selected Census tract by transit within 10-minute travel
-                    increments. Click on the <b><a href="tti.html">Transit Travelshed Index</a></b> tab to find out how
-                    Census Tracts across the city vary in different indices.
+                   More about coming soon
                 </p>
             </div>
             <div class="col-12">
@@ -150,10 +168,7 @@
                     Methodology
                 </h1>
                 <p>
-                    The Transit Travelshed is developed through the open-source software OpenTripPlanner, with an input
-                    of General Transit Feed Specification schedule data published by 31 major transit operating agencies
-                    in the region. The model includes major public transit modes by which people get around the New York
-                    City metropolitan region, such as subway, bus, rail and ferry.
+                    The Spatial Jobs Index Project is developed through Mapbox Travel Time API, data from Lightcast, and more.
                 </p>
                 <p>
                     Click <b><a href="https://github.com/NYCPlanning/td-travelshed/blob/master/Transit%20Travelshed.pdf"

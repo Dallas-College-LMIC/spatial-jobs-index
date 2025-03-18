@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NYC DCP Transit Travelshed</title>
+    <title>LMIC DFW Travelshed Index</title>
 
     <script src="https://api.mapbox.com/mapbox-gl-js/v1.12.0/mapbox-gl.js"></script>
     <link href="https://api.mapbox.com/mapbox-gl-js/v1.12.0/mapbox-gl.css" rel="stylesheet" />
@@ -25,12 +25,12 @@
         }
 
         #banner {
-            background-color: rgba(217, 107, 39, 1);
+            background-color: rgba(0, 51, 133, 1);
             z-index: 1000;
         }
 
-        #dcplogo {
-            height: 2rem;
+        #dc_logo {
+            height: 4rem;
         }
 
         .navbar-brand {
@@ -99,34 +99,32 @@
         }
 
         .btn {
-            background-color: rgba(217, 107, 39, 0.9);
+            background-color: rgba(229, 38, 38, 0.9);
             border-style: none;
             margin-bottom: 1rem;
             width: 8rem;
         }
 
         .btn:hover {
-            background-color: rgba(217, 107, 39, 1);
+            background-color: rgba(229, 38, 38, 1);
         }
 
         .btn:focus {
-            background-color: rgba(217, 107, 39, 1);
+            background-color: rgba(229, 38, 38, 1);
         }
 
         .btn:active {
-            background-color: rgba(217, 107, 39, 1);
+            background-color: rgba(229, 38, 38, 1);
         }
     </style>
 </head>
 
 
-
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark g-0 p-0 m-0" id="banner">
-        <a class="navbar-brand p-0" href="http://www1.nyc.gov/site/planning/index.page">
-            <img src="https://raw.githubusercontent.com/NYCPlanning/dcp-logo/master/dcp_logo_white_772.png"
-                id="dcplogo">
-            <sup> Beta </sup>
+        <a class="navbar-brand p-0" href="https://www.dallascollege.edu/business-industry/lmic/pages/default.aspx">
+            <img src="https://raw.githubusercontent.com/Dallas-College-LMIC/spatial-jobs-index/e8094a75034b8627e629a350e0f1a2a81a0f468a/DCLOGO_RGB_MASTER_MARK-V-WHITE.png"
+                id="dc_logo">
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#bannertoggle">
             <span class="navbar-toggler-icon"></span>
@@ -134,13 +132,9 @@
         <div class="collapse navbar-collapse p-0 justify-content-start" id="bannertoggle">
             <ul class="navbar-nav p-0">
                 <a class="nav-link" href="index.html">
-                    Home </a>
-                <a class="nav-link" href="from.html">
-                    Transit Travelshed FROM a Census Tract </a>
-                <a class="nav-link" href="to.html">
-                    Transit Travelshed TO a Census Tract </a>
+                    Project Home </a>
                 <a class="nav-link active" href="tti.html">
-                    Transit Travelshed Index </a>
+                    Travelshed Index </a>
             </ul>
         </div>
     </nav>
@@ -230,6 +224,8 @@
 
             // Add access to population
             // Set layer contents
+
+            
             var layerContent = {
                 'sourceid': 'pop', // source id
                 'sourcetype': 'geojson', // source type
@@ -238,6 +234,8 @@
                 'layertype': 'fill', // symbology type
                 'layername': 'Access to Population', // layer name for the legend
                 'layervisibility': 'visible', // visibility of the layer
+                
+                //this is the main thing that changes between the 3 layers
                 'layercolname': 'popcat', // category column name
                 'layercat': ['<-2.5SD', '-2.5SD ~ -1.5SD', '-1.5SD ~ -0.5SD', '-0.5SD ~ +0.5SD', '+0.5SD ~ +1.5SD', '+1.5SD ~ +2.5SD', '>=+2.5SD'], // categories
                 'layercolor': ['rgba(43, 131, 186, 0.8)', 'rgba(128, 191, 172, 0.8)', 'rgba(199, 233, 173, 0.8)', 'rgba(255, 255, 191, 0.8)', 'rgba(254, 201, 128, 0.8)', 'rgba(241, 124, 74, 0.8)', 'rgba(215, 25, 28, 0.8)'], // fill color; use rgba
