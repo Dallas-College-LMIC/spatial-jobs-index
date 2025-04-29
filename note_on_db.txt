@@ -1,0 +1,9 @@
+postgis connection info
+
+database = jsi_proj_db
+username = jsi_read
+password = SDIRead1
+schema = jsi_data
+(this is a read only account- jsi_read can read all the data on the jsi_proj_db.jsi_data schema but do nothing else)
+
+select * from jsi_data.tti_clone
