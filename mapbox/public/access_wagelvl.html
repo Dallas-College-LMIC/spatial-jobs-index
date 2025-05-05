@@ -224,8 +224,10 @@
                 'bottom-left', // control position
             );
 
-
-
+            map.addSource('loc_data', {
+                type: 'geojson',
+                // Use a URL for the value for the `data` property.
+                data: 'https://raw.githubusercontent.com/Dallas-College-LMIC/spatial-jobs-index/refs/heads/master/mapbox/tti_clone.geojson'});
 
 
             // Add access to population
@@ -233,9 +235,7 @@
 
             
             var layerContent = {
-                'sourceid': 'pop', // source id
-                'sourcetype': 'geojson', // source type
-                'sourcedata': 'https://raw.githubusercontent.com/Dallas-College-LMIC/spatial-jobs-index/refs/heads/master/mapbox/tti_clone.geojson', // data source
+                'source': 'loc_data', // source type
                 'layerid': 'pop', // layer id
                 'layertype': 'fill', // symbology type
                 'layername': 'Access to All Jobs', // layer name for the legend
@@ -280,9 +280,7 @@
             // Add access to jobs
             // Set layer contents
             var layerContent = {
-                'sourceid': 'job', // source id
-                'sourcetype': 'geojson', // source type
-                'sourcedata': 'https://raw.githubusercontent.com/Dallas-College-LMIC/spatial-jobs-index/refs/heads/master/mapbox/tti_clone.geojson', // data source
+                'source': 'loc_data', // data source
                 'layerid': 'job', // layer id
                 'layertype': 'fill', // symbology type
                 'layername': 'Access to Living Wage Jobs', // layer name for the legend
@@ -326,9 +324,7 @@
             // Add access to labor force
             // Set layer contents
             var layerContent = {
-                'sourceid': 'lab', // source id
-                'sourcetype': 'geojson', // source type
-                'sourcedata': 'https://raw.githubusercontent.com/Dallas-College-LMIC/spatial-jobs-index/refs/heads/master/mapbox/tti_clone.geojson', // data source
+                'source': 'loc_data', // data source
                 'layerid': 'lab', // layer id
                 'layertype': 'fill', // symbology type
                 'layername': 'Access to Below Living Wage Jobs', // layer name for the legend
