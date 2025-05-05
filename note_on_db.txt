@@ -1,0 +1,10 @@
+postgis connection info
+
+database = jsi_proj_db
+username = jsi_read
+password = SDIRead1
+schema = jsi_data
+(this is a read only account- jsi_read can read all the data on the jsi_proj_db.jsi_data schema but do nothing else)
+
+SELECT geoid, all_jobs_zscore, all_jobs_zscore_cat, living_wage_zscore, living_wage_zscore_cat, not_living_wage_zscore, not_living_wage_zscore_cat, geom as geometry
+	FROM jsi_data.tti_clone;
