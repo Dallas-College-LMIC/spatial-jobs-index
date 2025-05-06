@@ -206,7 +206,7 @@
 
 
         // Add layers
-        map.on('style.load', function () {
+        map.on('load', function () {
 
             // Add full screen control
             map.addControl(new mapboxgl.FullscreenControl({
@@ -226,15 +226,12 @@
 
             // Add access to population
             // Set layer contents
-            map.addSource('tti_data', {
-                type: 'geojson',
-                data: "https://raw.githubusercontent.com/Dallas-College-LMIC/spatial-jobs-index/refs/heads/master/mapbox/tti_clone.geojson"
-            });
+
             
             var layerContent = {
-                'sourceid': 'tti_data', // source id
-                //'sourcetype': 'geojson', // source type
-                //'sourcedata': 'https://raw.githubusercontent.com/Dallas-College-LMIC/spatial-jobs-index/refs/heads/master/mapbox/tti_clone.geojson', // data source
+                'sourceid': 'pop', // source id
+                'sourcetype': 'geojson', // source type
+                'sourcedata': 'https://raw.githubusercontent.com/Dallas-College-LMIC/spatial-jobs-index/refs/heads/master/mapbox/tti_clone.geojson', // data source
                 'layerid': 'pop', // layer id
                 'layertype': 'fill', // symbology type
                 'layername': 'Access to All Jobs', // layer name for the legend
@@ -254,6 +251,11 @@
             };
             layerColor.push('#000000');
 
+            // Add data source
+            map.addSource(layerContent['sourceid'], {
+                'type': layerContent['sourcetype'],
+                'data': layerContent['sourcedata'],
+            });
 
             // Add fill layer
             map.addLayer({
@@ -269,10 +271,14 @@
                 },
             });
 
+
+
             // Add access to jobs
             // Set layer contents
             var layerContent = {
-                'sourceid': 'tti_data', // data source
+                'sourceid': 'job', // source id
+                'sourcetype': 'geojson', // source type
+                'sourcedata': 'https://raw.githubusercontent.com/Dallas-College-LMIC/spatial-jobs-index/refs/heads/master/mapbox/tti_clone.geojson', // data source
                 'layerid': 'job', // layer id
                 'layertype': 'fill', // symbology type
                 'layername': 'Access to Living Wage Jobs', // layer name for the legend
@@ -291,6 +297,11 @@
             };
             layerColor.push('#000000');
 
+            // Add data source
+            map.addSource(layerContent['sourceid'], {
+                'type': layerContent['sourcetype'],
+                'data': layerContent['sourcedata'],
+            });
 
             // Add fill layer
             map.addLayer({
@@ -307,10 +318,13 @@
             });
 
 
+
             // Add access to labor force
             // Set layer contents
             var layerContent = {
-                'sourceid': 'tti_data',
+                'sourceid': 'lab', // source id
+                'sourcetype': 'geojson', // source type
+                'sourcedata': 'https://raw.githubusercontent.com/Dallas-College-LMIC/spatial-jobs-index/refs/heads/master/mapbox/tti_clone.geojson', // data source
                 'layerid': 'lab', // layer id
                 'layertype': 'fill', // symbology type
                 'layername': 'Access to Below Living Wage Jobs', // layer name for the legend
@@ -328,6 +342,12 @@
                 layerColor.push(layerContent.layercolor[i]);
             };
             layerColor.push('#000000');
+
+            // Add data source
+            map.addSource(layerContent['sourceid'], {
+                'type': layerContent['sourcetype'],
+                'data': layerContent['sourcedata'],
+            });
 
             // Add fill layer
             map.addLayer({
