@@ -204,9 +204,12 @@
     // Add layers
     map.on('style.load', function () {
 
-            res = fetch("http://159.223.139.52:8000/geojson", {headers: {
-                Authorization: "Basic " + btoa("dclmic:<IG0Qam*D927G>mZcf@J*Y!R+F:U;N?m*@284V1%Q2:+6s")}})
-            res = res.json()
+            fetch("http://159.223.139.52:8000/geojson", {
+        headers: {
+        Authorization: "Basic " + btoa("dclmic:<IG0Qam*D927G>mZcf@J*Y!R+F:U;N?m*@284V1%Q2:+6s")
+        }
+    })
+    .then(res => res.json())
 
             // Add full screen control
             map.addControl(new mapboxgl.FullscreenControl({
