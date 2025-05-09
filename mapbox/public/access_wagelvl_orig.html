@@ -189,6 +189,8 @@
         // Set MapBox token
         mapboxgl.accessToken = 'pk.eyJ1IjoiY2dpbGNocmllc3QtZGNjY2QiLCJhIjoiY200aXNueG5hMDV6czJtcTBweTFlZG9weSJ9.BV1l4NoP08wC2vlkhYR2Pg'; // still need to find a way to store the token
 
+
+
         // Initialize the map
         var map = new mapboxgl.Map({ // creating a new map
             container: 'mainmap', // same as the div id to place the map
@@ -201,12 +203,10 @@
             zoom: 10.8, // set the initial zoom of the map view
         });
 
-    // Add layers
-    map.on('style.load', function () {
 
-            res = fetch("http://159.223.139.52:8000/geojson", {headers: {
-                Authorization: "Basic " + btoa("dclmic:<IG0Qam*D927G>mZcf@J*Y!R+F:U;N?m*@284V1%Q2:+6s")}})
-            res = res.json()
+
+        // Add layers
+        map.on('style.load', function () {
 
             // Add full screen control
             map.addControl(new mapboxgl.FullscreenControl({
@@ -224,10 +224,11 @@
                 'bottom-left', // control position
             );
 
-
+            // Add access to population
+            // Set layer contents
             map.addSource('tti_data', {
                 type: 'geojson',
-                data: res
+                data: "https://raw.githubusercontent.com/Dallas-College-LMIC/spatial-jobs-index/refs/heads/master/mapbox/tti_clone.geojson"
             });
             
             var layerContent = {
