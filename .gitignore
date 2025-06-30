@@ -1,0 +1,77 @@
+# Nix
+result
+result-*
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv
+*.egg-info/
+dist/
+build/
+htmlcov/
+.coverage
+.coverage.*
+.cache
+.pytest_cache/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+.eslintcache
+.node_repl_history
+*.tgz
+dist/
+.parcel-cache
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Environment
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Logs
+logs/
+*.log
+
+# Direnv
+.direnv/
+.envrc
+
+# Database
+*.sqlite
+*.db
+
+# Temporary files
+*.tmp
+*.temp
+tmp/
+temp/
+
+# Coverage
+coverage/
+*.lcov
+
+# OS files
+Thumbs.db

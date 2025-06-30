@@ -1,0 +1,21 @@
+app/__pycache__
+app/all_data_zscored.sqlite
+python_flake_test.egg-info
+all_data_zscored.sqlite
+.env
+.direnv
+.envrc
+.aider*
+todo.org
+
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Coverage reports
+.coverage
+htmlcov/
+
+# AI assistant configuration and cache
+.serena/
