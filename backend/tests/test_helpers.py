@@ -1,6 +1,5 @@
 """Test helper utilities for handling database schema differences."""
-import os
-from sqlalchemy import MetaData, Table, Column, String, Float, Integer
+from sqlalchemy import MetaData, Table, Column, String, Float
 from sqlalchemy.orm import Session
 
 
@@ -13,7 +12,7 @@ def create_test_tables(engine):
     metadata = MetaData()
     
     # Create occupation_lvl_data table without schema for SQLite
-    occupation_table = Table(
+    Table(  # noqa: F841
         'occupation_lvl_data',
         metadata,
         Column('geoid', String, primary_key=True),
@@ -25,7 +24,7 @@ def create_test_tables(engine):
     )
     
     # Create tti_clone table without schema for SQLite
-    tti_table = Table(
+    Table(  # noqa: F841
         'tti_clone',
         metadata,
         Column('geoid', String, primary_key=True),

@@ -1,7 +1,6 @@
 import logging
 from typing import List, Dict, Optional
 from functools import lru_cache
-import os
 
 from pyghtcast import lightcast
 from app.config import LightcastConfig

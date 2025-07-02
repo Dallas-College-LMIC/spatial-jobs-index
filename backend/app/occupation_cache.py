@@ -1,6 +1,6 @@
 """Simple in-memory cache for occupation data with TTL support."""
 import time
-from typing import Dict, List, Optional, Any
+from typing import Dict, Optional, Any
 from functools import wraps
 import logging
 

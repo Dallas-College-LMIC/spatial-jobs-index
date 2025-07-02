@@ -1,7 +1,10 @@
 // API Response Types
 
 export interface OccupationIdsResponse {
-  occupation_ids: string[];
+  occupations: Array<{
+    code: string;
+    name: string;
+  }>;
 }
 
 export interface GeoJSONProperties {

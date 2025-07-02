@@ -13,7 +13,7 @@ load_dotenv()
 username = os.getenv("LCAPI_USER")
 password = os.getenv("LCAPI_PASS")
 
-print(f"Testing Lightcast API connection...")
+print("Testing Lightcast API connection...")
 print(f"Username: {username}")
 print(f"Password: {'*' * len(password) if password else 'None'}")
 

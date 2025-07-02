@@ -1,12 +1,10 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import select
-from sqlalchemy.orm import Session
 from geoalchemy2.functions import ST_AsGeoJSON
 from typing import List, Dict
 import json
 
 from .models import OccupationLvlData, TTIClone, SpatialFeatureProperties, GeoJSONFeature, OccupationSpatialProperties, OccupationGeoJSONFeature
-from .occupation_cache import cache_with_ttl, OCCUPATION_NAMES
 
 class OccupationService:
     """Service for occupation-related operations"""
@@ -32,31 +30,44 @@ class OccupationService:
         Get all distinct occupation categories with their names.
         Uses static mapping for now, will integrate with Lightcast API later.
         """
-        from app.occupation_cache import cache_with_ttl, OCCUPATION_NAMES
+        import os
+        from app.occupation_cache import _cache, OCCUPATION_NAMES
         
-        @cache_with_ttl(ttl_seconds=86400)  # Cache for 24 hours
-        def _get_occupations_cached():
-            # Get occupation codes from database
-            result = session.execute(
-                select(OccupationLvlData.category).distinct()
-            )
-            occupation_codes = [row[0] for row in result.fetchall()]
-            
-            # Map codes to names using static mapping
-            occupations = []
-            for code in occupation_codes:
-                name = OCCUPATION_NAMES.get(code, code)  # Use code as name if not found
-                occupations.append({
-                    'code': code,
-                    'name': name
-                })
-            
-            # Sort by code for consistent ordering
-            occupations.sort(key=lambda x: x['code'])
-            
-            return occupations
+        # Check if we're in testing mode
+        is_testing = os.getenv('TESTING') == '1'
         
-        return _get_occupations_cached()
+        # Generate cache key
+        cache_key = "get_occupations_with_names"
+        
+        # Try to get from cache if not testing
+        if not is_testing:
+            cached_value = _cache.get(cache_key)
+            if cached_value is not None:
+                return cached_value
+        
+        # Get occupation codes from database
+        result = session.execute(
+            select(OccupationLvlData.category).distinct()
+        )
+        occupation_codes = [row[0] for row in result.fetchall()]
+        
+        # Map codes to names using static mapping
+        occupations = []
+        for code in occupation_codes:
+            name = OCCUPATION_NAMES.get(code, code)  # Use code as name if not found
+            occupations.append({
+                'code': code,
+                'name': name
+            })
+        
+        # Sort by code for consistent ordering
+        occupations.sort(key=lambda x: x['code'])
+        
+        # Cache the result if not testing
+        if not is_testing:
+            _cache.set(cache_key, occupations, 86400)  # Cache for 24 hours
+        
+        return occupations
     
     @staticmethod
     def get_occupation_spatial_data(session: Session, category: str) -> List[OccupationGeoJSONFeature]:

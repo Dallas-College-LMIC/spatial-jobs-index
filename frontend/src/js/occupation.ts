@@ -52,7 +52,9 @@ export class OccupationMapController extends BaseMapController {
 
     try {
       // Check cache first
-      const cachedData = this.cacheService.get<string[]>(this.CACHE_KEY);
+      const cachedData = this.cacheService.get<Array<{ code: string; name: string }>>(
+        this.CACHE_KEY
+      );
       if (cachedData) {
         console.log('Using cached occupation IDs');
         this.populateOccupationDropdown(cachedData);
@@ -67,13 +69,13 @@ export class OccupationMapController extends BaseMapController {
       const response = await this.apiService.getOccupationIds(controller.signal);
       console.log('Loaded occupation IDs response:', response);
 
-      // Handle new API structure - extract occupation_ids array from response
-      const occupationIds = response.occupation_ids || (Array.isArray(response) ? response : []);
+      // Handle new API structure - extract occupations array from response
+      const occupations = response.occupations || [];
 
       // Cache the data with TTL
-      this.cacheService.set(this.CACHE_KEY, occupationIds, this.CACHE_TTL);
+      this.cacheService.set(this.CACHE_KEY, occupations, this.CACHE_TTL);
 
-      this.populateOccupationDropdown(occupationIds);
+      this.populateOccupationDropdown(occupations);
 
       this.hideLoading('loading');
     } catch (error) {
@@ -95,23 +97,46 @@ export class OccupationMapController extends BaseMapController {
     }
   }
 
-  private populateOccupationDropdown(occupationIds: string[]): void {
+  private populateOccupationDropdown(occupations: Array<{ code: string; name: string }>): void {
     const select = $('#occupation-select') as JQuery<HTMLSelectElement>;
 
     // Clear existing options except the first one
     select.find('option:not(:first)').remove();
 
-    // Add occupation options
-    const options = occupationIds.map((id) => ({ value: id, text: id }));
-    options.forEach((option) => {
-      select.append(new Option(option.text, option.value));
+    // Add occupation options with both code and name
+    occupations.forEach((occupation) => {
+      const displayText = `${occupation.code} - ${occupation.name}`;
+      select.append(new Option(displayText, occupation.code));
     });
 
-    // Initialize Select2 for searchable dropdown
+    // Initialize Select2 for searchable dropdown with custom matcher
     select.select2({
-      placeholder: 'Search and select an occupation...',
+      placeholder: 'Search by occupation code or name...',
       allowClear: true,
       width: '100%',
+      matcher: function (params: any, data: any) {
+        // If there are no search terms, return all data
+        if ($.trim(params.term) === '') {
+          return data;
+        }
+
+        // Skip if there is no text property
+        if (typeof data.text === 'undefined') {
+          return null;
+        }
+
+        // Make search case-insensitive
+        const searchTerm = params.term.toLowerCase();
+        const text = data.text.toLowerCase();
+
+        // Check if the search term appears anywhere in the text (code or name)
+        if (text.indexOf(searchTerm) > -1) {
+          return data;
+        }
+
+        // Return null if no match
+        return null;
+      },
     });
 
     // Set up change event listener using base class method
@@ -126,7 +151,7 @@ export class OccupationMapController extends BaseMapController {
     // Show success notification
     uiService.showNotification({
       type: 'success',
-      message: `Loaded ${occupationIds.length} occupations`,
+      message: `Loaded ${occupations.length} occupations`,
       duration: 3000,
     });
   }

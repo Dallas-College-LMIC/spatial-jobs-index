@@ -1,6 +1,5 @@
 """Unit tests for occupation service functionality."""
-import pytest
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock
 from sqlalchemy.orm import Session
 
 from app.services import OccupationService

@@ -158,7 +158,12 @@ describe('OccupationMapController - Loading States', () => {
 
   describe('Loading Spinner During Occupation List Fetch', () => {
     it('should show loading spinner when fetching occupation IDs', async () => {
-      const response: OccupationIdsResponse = { occupation_ids: ['OCC-001', 'OCC-002'] };
+      const response: OccupationIdsResponse = {
+        occupations: [
+          { code: 'OCC-001', name: 'Occupation 1' },
+          { code: 'OCC-002', name: 'Occupation 2' },
+        ],
+      };
       mockCacheService.get.mockReturnValue(null);
       mockApiService.getOccupationIds.mockResolvedValue(response);
 
@@ -170,7 +175,9 @@ describe('OccupationMapController - Loading States', () => {
     });
 
     it('should hide loading spinner after occupation IDs are loaded', async () => {
-      const response: OccupationIdsResponse = { occupation_ids: ['OCC-001'] };
+      const response: OccupationIdsResponse = {
+        occupations: [{ code: 'OCC-001', name: 'Occupation 1' }],
+      };
       mockCacheService.get.mockReturnValue(null);
       mockApiService.getOccupationIds.mockResolvedValue(response);
 
@@ -289,7 +296,9 @@ describe('OccupationMapController - Loading States', () => {
 
   describe('Loading Message Customization', () => {
     it('should show custom message for occupation list loading', async () => {
-      const response: OccupationIdsResponse = { occupation_ids: ['OCC-001'] };
+      const response: OccupationIdsResponse = {
+        occupations: [{ code: 'OCC-001', name: 'Occupation 1' }],
+      };
       mockCacheService.get.mockReturnValue(null);
       mockApiService.getOccupationIds.mockResolvedValue(response);
 
@@ -320,7 +329,7 @@ describe('OccupationMapController - Loading States', () => {
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       // Resolve the promise
-      resolvePromise!({ occupation_ids: ['OCC-001'] });
+      resolvePromise!({ occupations: [{ code: 'OCC-001', name: 'Occupation 1' }] });
       await loadPromise;
 
       expect(uiService.hideLoading).toHaveBeenCalled();
@@ -330,7 +339,9 @@ describe('OccupationMapController - Loading States', () => {
   describe('Loading State Persistence', () => {
     it('should maintain loading state across component lifecycle', async () => {
       // Mock a scenario where component might be re-initialized
-      const response: OccupationIdsResponse = { occupation_ids: ['OCC-001'] };
+      const response: OccupationIdsResponse = {
+        occupations: [{ code: 'OCC-001', name: 'Occupation 1' }],
+      };
       mockCacheService.get.mockReturnValue(null);
       mockApiService.getOccupationIds.mockResolvedValue(response);
 
@@ -379,7 +390,9 @@ describe('OccupationMapController - Loading States', () => {
         };
       });
 
-      const response: OccupationIdsResponse = { occupation_ids: ['OCC-001'] };
+      const response: OccupationIdsResponse = {
+        occupations: [{ code: 'OCC-001', name: 'Occupation 1' }],
+      };
       mockCacheService.get.mockReturnValue(null);
       mockApiService.getOccupationIds.mockResolvedValue(response);
 
