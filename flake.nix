@@ -262,6 +262,8 @@
               # General tools
               pkgs.git
               pkgs.direnv
+              # Database tools
+              pkgs.postgresql
             ] ++ (with pkgs.python313Packages; [
               mypy
               python-lsp-server
