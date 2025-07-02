@@ -16,9 +16,6 @@
     "test:watch": "vitest --watch",
     "test:run": "vitest run"
   },
-  "dependencies": {
-    "dotenv": "^16.5.0"
-  },
   "devDependencies": {
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",

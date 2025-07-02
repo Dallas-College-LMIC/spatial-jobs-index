@@ -90,14 +90,29 @@ See [frontend/README.md](frontend/README.md) for detailed frontend documentation
 
 ## Environment Variables
 
-### Backend
-- `USERNAME` - Database username
-- `PASS` - Database password  
-- `URL` - Database host URL
-- `DB` - Database name
+This project uses environment-specific `.env` files in each subdirectory:
 
-### Frontend
-- `VITE_API_BASE_URL` - Backend API URL (defaults to http://localhost:8000)
+### Backend (`backend/.env`)
+Create a `backend/.env` file with your PostgreSQL database credentials:
+```bash
+USERNAME=your_postgres_user
+PASS=your_postgres_password
+URL=your_postgres_host
+DB=your_postgres_database
+```
+See `backend/.env.example` for a template.
+
+### Frontend (`frontend/.env`)
+Create a `frontend/.env` file for local development:
+```bash
+VITE_API_BASE_URL=http://localhost:8000
+```
+See `frontend/.env.example` for a template.
+
+For production builds, the frontend uses `frontend/.env.production` which is committed to the repository.
+
+### Using direnv (Optional)
+The repository includes a `.envrc` file for use with [direnv](https://direnv.net/). This automatically loads the Nix environment and can set common environment variables when you enter the project directory.
 
 ## Development Workflow
 

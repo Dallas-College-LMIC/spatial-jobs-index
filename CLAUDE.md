@@ -2,6 +2,24 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this monorepo.
 
+## IMPORTANT: Serena MCP Usage Instructions
+
+**ALWAYS activate the appropriate Serena project when working with code:**
+- When editing ANY file in `backend/`: First run `mcp__serena__activate_project` with "backend"
+- When editing ANY file in `frontend/`: First run `mcp__serena__activate_project` with "frontend"
+- Use Serena's language-aware tools INSTEAD of basic tools:
+  - `mcp__serena__find_symbol` instead of Grep for finding classes/functions/methods
+  - `mcp__serena__replace_symbol_body` instead of Edit for changing function/class implementations
+  - `mcp__serena__insert_before_symbol`/`mcp__serena__insert_after_symbol` for adding new code
+  - `mcp__serena__get_symbols_overview` instead of Read for understanding file structure
+  - `mcp__serena__find_referencing_symbols` to find where code is used
+  - `mcp__serena__replace_regex` for complex multi-line replacements
+
+**Example workflow when asked to modify backend code:**
+1. First: `mcp__serena__activate_project("backend")`
+2. Then: Use Serena tools for all code operations
+3. Only use basic Read/Edit/Grep for non-code files (configs, docs)
+
 ## Monorepo Structure
 
 This is a Nix flake-based monorepo containing:
@@ -274,3 +292,33 @@ nix build .#frontend
 - Frontend: Use Vitest UI with `npm run test:ui`
 - Both: Check respective `node_modules/` or Python env for dependency issues
 - Use `nix develop .#backend` or `nix develop .#frontend` for isolated debugging
+
+## MCP Server Configuration
+
+### Serena MCP Server (MUST USE FOR CODE EDITING)
+**Critical**: Serena provides language-aware code intelligence that is REQUIRED for code editing:
+- **Projects configured**: 
+  - "backend" - Python/FastAPI code in backend/
+  - "frontend" - TypeScript/Vite code in frontend/
+- **Activation is MANDATORY**: Always run `mcp__serena__activate_project` before editing code
+- **Tool priority**:
+  1. ALWAYS use Serena tools for code operations
+  2. ONLY use basic Read/Edit/Grep for non-code files (JSON, YAML, Markdown)
+- **Key capabilities**:
+  - Symbol-based navigation (finds exact definitions, not just text matches)
+  - Language server integration (understands imports, types, references)
+  - Intelligent refactoring (safely rename across files)
+  - Project memories (stores important context between sessions)
+
+### Other MCP Servers
+- **context7**: Use for up-to-date library documentation
+- **nixos**: Use for Nix package/option queries
+- **browsermcp**: Use for browser automation tasks
+
+## Best Practices
+
+1. **ALWAYS activate Serena first** when working on code in backend/ or frontend/
+2. Use context7 to fetch current documentation during implementation
+3. Run linting and type checking before committing
+4. Follow existing code patterns - use Serena's `get_symbols_overview` to understand structure
+5. Update this file when adding new workflows
