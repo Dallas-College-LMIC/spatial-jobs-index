@@ -175,22 +175,6 @@ src/
 - **UI Testing**: Vitest UI interface available for interactive test debugging
 
 ### Development Commands
-
-#### Preferred Method: Using Nix (Recommended)
-```bash
-# From monorepo root:
-nix run .#frontend       # Run the frontend dev server
-nix develop .#frontend   # Enter frontend-specific dev shell
-nix build .#frontend     # Build frontend for production
-
-# Inside frontend dev shell:
-nix develop .#frontend
-cd frontend
-npm run dev
-npm test
-```
-
-#### Alternative Method: Direct Commands
 If working without Nix or inside the dev shell:
 ```bash
 cd frontend
@@ -220,8 +204,5 @@ npm run test:coverage # Generate coverage report
 - **Quality Gates**: All tests must pass for merge approval
 - **Coverage Monitoring**: Prevents coverage regression
 
-## GitHub Pages Deployment
-- Uses `npm run deploy` with gh-pages package
-- Base path configured in `vite.config.ts`: `/sji-webapp/`
-- Production API URL via `.env.production`
-- See root `../CLAUDE.md` for full deployment workflows
+## Deployment
+See root `../CLAUDE.md` for deployment workflows

@@ -119,42 +119,17 @@ npm run lint
 npm run format
 ```
 
-## Backend Architecture
+## Project Architecture
 
-**Tech Stack:**
-- Python 3.13+ with FastAPI framework
-- PostgreSQL with PostGIS extension for spatial data
-- SQLAlchemy ORM with GeoAlchemy2 for spatial operations
-- Pydantic for data validation and response models
-- Nix flake with uv2nix for reproducible builds
+**Backend (Python/FastAPI):**
+- REST API for spatial jobs data
+- PostgreSQL with PostGIS for spatial operations
+- See `backend/CLAUDE.md` for detailed architecture, endpoints, and configuration
 
-**Current Active Endpoints:**
-- `/occupation_ids`: List all available occupation categories
-- `/geojson`: Return spatial data as GeoJSON with job metrics
-- `/occupation_data/{category}`: Return spatial data for a specific occupation category
-
-**Environment Variables Required:**
-- `USERNAME`, `PASS`: Database credentials
-- `URL`, `DB`: Database connection details
-
-## Frontend Architecture
-
-**Tech Stack:**
-- Vite 6.3.5 build system with ES6 modules
-- TypeScript 5.8.3 with strict mode
-- Mapbox GL JS v1.12.0 for interactive maps
-- Bootstrap 5.0.0-beta2 for UI
-- Select2 4.1.0 for searchable dropdowns
-- Vitest 3.2.3 for testing
-
-**Key Features:**
-- Client-side caching with 24-hour TTL for occupation IDs
-- Non-blocking data loading for improved UX
-- Choropleth maps with z-score based coloring
-- Export functionality for GeoJSON data
-
-**Environment Variables:**
-- `VITE_API_BASE_URL`: Backend API URL (defaults to http://localhost:8000)
+**Frontend (TypeScript/Vite):**
+- Interactive maps with Mapbox GL JS
+- Client-side caching for performance
+- See `frontend/CLAUDE.md` for detailed architecture and component structure
 
 ## Cross-Project Coordination
 

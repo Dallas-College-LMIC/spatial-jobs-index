@@ -9,23 +9,6 @@ This is part of a monorepo. See the root `../CLAUDE.md` for:
 - Full stack development patterns
 
 ## Development Commands
-
-### Preferred Method: Using Nix (Recommended)
-```bash
-# From monorepo root:
-nix run .#backend          # Run the backend server
-nix develop .#backend      # Enter backend-specific dev shell
-nix build .#backend        # Build backend package
-nix build .#backend-docker # Build Docker image
-
-# Inside backend dev shell:
-nix develop .#backend
-cd backend
-ruff check
-mypy app/
-```
-
-### Alternative Method: Direct Commands
 If working without Nix or inside the dev shell:
 ```bash
 cd backend
