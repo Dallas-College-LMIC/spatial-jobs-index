@@ -225,6 +225,34 @@ Serena provides language-aware code intelligence for navigating and editing code
 - Test user interactions and error handling
 - Verify caching behavior
 
+## CI/CD Workflows
+
+The monorepo uses GitHub Actions workflows located in `.github/workflows/`:
+
+### CI Workflow (`ci.yml`)
+- **Path-based execution**: Only runs tests for components that changed
+- **Granular filters**: 
+  - Backend changes trigger Python tests, linting, and type checking
+  - Frontend changes trigger npm tests and Nix build verification
+  - Documentation-only changes skip CI entirely
+- **Cachix integration**: All Nix builds use shared cache for speed
+- **Coverage reporting**: Uploads to Codecov with component-specific flags
+
+### Deploy Workflow (`deploy.yml`)
+- **Triggered by**: Successful CI completion on main branch
+- **Backend deployment**:
+  - Builds Docker image with Nix
+  - Pushes to GitHub Container Registry
+  - Deploys to VPS via SSH
+- **Frontend deployment**:
+  - Builds static site with Nix
+  - Deploys to GitHub Pages
+
+### Required GitHub Secrets
+- `CACHIX_AUTH_TOKEN`: For Nix build caching
+- `GHCR_TOKEN`: For pushing Docker images
+- `VPS_HOST`, `VPS_USER`, `VPS_SSH_KEY`: For backend deployment
+
 ## Deployment
 
 ### Backend Docker Deployment
