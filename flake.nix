@@ -73,23 +73,48 @@
           };
         };
         
-        # Frontend build
-        frontendBuild = pkgs.stdenv.mkDerivation {
+        # Frontend build using buildNpmPackage
+        frontendBuild = pkgs.buildNpmPackage {
           pname = "sji-webapp";
           version = "0.1.0";
           src = ./frontend;
           
-          nativeBuildInputs = with pkgs; [ nodejs ];
+          # Use importNpmLock to avoid managing hashes
+          npmDeps = pkgs.importNpmLock {
+            npmRoot = ./frontend;
+          };
           
-          buildPhase = ''
-            export HOME=$TMPDIR
-            npm ci
-            npm run build
-          '';
+          npmConfigHook = pkgs.importNpmLock.npmConfigHook;
+          
+          # Build the production bundle
+          npmBuildScript = "build";
           
           installPhase = ''
+            runHook preInstall
             mkdir -p $out
             cp -r dist/* $out/
+            runHook postInstall
+          '';
+        };
+
+        # Frontend development dependencies
+        frontendNodeModules = pkgs.buildNpmPackage {
+          pname = "sji-webapp-deps";
+          version = "0.1.0";
+          src = ./frontend;
+          
+          npmDeps = pkgs.importNpmLock {
+            npmRoot = ./frontend;
+          };
+          
+          npmConfigHook = pkgs.importNpmLock.npmConfigHook;
+          dontNpmBuild = true;
+          
+          installPhase = ''
+            runHook preInstall
+            mkdir -p $out
+            cp -r node_modules $out/
+            runHook postInstall
           '';
         };
         
@@ -120,8 +145,25 @@
           frontend = {
             type = "app";
             program = "${pkgs.writeShellScriptBin "run-frontend" ''
-              cd ${./frontend}
-              ${pkgs.nodejs}/bin/npm run dev
+              # Create a temporary working directory
+              WORK_DIR=$(mktemp -d)
+              trap "rm -rf $WORK_DIR" EXIT
+              
+              echo "Setting up frontend development environment..."
+              
+              # Copy source files to working directory
+              cp -r ${./frontend}/* $WORK_DIR/
+              cp -r ${./frontend}/.[^.]* $WORK_DIR/ 2>/dev/null || true
+              
+              # Copy the pre-built node_modules (not symlink, to allow writes)
+              echo "Copying dependencies..."
+              cp -r ${frontendNodeModules}/node_modules $WORK_DIR/
+              chmod -R u+w $WORK_DIR/node_modules
+              
+              # Change to working directory and run dev server
+              cd $WORK_DIR
+              echo "Starting frontend dev server on http://localhost:5173"
+              exec ${pkgs.nodejs}/bin/npm run dev
             ''}/bin/run-frontend";
           };
           
@@ -135,12 +177,25 @@
               BACKEND_PID=$!
               
               echo "Starting frontend on port 5173..."
-              cd ${./frontend}
+              # Create a temporary writable directory for frontend
+              WORK_DIR=$(mktemp -d)
+              trap "rm -rf $WORK_DIR; kill $BACKEND_PID" EXIT
+              
+              # Copy frontend source to writable location
+              cp -r ${./frontend}/* $WORK_DIR/
+              cp -r ${./frontend}/.[^.]* $WORK_DIR/ 2>/dev/null || true
+              
+              # Copy the pre-built node_modules (not symlink, to allow writes)
+              echo "Copying dependencies..."
+              cp -r ${frontendNodeModules}/node_modules $WORK_DIR/
+              chmod -R u+w $WORK_DIR/node_modules
+              
+              cd $WORK_DIR
               ${pkgs.nodejs}/bin/npm run dev &
               FRONTEND_PID=$!
               
               # Wait for Ctrl+C
-              trap "kill $BACKEND_PID $FRONTEND_PID" INT
+              trap "kill $BACKEND_PID $FRONTEND_PID; rm -rf $WORK_DIR" INT
               wait
             ''}/bin/run-all";
           };
