@@ -23,7 +23,7 @@ describe('CacheService', () => {
         const testData = { foo: 'bar' };
         const cacheKey = 'test_mykey_cache';
         const cacheTimeKey = 'test_mykey_cache_time';
-        
+
         // Mock localStorage to return our test data
         mockLocalStorage.getItem = vi.fn((key) => {
           if (key === cacheKey) return JSON.stringify(testData);
@@ -39,7 +39,7 @@ describe('CacheService', () => {
         const testData = { foo: 'bar' };
         const cacheKey = 'test_mykey_cache';
         const cacheTimeKey = 'test_mykey_cache_time';
-        
+
         // Mock localStorage to return expired data
         mockLocalStorage.getItem = vi.fn((key) => {
           if (key === cacheKey) return JSON.stringify(testData);
@@ -55,7 +55,7 @@ describe('CacheService', () => {
       it('should handle invalid JSON gracefully', () => {
         const cacheKey = 'test_mykey_cache';
         const cacheTimeKey = 'test_mykey_cache_time';
-        
+
         // Mock localStorage to return invalid JSON
         mockLocalStorage.getItem = vi.fn((key) => {
           if (key === cacheKey) return 'invalid json';
@@ -125,9 +125,9 @@ describe('CacheService', () => {
         mockLocalStorage.setItem('test_key2', 'value2');
         mockLocalStorage.setItem('test_key2_time', new Date().toISOString());
         mockLocalStorage.setItem('other_key', 'should not be removed');
-        
+
         // Mock localStorage.key() to return our test keys
-        let keys = ['test_key1', 'test_key1_time', 'test_key2', 'test_key2_time', 'other_key'];
+        const keys = ['test_key1', 'test_key1_time', 'test_key2', 'test_key2_time', 'other_key'];
         vi.mocked(mockLocalStorage.key).mockImplementation((index: number) => keys[index] || null);
         Object.defineProperty(mockLocalStorage, 'length', { get: () => keys.length });
 

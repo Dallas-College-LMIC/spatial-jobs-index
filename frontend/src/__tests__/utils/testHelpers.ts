@@ -31,7 +31,7 @@ export function createMockLocalStorage(): Storage {
  * Wait for async operations to complete
  */
 export function waitFor(ms: number = 0): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 /**
@@ -81,14 +81,14 @@ export function createFetchErrorResponse(
 export function setupMockFetch(responses: Map<string, Response>): void {
   vi.mocked(global.fetch).mockImplementation(async (input: RequestInfo | URL) => {
     const url = typeof input === 'string' ? input : input.toString();
-    
+
     // Find matching response
     for (const [pattern, response] of responses) {
       if (url.includes(pattern)) {
         return response;
       }
     }
-    
+
     // Default to 404
     return createFetchErrorResponse('Not found', 404);
   });

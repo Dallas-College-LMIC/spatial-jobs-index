@@ -125,7 +125,9 @@ export interface MapViewState {
 }
 
 // Type guards
-export function isGeoJSONSource(source: MapboxAnySource | undefined): source is MapboxGeoJSONSource {
+export function isGeoJSONSource(
+  source: MapboxAnySource | undefined
+): source is MapboxGeoJSONSource {
   return source?.type === 'geojson';
 }
 
@@ -169,11 +171,13 @@ export interface CensusTractProperties {
   [key: string]: any; // Dynamic properties for different z-score fields
 }
 
-export interface CensusTractFeature extends GeoJSON.Feature<GeoJSON.Geometry, CensusTractProperties> {
+export interface CensusTractFeature
+  extends GeoJSON.Feature<GeoJSON.Geometry, CensusTractProperties> {
   id?: string | number;
 }
 
-export interface CensusTractFeatureCollection extends GeoJSON.FeatureCollection<GeoJSON.Geometry, CensusTractProperties> {
+export interface CensusTractFeatureCollection
+  extends GeoJSON.FeatureCollection<GeoJSON.Geometry, CensusTractProperties> {
   features: CensusTractFeature[];
 }
 

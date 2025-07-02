@@ -1,21 +1,11 @@
-app/__pycache__
+# Backend-specific files
 app/all_data_zscored.sqlite
-python_flake_test.egg-info
 all_data_zscored.sqlite
-.env
-.direnv
-.envrc
-.aider*
+python_flake_test.egg-info
 todo.org
 
-# Python cache files
-__pycache__/
-*.py[cod]
-*$py.class
-
-# Coverage reports
-.coverage
-htmlcov/
+# Backend-specific patterns
+.aider*
 
 # AI assistant configuration and cache
 .serena/

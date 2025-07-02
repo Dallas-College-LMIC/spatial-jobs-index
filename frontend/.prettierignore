@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+coverage/
+htmlcov/
+
+# Environment files
+.env*
+
+# Package manager files
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+
+# Public assets
+public/
+
+# Test coverage
+*.lcov
+
+# IDE
+.idea/
+.vscode/
+
+# Temporary files
+*.log
+*.tmp

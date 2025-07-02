@@ -5,29 +5,29 @@ import { TestableBaseMapController } from './testableBaseMapController';
 // Use vi.hoisted to ensure mock is created before imports
 const { mockMapManager } = vi.hoisted(() => {
   const mockMapManager = {
-  map: {
-    on: vi.fn(),
-    isStyleLoaded: vi.fn(() => true),
-    getLayer: vi.fn(() => null),
-    removeLayer: vi.fn(),
+    map: {
+      on: vi.fn(),
+      isStyleLoaded: vi.fn(() => true),
+      getLayer: vi.fn(() => null),
+      removeLayer: vi.fn(),
+      addSource: vi.fn(),
+      setLayoutProperty: vi.fn(),
+    },
+    containerId: 'test-container',
+    popup: {} as any,
+    initializeMap: vi.fn(),
+    addControls: vi.fn(),
+    createLayerColor: vi.fn(),
     addSource: vi.fn(),
-    setLayoutProperty: vi.fn(),
-  },
-  containerId: 'test-container',
-  popup: {} as any,
-  initializeMap: vi.fn(),
-  addControls: vi.fn(),
-  createLayerColor: vi.fn(),
-  addSource: vi.fn(),
-  addLayer: vi.fn(),
-  clearLayers: vi.fn(),
-  onStyleLoad: vi.fn((callback) => {
-    // Call the callback immediately to simulate style load
-    callback();
-  }),
-  addPopupEvents: vi.fn(),
-  setLayerVisibility: vi.fn(),
-};
+    addLayer: vi.fn(),
+    clearLayers: vi.fn(),
+    onStyleLoad: vi.fn((callback) => {
+      // Call the callback immediately to simulate style load
+      callback();
+    }),
+    addPopupEvents: vi.fn(),
+    setLayerVisibility: vi.fn(),
+  };
   return { mockMapManager };
 });
 
@@ -52,14 +52,13 @@ vi.mock('../../../js/services/uiService', () => ({
   },
 }));
 
-
 describe('BaseMapController', () => {
   let controller: TestableBaseMapController;
   let mockApiService: ApiService;
 
   beforeEach(() => {
     vi.clearAllMocks();
-    
+
     // Setup API service mock
     mockApiService = {
       getGeojsonData: vi.fn(),
@@ -69,18 +68,25 @@ describe('BaseMapController', () => {
       cancelRequest: vi.fn(),
       getAbortController: vi.fn(),
     } as any;
-    
+
     // Create controller
-    controller = new TestableBaseMapController('test-container', 'test-source', mockMapManager as any);
-    
-    
+    controller = new TestableBaseMapController(
+      'test-container',
+      'test-source',
+      mockMapManager as any
+    );
+
     // Replace API service with mock
     controller['apiService'] = mockApiService;
   });
 
   describe('constructor', () => {
     it('should initialize with default values', () => {
-      const newController = new TestableBaseMapController('container-id', 'map_data', mockMapManager as any);
+      const newController = new TestableBaseMapController(
+        'container-id',
+        'map_data',
+        mockMapManager as any
+      );
       expect(newController['containerId']).toBe('container-id');
       expect(newController['sourceId']).toBe('map_data');
       expect(newController['isInitialized']).toBe(false);
@@ -88,7 +94,11 @@ describe('BaseMapController', () => {
     });
 
     it('should accept custom source ID', () => {
-      const newController = new TestableBaseMapController('container-id', 'custom-source', mockMapManager as any);
+      const newController = new TestableBaseMapController(
+        'container-id',
+        'custom-source',
+        mockMapManager as any
+      );
       expect(newController['sourceId']).toBe('custom-source');
     });
   });
@@ -149,7 +159,10 @@ describe('BaseMapController', () => {
 
       await controller.testLoadData(config);
 
-      expect(mockApiService.getGeojsonData).toHaveBeenCalledWith({ occupation_id: '11-1011' }, expect.any(AbortSignal));
+      expect(mockApiService.getGeojsonData).toHaveBeenCalledWith(
+        { occupation_id: '11-1011' },
+        expect.any(AbortSignal)
+      );
     });
 
     it('should show loading state', async () => {
@@ -162,7 +175,9 @@ describe('BaseMapController', () => {
 
       await controller.testLoadData(config);
 
-      expect(uiService.showLoading).toHaveBeenCalledWith('loading-spinner', { message: 'Loading map data...' });
+      expect(uiService.showLoading).toHaveBeenCalledWith('loading-spinner', {
+        message: 'Loading map data...',
+      });
       expect(uiService.hideLoading).toHaveBeenCalledWith('loading-spinner');
     });
 
@@ -215,8 +230,8 @@ describe('BaseMapController', () => {
     });
 
     it('should prevent concurrent loads', async () => {
-      vi.mocked(mockApiService.getGeojsonData).mockImplementation(() => 
-        new Promise(resolve => setTimeout(() => resolve(mockGeoJSONResponse), 100))
+      vi.mocked(mockApiService.getGeojsonData).mockImplementation(
+        () => new Promise((resolve) => setTimeout(() => resolve(mockGeoJSONResponse), 100))
       );
 
       const promise1 = controller.testLoadData();
@@ -229,12 +244,12 @@ describe('BaseMapController', () => {
 
     it('should update export link after loading', async () => {
       vi.mocked(mockApiService.getGeojsonData).mockResolvedValue(mockGeoJSONResponse);
-      
+
       // Mock DOM element with correct ID
       const exportLink = document.createElement('a');
       exportLink.id = 'exp';
       document.body.appendChild(exportLink);
-      
+
       // Mock getExportUrl to return a proper URL
       mockApiService.getExportUrl = vi.fn().mockReturnValue('http://127.0.0.1:8000/geojson');
 
@@ -257,7 +272,7 @@ describe('BaseMapController', () => {
       const exportLink = document.createElement('a');
       exportLink.id = 'exp';
       document.body.appendChild(exportLink);
-      
+
       mockApiService.getExportUrl = vi.fn().mockReturnValue('http://127.0.0.1:8000/geojson');
 
       controller['updateExportLink']();
@@ -280,21 +295,21 @@ describe('BaseMapController', () => {
     it('should show loading state', async () => {
       const { uiService } = await import('../../../js/services/uiService');
       controller.testShowLoading('test-element', 'Loading...');
-      
+
       expect(uiService.showLoading).toHaveBeenCalledWith('test-element', { message: 'Loading...' });
     });
 
     it('should hide loading state', async () => {
       const { uiService } = await import('../../../js/services/uiService');
       controller.testHideLoading('test-element');
-      
+
       expect(uiService.hideLoading).toHaveBeenCalledWith('test-element');
     });
 
     it('should show error state', async () => {
       const { uiService } = await import('../../../js/services/uiService');
       controller.testShowError('test-element', 'Error message');
-      
+
       expect(uiService.showError).toHaveBeenCalledWith('test-element', 'Error message');
     });
   });

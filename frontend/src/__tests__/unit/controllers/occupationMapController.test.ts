@@ -22,19 +22,19 @@ describe('OccupationMapController', () => {
 
   beforeEach(async () => {
     vi.clearAllMocks();
-    
+
     // Setup mock localStorage
     mockLocalStorage = createMockLocalStorage();
     global.localStorage = mockLocalStorage;
-    
+
     // Mock DOM Option constructor
     global.Option = vi.fn().mockImplementation((text: string, value: string) => ({
       text,
       value,
       selected: false,
-      disabled: false
+      disabled: false,
     }));
-    
+
     // Setup mock DOM elements
     document.body.innerHTML = `
       <div id="test-container"></div>
@@ -45,7 +45,7 @@ describe('OccupationMapController', () => {
       <a id="exportGeoJSON"></a>
       <a id="exp"></a>
     `;
-    
+
     // Mock document.getElementById to return the proper elements
     vi.spyOn(document, 'getElementById').mockImplementation((id: string) => {
       return document.querySelector(`#${id}`) as HTMLElement | null;
@@ -53,13 +53,13 @@ describe('OccupationMapController', () => {
 
     // Create controller
     controller = new OccupationMapController('test-container');
-    
+
     // Get mocked services from the controller
     mockApiService = (controller as any).apiService;
     mockCacheService = (controller as any).cacheService;
     mockOccupationCache = (controller as any).occupationCache;
     mockMapManager = (controller as any).mapManager;
-    
+
     // If services are not mocked properly, add mock methods
     if (!mockApiService.getOccupationIds) {
       mockApiService.getOccupationIds = vi.fn();
@@ -85,7 +85,7 @@ describe('OccupationMapController', () => {
     }
 
     // Wait for initialization
-    await new Promise(resolve => setTimeout(resolve, 10));
+    await new Promise((resolve) => setTimeout(resolve, 10));
   });
 
   afterEach(() => {
@@ -105,14 +105,14 @@ describe('OccupationMapController', () => {
       const currentTime = Date.now();
       mockLocalStorage.setItem('occupation_ids_cache', JSON.stringify(oldData));
       mockLocalStorage.setItem('occupation_ids_cache_time', currentTime.toString());
-      
+
       // Create new controller which should trigger migration
       // Create new controller which should trigger migration
       new OccupationMapController('test-container');
-      
+
       // Wait for async initialization
-      await new Promise(resolve => setTimeout(resolve, 10));
-      
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
       // Check that old cache was removed (migration cleans up old format)
       expect(mockLocalStorage.removeItem).toHaveBeenCalledWith('occupation_ids_cache');
       expect(mockLocalStorage.removeItem).toHaveBeenCalledWith('occupation_ids_cache_time');
@@ -123,9 +123,9 @@ describe('OccupationMapController', () => {
     it('should use cached occupation IDs when available', async () => {
       const cachedIds = ['11-1011', '11-1021', '11-1031'];
       mockCacheService.get.mockReturnValue(cachedIds);
-      
+
       await controller['loadOccupationIds']();
-      
+
       expect(mockCacheService.get).toHaveBeenCalledWith('occupation_ids');
       expect(mockApiService.getOccupationIds).not.toHaveBeenCalled();
       expect((global as any).$).toHaveBeenCalledWith('#occupation-select');
@@ -135,9 +135,9 @@ describe('OccupationMapController', () => {
       // Cache returns null (expired or not found)
       mockCacheService.get.mockReturnValue(null);
       mockApiService.getOccupationIds.mockResolvedValue(mockOccupationIdsResponse);
-      
+
       await controller['loadOccupationIds']();
-      
+
       expect(mockCacheService.get).toHaveBeenCalledWith('occupation_ids');
       expect(mockApiService.getOccupationIds).toHaveBeenCalled();
       expect(mockCacheService.set).toHaveBeenCalledWith(
@@ -150,9 +150,9 @@ describe('OccupationMapController', () => {
     it('should handle API errors gracefully', async () => {
       mockCacheService.get.mockReturnValue(null);
       mockApiService.getOccupationIds.mockRejectedValue(new Error('API Error'));
-      
+
       await controller['loadOccupationIds']();
-      
+
       expect(uiService.showError).toHaveBeenCalledWith('loading', 'Error loading occupations');
       expect(uiService.showNotification).toHaveBeenCalledWith({
         type: 'error',
@@ -166,10 +166,10 @@ describe('OccupationMapController', () => {
       mockLocalStorage.setItem = vi.fn(() => {
         throw new Error('QuotaExceededError');
       });
-      
+
       mockCacheService.get.mockReturnValue(null);
       mockApiService.getOccupationIds.mockResolvedValue(mockOccupationIdsResponse);
-      
+
       // Should not throw
       await expect(controller['loadOccupationIds']()).resolves.not.toThrow();
     });
@@ -178,10 +178,10 @@ describe('OccupationMapController', () => {
   describe('populateOccupationDropdown', () => {
     it('should populate dropdown with occupation IDs', () => {
       const occupationIds = ['11-1011', '11-1021', '11-1031'];
-      
+
       // The method should be called without throwing errors
       expect(() => controller['populateOccupationDropdown'](occupationIds)).not.toThrow();
-      
+
       // Verify jQuery calls are made
       expect((global as any).$).toHaveBeenCalledWith('#occupation-select');
       expect(global.Option).toHaveBeenCalledTimes(3);
@@ -190,13 +190,13 @@ describe('OccupationMapController', () => {
     it('should initialize select2 and setup change listener', () => {
       const occupationIds = ['11-1011'];
       const mockSelect = (global as any).$('#occupation-select');
-      
+
       controller['populateOccupationDropdown'](occupationIds);
-      
+
       expect(mockSelect.select2).toHaveBeenCalledWith({
         placeholder: 'Search and select an occupation...',
         allowClear: true,
-        width: '100%'
+        width: '100%',
       });
       // Verify that the dropdown change handler setup was called
       expect(document.getElementById).toHaveBeenCalled();
@@ -208,10 +208,13 @@ describe('OccupationMapController', () => {
       const occupationId = '11-1011';
       mockOccupationCache.get.mockResolvedValue(null);
       mockApiService.getOccupationData.mockResolvedValue(mockGeoJSONResponse);
-      
+
       await controller['loadOccupationData'](occupationId);
-      
-      expect(mockApiService.getOccupationData).toHaveBeenCalledWith(occupationId, expect.any(AbortSignal));
+
+      expect(mockApiService.getOccupationData).toHaveBeenCalledWith(
+        occupationId,
+        expect.any(AbortSignal)
+      );
     });
 
     it('should clear map when no occupation selected', () => {
@@ -223,10 +226,13 @@ describe('OccupationMapController', () => {
       const occupationId = '11-1011';
       mockOccupationCache.get.mockResolvedValue(null);
       mockApiService.getOccupationData.mockResolvedValue(mockGeoJSONResponse);
-      
+
       await controller['loadOccupationData'](occupationId);
-      
-      expect(mockApiService.getOccupationData).toHaveBeenCalledWith(occupationId, expect.any(AbortSignal));
+
+      expect(mockApiService.getOccupationData).toHaveBeenCalledWith(
+        occupationId,
+        expect.any(AbortSignal)
+      );
       expect(mockMapManager.addSource).toHaveBeenCalled();
     });
 
@@ -235,11 +241,14 @@ describe('OccupationMapController', () => {
       const error = new Error('API Error');
       mockOccupationCache.get.mockResolvedValue(null);
       mockApiService.getOccupationData.mockRejectedValue(error);
-      
+
       // This should not throw since errors are handled
       await expect(controller['loadOccupationData'](occupationId)).resolves.not.toThrow();
-      
-      expect(mockApiService.getOccupationData).toHaveBeenCalledWith(occupationId, expect.any(AbortSignal));
+
+      expect(mockApiService.getOccupationData).toHaveBeenCalledWith(
+        occupationId,
+        expect.any(AbortSignal)
+      );
       expect(uiService.showError).toHaveBeenCalledWith('loading', 'Error loading occupation data');
     });
 
@@ -247,9 +256,9 @@ describe('OccupationMapController', () => {
       const occupationId = '11-1011';
       const cachedData = mockGeoJSONResponse;
       mockOccupationCache.get.mockResolvedValue(cachedData);
-      
+
       await controller['loadOccupationData'](occupationId);
-      
+
       expect(mockOccupationCache.get).toHaveBeenCalledWith(occupationId);
       expect(mockApiService.getOccupationData).not.toHaveBeenCalled();
       expect(mockMapManager.addSource).toHaveBeenCalledWith('occupation_data', cachedData);
@@ -258,31 +267,31 @@ describe('OccupationMapController', () => {
     it('should prevent concurrent loads of same occupation', async () => {
       const occupationId = '11-1011';
       mockOccupationCache.get.mockResolvedValue(null);
-      
+
       // Ensure no previous occupation is set and controller is not loading
       (controller as any).currentOccupationId = null;
       (controller as any).isLoading = false;
-      
+
       // Create a delayed promise to simulate slow API call
       let resolvePromise: (value: any) => void;
-      const delayedPromise = new Promise(resolve => {
+      const delayedPromise = new Promise((resolve) => {
         resolvePromise = resolve;
       });
       mockApiService.getOccupationData.mockReturnValue(delayedPromise);
-      
+
       // Start two concurrent loads
       const load1 = controller['loadOccupationData'](occupationId);
       const load2 = controller['loadOccupationData'](occupationId);
-      
+
       // The second request should wait for the first due to activeRequests Map
       expect(controller['activeRequests'].size).toBe(1);
-      
+
       // Resolve the promise
       resolvePromise!(mockGeoJSONResponse);
-      
+
       // Wait for both to complete
       await Promise.all([load1, load2]);
-      
+
       // Verify deduplication worked
       expect(controller['activeRequests'].size).toBe(0);
     });
@@ -291,7 +300,7 @@ describe('OccupationMapController', () => {
   describe('clearOccupationCache', () => {
     it('should clear occupation cache', () => {
       controller.clearOccupationCache();
-      
+
       // The cacheService.remove method is called with the cache key
       expect(mockCacheService.remove).toHaveBeenCalledWith('occupation_ids');
     });
@@ -300,7 +309,7 @@ describe('OccupationMapController', () => {
   describe('clearAllCaches', () => {
     it('should clear all caches', () => {
       controller.clearAllCaches();
-      
+
       expect(mockCacheService.remove).toHaveBeenCalledWith('occupation_ids');
       expect(mockOccupationCache.clear).toHaveBeenCalled();
     });
@@ -316,13 +325,13 @@ describe('OccupationMapController', () => {
         stats: {
           hits: 85,
           misses: 15,
-          totalRequests: 100
-        }
+          totalRequests: 100,
+        },
       };
       mockOccupationCache.getDebugInfo.mockReturnValue(mockStats);
-      
+
       const stats = controller.getCacheStats();
-      
+
       expect(stats).toEqual(mockStats);
     });
   });

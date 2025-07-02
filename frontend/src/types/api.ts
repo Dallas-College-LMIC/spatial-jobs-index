@@ -24,7 +24,7 @@ export interface GeoJSONResponse {
 }
 
 // Z-score categories
-export type ZScoreCategory = 
+export type ZScoreCategory =
   | '<-2.5SD'
   | '-2.5SD ~ -1.5SD'
   | '-1.5SD ~ -0.5SD'

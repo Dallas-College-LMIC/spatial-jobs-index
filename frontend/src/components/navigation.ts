@@ -1,7 +1,7 @@
 import { BRANDING } from '../js/constants';
 
 export function createNavigation(activePageTitle: string = ''): string {
-    return `
+  return `
         <nav class="navbar navbar-expand-lg navbar-dark g-0 p-0 m-0" id="banner">
             <a class="navbar-brand p-0" href="${BRANDING.homeUrl}">
                 <img src="${BRANDING.logoUrl}" id="dc_logo" alt="Dallas College Logo" />
@@ -32,8 +32,8 @@ export function createNavigation(activePageTitle: string = ''): string {
 }
 
 export function renderNavigation(containerId: string, activePageTitle: string = ''): void {
-    const container = document.getElementById(containerId);
-    if (container) {
-        container.innerHTML = createNavigation(activePageTitle);
-    }
+  const container = document.getElementById(containerId);
+  if (container) {
+    container.innerHTML = createNavigation(activePageTitle);
+  }
 }

@@ -3,133 +3,133 @@
  */
 
 export enum ErrorType {
-    NETWORK = 'NETWORK',
-    API = 'API',
-    TIMEOUT = 'TIMEOUT',
-    VALIDATION = 'VALIDATION',
-    PERMISSION = 'PERMISSION',
-    NOT_FOUND = 'NOT_FOUND',
-    SERVER = 'SERVER',
-    UNKNOWN = 'UNKNOWN'
+  NETWORK = 'NETWORK',
+  API = 'API',
+  TIMEOUT = 'TIMEOUT',
+  VALIDATION = 'VALIDATION',
+  PERMISSION = 'PERMISSION',
+  NOT_FOUND = 'NOT_FOUND',
+  SERVER = 'SERVER',
+  UNKNOWN = 'UNKNOWN',
 }
 
 export interface ErrorContext {
-    type: ErrorType;
-    statusCode?: number;
-    endpoint?: string;
-    retryable: boolean;
-    userMessage: string;
-    technicalMessage: string;
-    recoveryAction?: () => void;
+  type: ErrorType;
+  statusCode?: number;
+  endpoint?: string;
+  retryable: boolean;
+  userMessage: string;
+  technicalMessage: string;
+  recoveryAction?: () => void;
 }
 
 export class ErrorHandler {
-    private static errorHistory: Array<{error: Error, timestamp: Date, context: string}> = [];
-    private static readonly MAX_ERROR_HISTORY = 50;
+  private static errorHistory: Array<{ error: Error; timestamp: Date; context: string }> = [];
+  private static readonly MAX_ERROR_HISTORY = 50;
 
-    /**
-     * Analyze error and return context
-     */
-    static analyzeError(error: Error): ErrorContext {
-        const errorAny = error as any;
-        
-        // Network/Connection errors
-        if (error.name === 'TypeError' && error.message.includes('fetch')) {
-            return {
-                type: ErrorType.NETWORK,
-                retryable: true,
-                userMessage: 'Unable to connect to the server. Please check your internet connection.',
-                technicalMessage: error.message
-            };
-        }
+  /**
+   * Analyze error and return context
+   */
+  static analyzeError(error: Error): ErrorContext {
+    const errorAny = error as any;
 
-        // Timeout errors
-        if (error.message.includes('timeout')) {
-            return {
-                type: ErrorType.TIMEOUT,
-                retryable: true,
-                userMessage: 'The request took too long to complete. The server might be busy.',
-                technicalMessage: error.message
-            };
-        }
-
-        // HTTP errors
-        if (errorAny.status) {
-            const statusCode = errorAny.status;
-            
-            if (statusCode === 404) {
-                return {
-                    type: ErrorType.NOT_FOUND,
-                    statusCode,
-                    endpoint: errorAny.endpoint,
-                    retryable: false,
-                    userMessage: 'The requested resource was not found.',
-                    technicalMessage: `404 Not Found: ${errorAny.endpoint || 'Unknown endpoint'}`
-                };
-            }
-            
-            if (statusCode === 403 || statusCode === 401) {
-                return {
-                    type: ErrorType.PERMISSION,
-                    statusCode,
-                    retryable: false,
-                    userMessage: 'You do not have permission to access this resource.',
-                    technicalMessage: `${statusCode} ${errorAny.statusText}`
-                };
-            }
-            
-            if (statusCode >= 500) {
-                return {
-                    type: ErrorType.SERVER,
-                    statusCode,
-                    retryable: true,
-                    userMessage: 'The server encountered an error. Please try again later.',
-                    technicalMessage: `${statusCode} Server Error`
-                };
-            }
-            
-            if (statusCode >= 400) {
-                return {
-                    type: ErrorType.VALIDATION,
-                    statusCode,
-                    retryable: false,
-                    userMessage: 'There was a problem with your request.',
-                    technicalMessage: `${statusCode} ${errorAny.statusText}`
-                };
-            }
-        }
-
-        // Default unknown error
-        return {
-            type: ErrorType.UNKNOWN,
-            retryable: true,
-            userMessage: 'An unexpected error occurred.',
-            technicalMessage: error.message || 'Unknown error'
-        };
+    // Network/Connection errors
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      return {
+        type: ErrorType.NETWORK,
+        retryable: true,
+        userMessage: 'Unable to connect to the server. Please check your internet connection.',
+        technicalMessage: error.message,
+      };
     }
 
-    /**
-     * Display enhanced error message with recovery options
-     */
-    static showEnhancedError(
-        containerId: string, 
-        error: Error, 
-        context: string = 'application',
-        onRetry?: () => void
-    ): void {
-        const container = document.getElementById(containerId);
-        if (!container) {
-            console.error('Error container not found:', containerId);
-            return;
-        }
+    // Timeout errors
+    if (error.message.includes('timeout')) {
+      return {
+        type: ErrorType.TIMEOUT,
+        retryable: true,
+        userMessage: 'The request took too long to complete. The server might be busy.',
+        technicalMessage: error.message,
+      };
+    }
 
-        const errorContext = this.analyzeError(error);
-        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
-        
-        // Record error in history
-        this.recordError(error, context);
-        
-        container.innerHTML = `
+    // HTTP errors
+    if (errorAny.status) {
+      const statusCode = errorAny.status;
+
+      if (statusCode === 404) {
+        return {
+          type: ErrorType.NOT_FOUND,
+          statusCode,
+          endpoint: errorAny.endpoint,
+          retryable: false,
+          userMessage: 'The requested resource was not found.',
+          technicalMessage: `404 Not Found: ${errorAny.endpoint || 'Unknown endpoint'}`,
+        };
+      }
+
+      if (statusCode === 403 || statusCode === 401) {
+        return {
+          type: ErrorType.PERMISSION,
+          statusCode,
+          retryable: false,
+          userMessage: 'You do not have permission to access this resource.',
+          technicalMessage: `${statusCode} ${errorAny.statusText}`,
+        };
+      }
+
+      if (statusCode >= 500) {
+        return {
+          type: ErrorType.SERVER,
+          statusCode,
+          retryable: true,
+          userMessage: 'The server encountered an error. Please try again later.',
+          technicalMessage: `${statusCode} Server Error`,
+        };
+      }
+
+      if (statusCode >= 400) {
+        return {
+          type: ErrorType.VALIDATION,
+          statusCode,
+          retryable: false,
+          userMessage: 'There was a problem with your request.',
+          technicalMessage: `${statusCode} ${errorAny.statusText}`,
+        };
+      }
+    }
+
+    // Default unknown error
+    return {
+      type: ErrorType.UNKNOWN,
+      retryable: true,
+      userMessage: 'An unexpected error occurred.',
+      technicalMessage: error.message || 'Unknown error',
+    };
+  }
+
+  /**
+   * Display enhanced error message with recovery options
+   */
+  static showEnhancedError(
+    containerId: string,
+    error: Error,
+    context: string = 'application',
+    onRetry?: () => void
+  ): void {
+    const container = document.getElementById(containerId);
+    if (!container) {
+      console.error('Error container not found:', containerId);
+      return;
+    }
+
+    const errorContext = this.analyzeError(error);
+    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+
+    // Record error in history
+    this.recordError(error, context);
+
+    container.innerHTML = `
             <div style="display: flex; align-items: center; justify-content: center; height: 100vh; background: #f8f9fa;">
                 <div style="text-align: center; padding: 2rem; max-width: 600px; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                     <div style="font-size: 3rem; margin-bottom: 1rem;">
@@ -141,11 +141,15 @@ export class ErrorHandler {
                     <p style="color: #6c757d; margin-bottom: 1rem;">
                         ${errorContext.userMessage}
                     </p>
-                    ${errorContext.endpoint ? `
+                    ${
+                      errorContext.endpoint
+                        ? `
                         <p style="color: #6c757d; font-size: 0.9rem;">
                             Failed endpoint: <code>${errorContext.endpoint}</code>
                         </p>
-                    ` : ''}
+                    `
+                        : ''
+                    }
                     <details style="margin: 1rem 0; text-align: left;">
                         <summary style="cursor: pointer; color: #0d6efd;">Technical Details</summary>
                         <div style="margin-top: 0.5rem; padding: 1rem; background: #f8f9fa; border-radius: 4px;">
@@ -157,204 +161,209 @@ export class ErrorHandler {
                         </div>
                     </details>
                     <div style="margin-top: 1.5rem;">
-                        ${errorContext.retryable ? `
+                        ${
+                          errorContext.retryable
+                            ? `
                             <button onclick="${onRetry ? '(' + onRetry.toString() + ')()' : 'location.reload()'}" 
                                     style="margin: 0.25rem; padding: 0.5rem 1.5rem; background: #0d6efd; color: white; border: none; border-radius: 0.25rem; cursor: pointer;">
                                 Try Again
                             </button>
-                        ` : ''}
+                        `
+                            : ''
+                        }
                         <button onclick="window.history.back()" 
                                 style="margin: 0.25rem; padding: 0.5rem 1.5rem; background: #6c757d; color: white; border: none; border-radius: 0.25rem; cursor: pointer;">
                             Go Back
                         </button>
-                        ${this.hasErrorHistory() ? `
+                        ${
+                          this.hasErrorHistory()
+                            ? `
                             <button onclick="console.table(${JSON.stringify(this.getErrorSummary())})" 
                                     style="margin: 0.25rem; padding: 0.5rem 1.5rem; background: #ffc107; color: #000; border: none; border-radius: 0.25rem; cursor: pointer;">
                                 Show Error History
                             </button>
-                        ` : ''}
+                        `
+                            : ''
+                        }
                     </div>
                 </div>
             </div>
         `;
+  }
+
+  /**
+   * Get appropriate icon for error type
+   */
+  private static getErrorIcon(type: ErrorType): string {
+    const icons = {
+      [ErrorType.NETWORK]: '🌐',
+      [ErrorType.API]: '🔌',
+      [ErrorType.TIMEOUT]: '⏱️',
+      [ErrorType.VALIDATION]: '⚠️',
+      [ErrorType.PERMISSION]: '🔒',
+      [ErrorType.NOT_FOUND]: '🔍',
+      [ErrorType.SERVER]: '🖥️',
+      [ErrorType.UNKNOWN]: '❓',
+    };
+    return icons[type] || '❌';
+  }
+
+  /**
+   * Get error title based on type and context
+   */
+  private static getErrorTitle(type: ErrorType, context: string): string {
+    if (context === 'map') {
+      return 'Map Loading Error';
     }
 
-    /**
-     * Get appropriate icon for error type
-     */
-    private static getErrorIcon(type: ErrorType): string {
-        const icons = {
-            [ErrorType.NETWORK]: '🌐',
-            [ErrorType.API]: '🔌',
-            [ErrorType.TIMEOUT]: '⏱️',
-            [ErrorType.VALIDATION]: '⚠️',
-            [ErrorType.PERMISSION]: '🔒',
-            [ErrorType.NOT_FOUND]: '🔍',
-            [ErrorType.SERVER]: '🖥️',
-            [ErrorType.UNKNOWN]: '❓'
-        };
-        return icons[type] || '❌';
+    const titles = {
+      [ErrorType.NETWORK]: 'Connection Error',
+      [ErrorType.API]: 'API Error',
+      [ErrorType.TIMEOUT]: 'Request Timeout',
+      [ErrorType.VALIDATION]: 'Invalid Request',
+      [ErrorType.PERMISSION]: 'Access Denied',
+      [ErrorType.NOT_FOUND]: 'Not Found',
+      [ErrorType.SERVER]: 'Server Error',
+      [ErrorType.UNKNOWN]: 'Unexpected Error',
+    };
+    return titles[type] || 'Application Error';
+  }
+
+  /**
+   * Record error in history
+   */
+  private static recordError(error: Error, context: string): void {
+    this.errorHistory.push({
+      error,
+      timestamp: new Date(),
+      context,
+    });
+
+    // Keep only recent errors
+    if (this.errorHistory.length > this.MAX_ERROR_HISTORY) {
+      this.errorHistory.shift();
+    }
+  }
+
+  /**
+   * Get error history
+   */
+  static getErrorHistory(): Array<{ error: Error; timestamp: Date; context: string }> {
+    return this.errorHistory;
+  }
+
+  /**
+   * Clear error history (useful for testing)
+   */
+  static clearErrorHistory(): void {
+    this.errorHistory = [];
+  }
+
+  /**
+   * Check if we have error history
+   */
+  private static hasErrorHistory(): boolean {
+    return this.errorHistory.length > 0;
+  }
+
+  /**
+   * Get error summary for debugging
+   */
+  private static getErrorSummary(): Array<{ message: string; context: string; time: string }> {
+    return this.errorHistory.map((item) => ({
+      message: item.error.message,
+      context: item.context,
+      time: item.timestamp.toLocaleTimeString(),
+    }));
+  }
+
+  /**
+   * Enhanced error logging with structured data
+   */
+  static logError(error: Error, context: string, _additionalInfo: Record<string, any> = {}): void {
+    const errorContext = this.analyzeError(error);
+
+    // Simple logging format for test compatibility
+    console.error(`[${context}] Error:`, error);
+
+    // Record error in history
+    this.recordError(error, context);
+
+    // Send to monitoring service if configured
+    this.sendToMonitoring(error, context, errorContext);
+  }
+
+  /**
+   * Send errors to monitoring service (placeholder for future implementation)
+   */
+  private static sendToMonitoring(error: Error, context: string, errorContext: ErrorContext): void {
+    // This could be integrated with services like Sentry, LogRocket, etc.
+    if (import.meta.env.VITE_MONITORING_ENABLED === 'true') {
+      console.log('Would send to monitoring:', { error, context, errorContext });
+    }
+  }
+
+  /**
+   * Show inline error message (non-blocking)
+   */
+  static showInlineError(containerId: string, message: string, retryCallback?: () => void): void {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'alert alert-danger';
+    errorDiv.textContent = message;
+
+    if (retryCallback) {
+      const retryButton = document.createElement('button');
+      retryButton.textContent = 'Retry';
+      retryButton.className = 'btn btn-danger ms-2';
+      retryButton.onclick = retryCallback;
+      errorDiv.appendChild(retryButton);
     }
 
-    /**
-     * Get error title based on type and context
-     */
-    private static getErrorTitle(type: ErrorType, context: string): string {
-        if (context === 'map') {
-            return 'Map Loading Error';
+    container.appendChild(errorDiv);
+  }
+
+  /**
+   * Handle API errors with user-friendly messages
+   */
+  static handleApiError(error: Error, containerId: string, userMessage: string): void {
+    this.logError(error, 'API');
+    this.showInlineError(containerId, userMessage);
+  }
+
+  /**
+   * Create error boundary wrapper for functions
+   */
+  static createErrorBoundary<T extends (...args: any[]) => any>(fn: T, context: string): T {
+    return ((...args: any[]) => {
+      try {
+        const result = fn(...args);
+        if (result instanceof Promise) {
+          return result.catch((error: Error) => {
+            this.logError(error, context);
+            throw error;
+          });
         }
-        
-        const titles = {
-            [ErrorType.NETWORK]: 'Connection Error',
-            [ErrorType.API]: 'API Error',
-            [ErrorType.TIMEOUT]: 'Request Timeout',
-            [ErrorType.VALIDATION]: 'Invalid Request',
-            [ErrorType.PERMISSION]: 'Access Denied',
-            [ErrorType.NOT_FOUND]: 'Not Found',
-            [ErrorType.SERVER]: 'Server Error',
-            [ErrorType.UNKNOWN]: 'Unexpected Error'
-        };
-        return titles[type] || 'Application Error';
-    }
+        return result;
+      } catch (error) {
+        this.logError(error as Error, context);
+        throw error;
+      }
+    }) as T;
+  }
 
-    /**
-     * Record error in history
-     */
-    private static recordError(error: Error, context: string): void {
-        this.errorHistory.push({
-            error,
-            timestamp: new Date(),
-            context
-        });
-        
-        // Keep only recent errors
-        if (this.errorHistory.length > this.MAX_ERROR_HISTORY) {
-            this.errorHistory.shift();
-        }
-    }
+  /**
+   * Setup global error handlers
+   */
+  static setupGlobalHandlers(): void {
+    window.addEventListener('error', (event) => {
+      this.logError(event.error, 'Global');
+    });
 
-    /**
-     * Get error history
-     */
-    static getErrorHistory(): Array<{error: Error, timestamp: Date, context: string}> {
-        return this.errorHistory;
-    }
-
-    /**
-     * Clear error history (useful for testing)
-     */
-    static clearErrorHistory(): void {
-        this.errorHistory = [];
-    }
-
-    /**
-     * Check if we have error history
-     */
-    private static hasErrorHistory(): boolean {
-        return this.errorHistory.length > 0;
-    }
-
-    /**
-     * Get error summary for debugging
-     */
-    private static getErrorSummary(): Array<{message: string, context: string, time: string}> {
-        return this.errorHistory.map(item => ({
-            message: item.error.message,
-            context: item.context,
-            time: item.timestamp.toLocaleTimeString()
-        }));
-    }
-
-    /**
-     * Enhanced error logging with structured data
-     */
-    static logError(error: Error, context: string, _additionalInfo: Record<string, any> = {}): void {
-        const errorContext = this.analyzeError(error);
-        
-        // Simple logging format for test compatibility
-        console.error(`[${context}] Error:`, error);
-        
-        // Record error in history
-        this.recordError(error, context);
-        
-        // Send to monitoring service if configured
-        this.sendToMonitoring(error, context, errorContext);
-    }
-
-    /**
-     * Send errors to monitoring service (placeholder for future implementation)
-     */
-    private static sendToMonitoring(error: Error, context: string, errorContext: ErrorContext): void {
-        // This could be integrated with services like Sentry, LogRocket, etc.
-        if (import.meta.env.VITE_MONITORING_ENABLED === 'true') {
-            console.log('Would send to monitoring:', { error, context, errorContext });
-        }
-    }
-
-    /**
-     * Show inline error message (non-blocking)
-     */
-    static showInlineError(containerId: string, message: string, retryCallback?: () => void): void {
-        const container = document.getElementById(containerId);
-        if (!container) return;
-        
-        const errorDiv = document.createElement('div');
-        errorDiv.className = 'alert alert-danger';
-        errorDiv.textContent = message;
-        
-        if (retryCallback) {
-            const retryButton = document.createElement('button');
-            retryButton.textContent = 'Retry';
-            retryButton.className = 'btn btn-danger ms-2';
-            retryButton.onclick = retryCallback;
-            errorDiv.appendChild(retryButton);
-        }
-        
-        container.appendChild(errorDiv);
-    }
-
-    /**
-     * Handle API errors with user-friendly messages
-     */
-    static handleApiError(error: Error, containerId: string, userMessage: string): void {
-        this.logError(error, 'API');
-        this.showInlineError(containerId, userMessage);
-    }
-
-    /**
-     * Create error boundary wrapper for functions
-     */
-    static createErrorBoundary<T extends (...args: any[]) => any>(
-        fn: T, 
-        context: string
-    ): T {
-        return ((...args: any[]) => {
-            try {
-                const result = fn(...args);
-                if (result instanceof Promise) {
-                    return result.catch((error: Error) => {
-                        this.logError(error, context);
-                        throw error;
-                    });
-                }
-                return result;
-            } catch (error) {
-                this.logError(error as Error, context);
-                throw error;
-            }
-        }) as T;
-    }
-
-    /**
-     * Setup global error handlers
-     */
-    static setupGlobalHandlers(): void {
-        window.addEventListener('error', (event) => {
-            this.logError(event.error, 'Global');
-        });
-        
-        window.addEventListener('unhandledrejection', (event) => {
-            this.logError(new Error(event.reason), 'UnhandledPromise');
-        });
-    }
+    window.addEventListener('unhandledrejection', (event) => {
+      this.logError(new Error(event.reason), 'UnhandledPromise');
+    });
+  }
 }

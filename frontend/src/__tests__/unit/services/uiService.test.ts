@@ -11,7 +11,7 @@ describe('uiService', () => {
   afterEach(() => {
     vi.useRealTimers();
     // Clean up any notification containers
-    document.querySelectorAll('[id^="ui-notification-"]').forEach(el => el.remove());
+    document.querySelectorAll('[id^="ui-notification-"]').forEach((el) => el.remove());
   });
 
   describe('showLoading', () => {
@@ -89,7 +89,7 @@ describe('uiService', () => {
       uiService.showNotification({
         type: 'success',
         message: 'Operation successful',
-        duration: 3000
+        duration: 3000,
       });
 
       const notification = document.querySelector('.alert-success');
@@ -101,7 +101,7 @@ describe('uiService', () => {
       uiService.showNotification({
         type: 'info',
         message: 'Info message',
-        duration: 1000
+        duration: 1000,
       });
 
       const notification = document.querySelector('.alert-info');
@@ -116,7 +116,7 @@ describe('uiService', () => {
     it('should handle different notification types', () => {
       uiService.showNotification({
         type: 'error',
-        message: 'Error message'
+        message: 'Error message',
       });
 
       const notification = document.querySelector('.alert-danger');
@@ -127,7 +127,7 @@ describe('uiService', () => {
       uiService.showNotification({
         type: 'warning',
         message: 'Warning message',
-        position: 'top'
+        position: 'top',
       });
 
       const container = document.querySelector('.notification-container-top');
@@ -323,7 +323,7 @@ describe('uiService', () => {
 
       const options = [
         { value: 'val1', text: 'Option 1' },
-        { value: 'val2', text: 'Option 2' }
+        { value: 'val2', text: 'Option 2' },
       ];
 
       uiService.addDropdownOptions('test-dropdown', options);
@@ -363,6 +363,6 @@ describe('uiService', () => {
     });
   });
 
-  // Note: createProgressBar, updateProgressBar, showModal, and hideModal methods 
+  // Note: createProgressBar, updateProgressBar, showModal, and hideModal methods
   // are not implemented in the current uiService
 });

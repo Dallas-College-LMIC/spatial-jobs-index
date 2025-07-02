@@ -10,10 +10,10 @@ describe('ApiService', () => {
     // Clear any existing environment variable to test default behavior
     const originalEnv = import.meta.env.VITE_API_BASE_URL;
     vi.stubEnv('VITE_API_BASE_URL', '');
-    
+
     apiService = new ApiService();
     vi.clearAllMocks();
-    
+
     // Restore original env after creating the service
     if (originalEnv) {
       vi.stubEnv('VITE_API_BASE_URL', originalEnv);
@@ -70,19 +70,21 @@ describe('ApiService', () => {
 
       // The API service currently has a bug where it tries to call applyResponseInterceptors with undefined response
       // This causes "Cannot read properties of undefined (reading 'ok')" instead of the original error
-      await expect(apiService.getOccupationIds()).rejects.toThrow('Cannot read properties of undefined');
+      await expect(apiService.getOccupationIds()).rejects.toThrow(
+        'Cannot read properties of undefined'
+      );
     });
 
     it('should retry on failure', async () => {
       // For retry testing, we need to simulate network errors (rejected promises)
       // rather than HTTP error responses, since HTTP errors don't trigger retries
       const networkError = new Error('Network error');
-      
+
       // Create new instance with faster retry delays for testing
       const testApi = new ApiService();
       testApi['defaultConfig'].retryDelay = 1; // 1ms retry delay for testing
       testApi['defaultConfig'].retries = 2; // Reduce retries for faster test
-      
+
       vi.mocked(global.fetch)
         .mockRejectedValueOnce(networkError)
         .mockRejectedValueOnce(networkError)
@@ -103,7 +105,7 @@ describe('ApiService', () => {
             reject(new DOMException('The operation was aborted', 'AbortError'));
             return;
           }
-          
+
           // Listen for abort event
           options?.signal?.addEventListener('abort', () => {
             reject(new DOMException('The operation was aborted', 'AbortError'));
@@ -116,9 +118,9 @@ describe('ApiService', () => {
       apiWithShortTimeout['defaultConfig'].retries = 0;
 
       // Wait a bit longer than the timeout to ensure it triggers
-      await expect(
-        apiWithShortTimeout['fetchData']('/test', {})
-      ).rejects.toThrow('Request timeout after 100ms');
+      await expect(apiWithShortTimeout['fetchData']('/test', {})).rejects.toThrow(
+        'Request timeout after 100ms'
+      );
     });
   });
 
@@ -143,10 +145,7 @@ describe('ApiService', () => {
 
       const result = await apiService.getGeojsonData();
 
-      expect(fetch).toHaveBeenCalledWith(
-        expect.stringContaining('/geojson'),
-        expect.any(Object)
-      );
+      expect(fetch).toHaveBeenCalledWith(expect.stringContaining('/geojson'), expect.any(Object));
       expect(result).toEqual(mockGeoJSONResponse);
     });
 
@@ -167,9 +166,9 @@ describe('ApiService', () => {
         ...config,
         headers: { ...config.headers, 'X-Custom': 'test' },
       }));
-      
+
       apiService.addRequestInterceptor(interceptor);
-      
+
       const mockResponse = createFetchResponse(mockOccupationIdsResponse);
       vi.mocked(global.fetch).mockResolvedValueOnce(mockResponse);
 
@@ -189,7 +188,7 @@ describe('ApiService', () => {
     it('should apply response interceptors on success', async () => {
       const onSuccess = vi.fn((response) => response);
       apiService.addResponseInterceptor({ onSuccess });
-      
+
       const mockResponse = createFetchResponse(mockOccupationIdsResponse);
       vi.mocked(global.fetch).mockResolvedValueOnce(mockResponse);
 
@@ -201,16 +200,18 @@ describe('ApiService', () => {
     it('should apply response interceptors on error', async () => {
       const error = new Error('Test error');
       const onError = vi.fn((err) => err);
-      
+
       // Create new instance with no retries
       const testApi = new ApiService();
       testApi['defaultConfig'].retries = 0;
       testApi.addResponseInterceptor({ onError });
-      
+
       vi.mocked(global.fetch).mockRejectedValueOnce(error);
 
       // The API service currently has a bug where network errors don't properly trigger response interceptors
-      await expect(testApi.getOccupationIds()).rejects.toThrow('Cannot read properties of undefined');
+      await expect(testApi.getOccupationIds()).rejects.toThrow(
+        'Cannot read properties of undefined'
+      );
       // The onError interceptor won't be called due to the bug
       // expect(onError).toHaveBeenCalledWith(error);
     });
@@ -220,11 +221,11 @@ describe('ApiService', () => {
     it('should cancel previous request when making new request to same endpoint', async () => {
       const mockResponse1 = createFetchResponse(mockGeoJSONResponse);
       const mockResponse2 = createFetchResponse(mockGeoJSONResponse);
-      
+
       // Create new API instance with no retries for cleaner test
       const testApi = new ApiService();
       testApi['defaultConfig'].retries = 0;
-      
+
       let callCount = 0;
       vi.mocked(global.fetch).mockImplementation(async () => {
         callCount++;
@@ -234,21 +235,21 @@ describe('ApiService', () => {
 
       // Start first request
       const promise1 = testApi.getGeojsonData({ occupation_id: '11-1011' });
-      
+
       // Immediately start second request to same endpoint (different params but same base URL should cancel)
       const promise2 = testApi.getGeojsonData({ occupation_id: '11-1021' });
 
       // Both requests should complete (cancellation is handled gracefully)
       const results = await Promise.allSettled([promise1, promise2]);
-      
+
       // At least one request should succeed
-      expect(results.some(r => r.status === 'fulfilled')).toBe(true);
+      expect(results.some((r) => r.status === 'fulfilled')).toBe(true);
     });
 
     it('should not cancel requests to different endpoints', async () => {
       const mockResponse1 = createFetchResponse(mockOccupationIdsResponse);
       const mockResponse2 = createFetchResponse(mockGeoJSONResponse);
-      
+
       vi.mocked(global.fetch)
         .mockResolvedValueOnce(mockResponse1)
         .mockResolvedValueOnce(mockResponse2);

@@ -1,6 +1,12 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to Claude Code (claude.ai/code) when working with the frontend project.
+
+## Parent Context
+This is part of a monorepo. See the root `../CLAUDE.md` for:
+- Monorepo-wide commands and workflows
+- Cross-project coordination
+- Full stack development patterns
 
 ## Project Overview
 
@@ -168,6 +174,33 @@ src/
 - **Coverage**: V8 coverage with 80% target threshold
 - **UI Testing**: Vitest UI interface available for interactive test debugging
 
+### Development Commands
+
+#### Preferred Method: Using Nix (Recommended)
+```bash
+# From monorepo root:
+nix run .#frontend       # Run the frontend dev server
+nix develop .#frontend   # Enter frontend-specific dev shell
+nix build .#frontend     # Build frontend for production
+
+# Inside frontend dev shell:
+nix develop .#frontend
+cd frontend
+npm run dev
+npm test
+```
+
+#### Alternative Method: Direct Commands
+If working without Nix or inside the dev shell:
+```bash
+cd frontend
+npm install              # Install dependencies
+npm run dev             # Start dev server
+npm run build           # Build for production
+npm run lint            # Run linter
+npm run format          # Format code
+```
+
 ### Test Commands
 ```bash
 npm test              # Run tests in watch mode
@@ -188,15 +221,7 @@ npm run test:coverage # Generate coverage report
 - **Coverage Monitoring**: Prevents coverage regression
 
 ## GitHub Pages Deployment
-
-### Configuration
+- Uses `npm run deploy` with gh-pages package
 - Base path configured in `vite.config.ts`: `/sji-webapp/`
-- GitHub Pages deployment via `npm run deploy` (uses gh-pages package)
-- Production API URL set via `.env.production` file
-- Automated deployment through GitHub Actions workflow
-
-### Requirements
-- API must have proper CORS headers for GitHub Pages domain
-- All features including localStorage caching work on static hosting
-- No server-side requirements
-- Build process validates TypeScript and runs tests before deployment
+- Production API URL via `.env.production`
+- See root `../CLAUDE.md` for full deployment workflows

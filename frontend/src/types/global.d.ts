@@ -8,7 +8,7 @@
 // Declare mapboxgl as global since it's loaded from CDN
 declare global {
   const mapboxgl: typeof import('mapbox-gl');
-  
+
   interface Window {
     $: JQueryStatic;
     jQuery: JQueryStatic;

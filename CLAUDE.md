@@ -8,6 +8,26 @@ This is a Nix flake-based monorepo containing:
 - **backend/**: Python FastAPI application for spatial jobs data API
 - **frontend/**: TypeScript/Vite web application for visualizing the data
 
+## Project Navigation
+
+### Working with Sub-Projects
+- Each project has its own CLAUDE.md with project-specific details:
+  - `backend/CLAUDE.md` - Backend-specific commands and architecture
+  - `frontend/CLAUDE.md` - Frontend-specific commands and architecture
+- Use the root CLAUDE.md (this file) for monorepo-level operations
+- Navigate to project directories when working on project-specific tasks
+
+### When to Work at Different Levels
+- **Monorepo level (root)**: 
+  - Running both services together
+  - Cross-project refactoring
+  - Dependency updates affecting both projects
+  - CI/CD configuration
+- **Project level (backend/frontend)**:
+  - Feature implementation within one project
+  - Project-specific testing and debugging
+  - Project-specific dependency management
+
 ## Development Commands
 
 ### Monorepo Commands
@@ -118,24 +138,35 @@ npm run format
 **Environment Variables:**
 - `VITE_API_BASE_URL`: Backend API URL (defaults to http://localhost:8000)
 
-## Common Development Tasks
+## Cross-Project Coordination
 
-### Adding a New API Endpoint
+### Adding a New API Endpoint (Full Stack)
+When implementing features that span both projects:
 
-1. Define Pydantic models in `backend/app/models.py`
-2. Add service method in `backend/app/services.py`
-3. Create endpoint in `backend/app/main.py` with rate limiting
-4. Write unit tests in `backend/tests/unit/`
-5. Add integration tests in `backend/tests/integration/`
-6. Update frontend API service in `frontend/src/js/api.ts`
-7. Add TypeScript types in `frontend/src/types/api.ts`
+1. **Backend Implementation**:
+   - Define Pydantic models in `backend/app/models.py`
+   - Add service method in `backend/app/services.py`
+   - Create endpoint in `backend/app/main.py` with rate limiting
+   - Write unit tests in `backend/tests/unit/`
+   - Add integration tests in `backend/tests/integration/`
 
-### Updating the Frontend Build
+2. **Frontend Integration**:
+   - Update frontend API service in `frontend/src/js/api.ts`
+   - Add TypeScript types in `frontend/src/types/api.ts`
+   - Update UI components to use new endpoint
+   - Add frontend tests for new functionality
 
-1. Make changes in `frontend/src/`
-2. Run tests: `cd frontend && npm test`
-3. Build: `cd frontend && npm run build`
-4. Test the production build locally
+3. **Testing Full Stack**:
+   - Run `nix run` to test both services together
+   - Verify CORS configuration for new endpoints
+   - Test error handling across the stack
+
+### Parallel Development Workflow
+For tasks affecting both projects:
+1. Open terminal tabs/panes for each project
+2. Run backend: `cd backend && uv run python -m uvicorn app.main:app --reload`
+3. Run frontend: `cd frontend && npm run dev`
+4. Make changes and see live updates in both services
 
 ### Working with the Monorepo
 
@@ -144,8 +175,35 @@ npm run format
 3. Test all outputs before committing: `nix build .#backend .#frontend`
 4. Use `nix run` to test both services together
 
+## Common Development Tasks
+
+For project-specific tasks, refer to:
+- Backend tasks: See `backend/CLAUDE.md`
+- Frontend tasks: See `frontend/CLAUDE.md`
+
+## MCP Server Setup
+
+This project uses several MCP (Model Context Protocol) servers configured in `.mcp.json`:
+
+### Serena MCP Server
+Serena provides language-aware code intelligence for navigating and editing code:
+- **Projects**: Backend and frontend are configured as separate Serena projects
+- **Switching projects**: Use `activate_project` with "backend" or "frontend"
+- **Key features**:
+  - Symbol-based navigation and editing (find/replace symbols, not just text)
+  - Language server integration for Python and TypeScript
+  - Project memories for storing important context
+  - Intelligent code search and refactoring
+
+### Other MCP Servers
+- **context7**: Fetches up-to-date documentation for libraries and frameworks
+- **nixos**: Provides Nix ecosystem information (packages, options, flakes)
+- **browsermcp**: Browser automation capabilities
+
 ## Best Practices
 
+- Use the context7 MCP tool to fetch up-to-date documentation for libraries and frameworks during planning, implementation, and debugging
+- Use the nixos MCP tool for Nix-related queries (packages, options, flakes, home-manager, darwin configurations)
 - Always run linting and type checking before committing
 - Maintain test coverage above 90% for both projects
 - Use type hints in Python and strict TypeScript

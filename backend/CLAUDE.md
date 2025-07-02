@@ -1,33 +1,46 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to Claude Code (claude.ai/code) when working with the backend project.
+
+## Parent Context
+This is part of a monorepo. See the root `../CLAUDE.md` for:
+- Monorepo-wide commands and workflows
+- Cross-project coordination
+- Full stack development patterns
 
 ## Development Commands
 
-**Note:** On NixOS systems, prefix commands with `nix develop -c` or enter a nix shell first.
-
-**Development server:**
+### Preferred Method: Using Nix (Recommended)
 ```bash
-uv run python -m uvicorn app.main:app --reload
-# Or in nix shell: python -m uvicorn app.main:app --reload
+# From monorepo root:
+nix run .#backend          # Run the backend server
+nix develop .#backend      # Enter backend-specific dev shell
+nix build .#backend        # Build backend package
+nix build .#backend-docker # Build Docker image
+
+# Inside backend dev shell:
+nix develop .#backend
+cd backend
+ruff check
+mypy app/
 ```
 
-**Docker build:**
+### Alternative Method: Direct Commands
+If working without Nix or inside the dev shell:
 ```bash
-nix build .#docker
+cd backend
+uv run python -m uvicorn app.main:app --reload
 ```
 
 **Linting and auto-fix:**
 ```bash
-nix develop -c ruff check
-nix develop -c ruff check --fix
-# Or in nix shell: ruff check / ruff check --fix
+ruff check
+ruff check --fix
 ```
 
 **Type checking:**
 ```bash
-nix develop -c mypy app/
-# Or in nix shell: mypy app/
+mypy app/
 ```
 
 **Running tests:**

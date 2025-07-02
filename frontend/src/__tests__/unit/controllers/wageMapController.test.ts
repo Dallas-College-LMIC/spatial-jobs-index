@@ -55,7 +55,7 @@ describe('WageMapController', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    
+
     // Setup mock DOM elements
     document.body.innerHTML = `
       <div id="test-container"></div>
@@ -76,7 +76,7 @@ describe('WageMapController', () => {
   describe('constructor and initialization', () => {
     it('should initialize with correct default values', () => {
       controller = new TestableWageMapController('test-container', mockMapManager as any);
-      
+
       expect(controller['containerId']).toBe('test-container');
       expect(controller['sourceId']).toBe('tti_data');
       expect(controller['layers']).toHaveLength(3);
@@ -84,34 +84,34 @@ describe('WageMapController', () => {
 
     it('should initialize with correct layer configuration', () => {
       controller = new TestableWageMapController('test-container', mockMapManager as any);
-      
+
       const layers = controller.getLayers();
-      
+
       // Check first layer (pop - visible by default)
       expect(layers[0]).toEqual({
-        id: "pop",
-        visibility: "visible",
-        property: "all_jobs_zscore_cat",
-        title: "Access to All Jobs",
-        scoreProperty: "all_jobs_zscore"
+        id: 'pop',
+        visibility: 'visible',
+        property: 'all_jobs_zscore_cat',
+        title: 'Access to All Jobs',
+        scoreProperty: 'all_jobs_zscore',
       });
 
       // Check second layer (job - hidden by default)
       expect(layers[1]).toEqual({
-        id: "job",
-        visibility: "none",
-        property: "living_wage_zscore_cat",
-        title: "Access to Living Wage Jobs",
-        scoreProperty: "living_wage_zscore"
+        id: 'job',
+        visibility: 'none',
+        property: 'living_wage_zscore_cat',
+        title: 'Access to Living Wage Jobs',
+        scoreProperty: 'living_wage_zscore',
       });
 
       // Check third layer (lab - hidden by default)
       expect(layers[2]).toEqual({
-        id: "lab",
-        visibility: "none",
-        property: "not_living_wage_zscore_cat",
-        title: "Access to Not Living Wage Jobs",
-        scoreProperty: "Not_Living_Wage_zscore"
+        id: 'lab',
+        visibility: 'none',
+        property: 'not_living_wage_zscore_cat',
+        title: 'Access to Not Living Wage Jobs',
+        scoreProperty: 'Not_Living_Wage_zscore',
       });
     });
   });
@@ -119,36 +119,42 @@ describe('WageMapController', () => {
   describe('initialize', () => {
     it('should initialize map and load data', async () => {
       controller = new TestableWageMapController('test-container', mockMapManager as any);
-      
+
       // Mock the methods that should be called
-      const initializeMapSpy = vi.spyOn(controller, 'testInitializeMapWithEmptySource').mockResolvedValue();
+      const initializeMapSpy = vi
+        .spyOn(controller, 'testInitializeMapWithEmptySource')
+        .mockResolvedValue();
       const loadDataSpy = vi.spyOn(controller, 'testLoadData').mockResolvedValue(null);
-      
+
       await controller.initialize();
-      
+
       expect(initializeMapSpy).toHaveBeenCalled();
       expect(loadDataSpy).toHaveBeenCalledWith({
-        onAfterLoad: expect.any(Function)
+        onAfterLoad: expect.any(Function),
       });
     });
 
     it('should setup layers and dropdown after loading data', async () => {
       controller = new TestableWageMapController('test-container', mockMapManager as any);
-      
+
       // Mock methods
       vi.spyOn(controller, 'testInitializeMapWithEmptySource').mockResolvedValue();
-      const addLayersFromConfigSpy = vi.spyOn(controller, 'testAddLayersFromConfig').mockImplementation(() => {});
-      const setupDropdownListenerSpy = vi.spyOn(controller, 'testSetupDropdownListener').mockImplementation(() => {});
-      
+      const addLayersFromConfigSpy = vi
+        .spyOn(controller, 'testAddLayersFromConfig')
+        .mockImplementation(() => {});
+      const setupDropdownListenerSpy = vi
+        .spyOn(controller, 'testSetupDropdownListener')
+        .mockImplementation(() => {});
+
       // Mock loadData to call onAfterLoad immediately
       vi.spyOn(controller, 'testLoadData').mockImplementation(async (config: any) => {
         if (config?.onAfterLoad) {
           config.onAfterLoad(mockGeoJSONResponse);
         }
       });
-      
+
       await controller.initialize();
-      
+
       expect(addLayersFromConfigSpy).toHaveBeenCalledWith(controller['layers']);
       expect(setupDropdownListenerSpy).toHaveBeenCalled();
     });
@@ -157,15 +163,23 @@ describe('WageMapController', () => {
       // Import the actual WageMapController (not the testable version)
       const { WageMapController } = await import('../../../js/wage');
       const realController = new WageMapController('test-container');
-      
+
       // Mock the protected methods on the prototype
-      const initializeMapSpy = vi.spyOn(WageMapController.prototype as any, 'initializeMapWithEmptySource').mockImplementation(async () => {});
-      const loadDataSpy = vi.spyOn(WageMapController.prototype as any, 'loadData').mockImplementation(async () => null);
-      vi.spyOn(WageMapController.prototype as any, 'addLayersFromConfig').mockImplementation(() => {});
-      vi.spyOn(WageMapController.prototype as any, 'setupDropdownListener').mockImplementation(() => {});
-      
+      const initializeMapSpy = vi
+        .spyOn(WageMapController.prototype as any, 'initializeMapWithEmptySource')
+        .mockImplementation(async () => {});
+      const loadDataSpy = vi
+        .spyOn(WageMapController.prototype as any, 'loadData')
+        .mockImplementation(async () => null);
+      vi.spyOn(WageMapController.prototype as any, 'addLayersFromConfig').mockImplementation(
+        () => {}
+      );
+      vi.spyOn(WageMapController.prototype as any, 'setupDropdownListener').mockImplementation(
+        () => {}
+      );
+
       await realController.initialize();
-      
+
       expect(initializeMapSpy).toHaveBeenCalled();
       expect(loadDataSpy).toHaveBeenCalled();
     });
@@ -174,30 +188,36 @@ describe('WageMapController', () => {
   describe('setupDropdownListener', () => {
     it('should setup dropdown change handler', () => {
       controller = new TestableWageMapController('test-container', mockMapManager as any);
-      
-      const setupDropdownChangeHandlerSpy = vi.spyOn(controller, 'testSetupDropdownChangeHandler').mockImplementation(() => {});
-      
+
+      const setupDropdownChangeHandlerSpy = vi
+        .spyOn(controller, 'testSetupDropdownChangeHandler')
+        .mockImplementation(() => {});
+
       controller.testSetupDropdownListener();
-      
+
       expect(setupDropdownChangeHandlerSpy).toHaveBeenCalledWith('tti', expect.any(Function));
     });
 
     it('should handle layer visibility changes', () => {
       controller = new TestableWageMapController('test-container', mockMapManager as any);
-      
-      const updateExportLinkSpy = vi.spyOn(controller, 'testUpdateExportLink').mockImplementation(() => {});
-      
+
+      const updateExportLinkSpy = vi
+        .spyOn(controller, 'testUpdateExportLink')
+        .mockImplementation(() => {});
+
       let changeHandler: ((chosenLayer: string) => void) | undefined;
-      vi.spyOn(controller, 'testSetupDropdownChangeHandler').mockImplementation((_: string, handler: (value: string) => void) => {
-        changeHandler = handler;
-      });
-      
+      vi.spyOn(controller, 'testSetupDropdownChangeHandler').mockImplementation(
+        (_: string, handler: (value: string) => void) => {
+          changeHandler = handler;
+        }
+      );
+
       controller.testSetupDropdownListener();
-      
+
       // Test layer switching
       expect(changeHandler).toBeDefined();
       changeHandler!('job');
-      
+
       expect(mockMapManager.setLayerVisibility).toHaveBeenCalledWith('pop', 'none');
       expect(mockMapManager.setLayerVisibility).toHaveBeenCalledWith('job', 'visible');
       expect(mockMapManager.setLayerVisibility).toHaveBeenCalledWith('lab', 'none');
@@ -206,20 +226,22 @@ describe('WageMapController', () => {
 
     it('should handle switching to different layers', () => {
       controller = new TestableWageMapController('test-container', mockMapManager as any);
-      
+
       vi.spyOn(controller, 'testUpdateExportLink').mockImplementation(() => {});
-      
+
       let changeHandler: ((chosenLayer: string) => void) | undefined;
-      vi.spyOn(controller, 'testSetupDropdownChangeHandler').mockImplementation((_: string, handler: (value: string) => void) => {
-        changeHandler = handler;
-      });
-      
+      vi.spyOn(controller, 'testSetupDropdownChangeHandler').mockImplementation(
+        (_: string, handler: (value: string) => void) => {
+          changeHandler = handler;
+        }
+      );
+
       controller.testSetupDropdownListener();
-      
+
       // Test switching to 'lab' layer
       expect(changeHandler).toBeDefined();
       changeHandler!('lab');
-      
+
       expect(mockMapManager.setLayerVisibility).toHaveBeenCalledWith('pop', 'none');
       expect(mockMapManager.setLayerVisibility).toHaveBeenCalledWith('job', 'none');
       expect(mockMapManager.setLayerVisibility).toHaveBeenCalledWith('lab', 'visible');
@@ -229,17 +251,17 @@ describe('WageMapController', () => {
   describe('getLayerIds', () => {
     it('should return correct layer IDs', () => {
       controller = new TestableWageMapController('test-container', mockMapManager as any);
-      
+
       const layerIds = controller['getLayerIds']();
-      
+
       expect(layerIds).toEqual(['pop', 'job', 'lab']);
     });
 
     it('should return layer IDs in correct order', () => {
       controller = new TestableWageMapController('test-container', mockMapManager as any);
-      
+
       const layerIds = controller['getLayerIds']();
-      
+
       expect(layerIds[0]).toBe('pop');
       expect(layerIds[1]).toBe('job');
       expect(layerIds[2]).toBe('lab');
@@ -249,11 +271,11 @@ describe('WageMapController', () => {
   describe('layer configuration', () => {
     it('should have layer with correct property mappings', () => {
       controller = new TestableWageMapController('test-container', mockMapManager as any);
-      
+
       const layers = controller.getLayers();
-      
+
       // Verify each layer has required properties
-      layers.forEach(layer => {
+      layers.forEach((layer) => {
         expect(layer).toHaveProperty('id');
         expect(layer).toHaveProperty('visibility');
         expect(layer).toHaveProperty('property');
