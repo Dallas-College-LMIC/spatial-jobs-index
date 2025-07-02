@@ -1,10 +1,12 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import select
+from sqlalchemy.orm import Session
 from geoalchemy2.functions import ST_AsGeoJSON
-from typing import List
+from typing import List, Dict
 import json
 
 from .models import OccupationLvlData, TTIClone, SpatialFeatureProperties, GeoJSONFeature, OccupationSpatialProperties, OccupationGeoJSONFeature
+from .occupation_cache import cache_with_ttl, OCCUPATION_NAMES
 
 class OccupationService:
     """Service for occupation-related operations"""
@@ -12,10 +14,49 @@ class OccupationService:
     @staticmethod
     def get_occupation_ids(session: Session) -> List[str]:
         """Get all distinct occupation categories"""
-        result = session.execute(
-            select(OccupationLvlData.category).distinct()
-        )
+        # Use table reference that works in both test and production
+        if hasattr(OccupationLvlData, '__table__'):
+            result = session.execute(
+                select(OccupationLvlData.category).distinct()
+            )
+        else:
+            # Fallback for edge cases
+            result = session.execute(
+                select(OccupationLvlData.category).distinct()
+            )
         return [row[0] for row in result.fetchall()]
+    
+    @staticmethod
+    def get_occupations_with_names(session: Session) -> List[Dict[str, str]]:
+        """
+        Get all distinct occupation categories with their names.
+        Uses static mapping for now, will integrate with Lightcast API later.
+        """
+        from app.occupation_cache import cache_with_ttl, OCCUPATION_NAMES
+        
+        @cache_with_ttl(ttl_seconds=86400)  # Cache for 24 hours
+        def _get_occupations_cached():
+            # Get occupation codes from database
+            result = session.execute(
+                select(OccupationLvlData.category).distinct()
+            )
+            occupation_codes = [row[0] for row in result.fetchall()]
+            
+            # Map codes to names using static mapping
+            occupations = []
+            for code in occupation_codes:
+                name = OCCUPATION_NAMES.get(code, code)  # Use code as name if not found
+                occupations.append({
+                    'code': code,
+                    'name': name
+                })
+            
+            # Sort by code for consistent ordering
+            occupations.sort(key=lambda x: x['code'])
+            
+            return occupations
+        
+        return _get_occupations_cached()
     
     @staticmethod
     def get_occupation_spatial_data(session: Session, category: str) -> List[OccupationGeoJSONFeature]:

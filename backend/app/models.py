@@ -3,13 +3,17 @@ from sqlalchemy.orm import DeclarativeBase
 from geoalchemy2 import Geometry
 from pydantic import BaseModel
 from typing import List, Optional
+import os
 
 class Base(DeclarativeBase):
     pass
 
+# Determine if we're in testing mode
+TESTING = os.getenv('TESTING') == '1'
+
 class OccupationLvlData(Base):
     __tablename__ = 'occupation_lvl_data'
-    __table_args__ = {'schema': 'jsi_data'}
+    __table_args__ = {} if TESTING else {'schema': 'jsi_data'}
     
     geoid = Column(String, primary_key=True)
     category = Column(String, primary_key=True)
@@ -20,7 +24,7 @@ class OccupationLvlData(Base):
 
 class TTIClone(Base):
     __tablename__ = 'tti_clone'
-    __table_args__ = {'schema': 'jsi_data'}
+    __table_args__ = {} if TESTING else {'schema': 'jsi_data'}
     
     geoid = Column(String, primary_key=True)
     all_jobs_zscore = Column(Float)
@@ -34,6 +38,13 @@ class TTIClone(Base):
 # Pydantic response models
 class OccupationIdsResponse(BaseModel):
     occupation_ids: List[str]
+
+class OccupationItem(BaseModel):
+    code: str
+    name: str
+
+class OccupationsResponse(BaseModel):
+    occupations: List[OccupationItem]
 
 class SpatialFeatureProperties(BaseModel):
     geoid: str
