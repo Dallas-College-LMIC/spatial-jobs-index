@@ -13,9 +13,7 @@ dependencies = [
     "sqlalchemy[mypy]>=2.0.0",
     "psycopg2-binary>=2.9.10",
     "geoalchemy2>=0.15.0",
-    "pyghtcast",
-    "pandas>=2.0.0",
-    "numpy>=1.24.0",
+    "requests>=2.31.0",
 ]
 
 [dependency-groups]
@@ -43,5 +41,4 @@ warn_return_any = false
 warn_unused_configs = true
 strict_optional = true
 
-[tool.uv.sources]
-pyghtcast = { git = "https://github.com/Dallas-College-LMIC/pyghtcast" }
+

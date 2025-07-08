@@ -6,6 +6,10 @@ import json
 
 from .models import OccupationLvlData, TTIClone, SpatialFeatureProperties, GeoJSONFeature, OccupationSpatialProperties, OccupationGeoJSONFeature
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 class OccupationService:
     """Service for occupation-related operations"""
     
@@ -28,7 +32,7 @@ class OccupationService:
     def get_occupations_with_names(session: Session) -> List[Dict[str, str]]:
         """
         Get all distinct occupation categories with their names.
-        Uses static mapping for now, will integrate with Lightcast API later.
+        First tries to get names from Lightcast API, falls back to static mapping if needed.
         """
         import os
         from app.occupation_cache import _cache, OCCUPATION_NAMES
@@ -51,10 +55,28 @@ class OccupationService:
         )
         occupation_codes = [row[0] for row in result.fetchall()]
         
-        # Map codes to names using static mapping
+        # Try to get names from Lightcast API first
+        occupations_dict = {}
+        try:
+            from app.lightcast_api import get_lightcast_client
+            client = get_lightcast_client()
+            lightcast_occupations = client.get_occupations()
+            
+            # Create a lookup dict from Lightcast data
+            for occ in lightcast_occupations:
+                occupations_dict[occ['code']] = occ['name']
+                
+            logger.info(f"Successfully loaded {len(lightcast_occupations)} occupation names")
+        except Exception as e:
+            logger.warning(f"Failed to fetch from Lightcast API, using static mapping: {str(e)}")
+            # Fall back to static mapping
+            occupations_dict = OCCUPATION_NAMES
+        
+        # Map codes to names
         occupations = []
         for code in occupation_codes:
-            name = OCCUPATION_NAMES.get(code, code)  # Use code as name if not found
+            # Use Lightcast name if available, otherwise static mapping, otherwise code itself
+            name = occupations_dict.get(code, OCCUPATION_NAMES.get(code, code))
             occupations.append({
                 'code': code,
                 'name': name
