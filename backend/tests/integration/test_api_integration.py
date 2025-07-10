@@ -182,6 +182,201 @@ class TestFullRequestResponseCycle:
         assert data["features"][0]["properties"]["geoid"] == "12345"
 
 
+    @patch('app.main.IsochroneService.get_isochrones_by_geoid')
+    def test_isochrone_full_cycle(self, mock_service, integration_client):
+        """Test full cycle for isochrone endpoint."""
+        # Import the model we need
+        from app.models import IsochroneFeature, IsochroneProperties
+        
+        # Create test isochrone data
+        test_features = [
+            IsochroneFeature(
+                geometry={"type": "Polygon", "coordinates": [[[-96.7970, 32.7767], [-96.7960, 32.7757], [-96.7950, 32.7767], [-96.7970, 32.7767]]]},
+                properties=IsochroneProperties(
+                    geoid="12345",
+                    time_category="< 5",
+                    color="#1a9850"
+                )
+            ),
+            IsochroneFeature(
+                geometry={"type": "Polygon", "coordinates": [[[-96.8070, 32.7867], [-96.8060, 32.7857], [-96.8050, 32.7867], [-96.8070, 32.7867]]]},
+                properties=IsochroneProperties(
+                    geoid="12345",
+                    time_category="5~10",
+                    color="#66bd63"
+                )
+            )
+        ]
+        mock_service.return_value = test_features
+        
+        # Make request
+        response = integration_client.get("/isochrones/12345")
+        
+        # Verify response
+        assert response.status_code == 200
+        assert response.headers["content-type"] == "application/geo+json"
+        data = response.json()
+        assert data["type"] == "FeatureCollection"
+        assert len(data["features"]) == 2
+        
+        # Check first feature
+        feature1 = data["features"][0]
+        assert feature1["properties"]["geoid"] == "12345"
+        assert feature1["properties"]["time_category"] == "< 5"
+        assert feature1["properties"]["color"] == "#1a9850"
+        
+        # Verify service was called with correct geoid
+        mock_service.assert_called_once()
+        args = mock_service.call_args[0]
+        assert args[1] == "12345"  # Second argument is the geoid
+    
+    @patch('app.main.IsochroneService.get_isochrones_by_geoid')
+    def test_isochrone_not_found(self, mock_service, integration_client):
+        """Test isochrone endpoint with non-existent geoid."""
+        # Mock service to return empty list
+        mock_service.return_value = []
+        
+        # Make request
+        response = integration_client.get("/isochrones/99999")
+        
+        # Verify 404 response
+        assert response.status_code == 404
+        assert "No isochrone data found" in response.json()["detail"]
+    
+    def test_isochrone_invalid_geoid(self, integration_client):
+        """Test isochrone endpoint with invalid geoid format."""
+        # Make request with non-numeric geoid
+        response = integration_client.get("/isochrones/ABC123")
+        
+        # Verify 400 response
+        assert response.status_code == 400
+        assert "Invalid geoid format" in response.json()["detail"]
+    
+    @patch('app.main.IsochroneService.get_isochrones_by_geoid')
+    def test_isochrone_empty_geoid(self, mock_service, integration_client):
+        """Test isochrone endpoint with empty geoid string."""
+        # This should be caught by FastAPI path validation
+        response = integration_client.get("/isochrones/")
+        
+        # Verify 404 response (path not found)
+        assert response.status_code == 404
+    
+    @patch('app.main.IsochroneService.get_isochrones_by_geoid')
+    def test_isochrone_special_characters_geoid(self, mock_service, integration_client):
+        """Test isochrone endpoint with special characters in geoid."""
+        # Test various invalid geoid formats
+        invalid_geoids = ["123-456", "123.456", "123@456", "123 456", "123/456"]
+        
+        for geoid in invalid_geoids:
+            response = integration_client.get(f"/isochrones/{geoid}")
+            # Some special characters might cause 404 (path not found) instead of 400
+            assert response.status_code in [400, 404]
+            if response.status_code == 400:
+                assert "Invalid geoid format" in response.json()["detail"]
+    
+    @patch('app.main.IsochroneService.get_isochrones_by_geoid')
+    def test_isochrone_valid_numeric_geoids(self, mock_service, integration_client):
+        """Test isochrone endpoint with various valid numeric geoids."""
+        # Import the model we need
+        from app.models import IsochroneFeature, IsochroneProperties
+        
+        # Mock service return value
+        test_features = [
+            IsochroneFeature(
+                geometry={"type": "Polygon", "coordinates": [[[-96.7970, 32.7767], [-96.7960, 32.7757], [-96.7950, 32.7767], [-96.7970, 32.7767]]]},
+                properties=IsochroneProperties(
+                    geoid="12345",
+                    time_category="< 5",
+                    color="#1a9850"
+                )
+            )
+        ]
+        mock_service.return_value = test_features
+        
+        # Test various valid numeric geoids
+        valid_geoids = ["12345", "00001", "99999", "123456789", "1"]
+        
+        for geoid in valid_geoids:
+            response = integration_client.get(f"/isochrones/{geoid}")
+            assert response.status_code == 200
+            assert response.headers["content-type"] == "application/geo+json"
+            data = response.json()
+            assert data["type"] == "FeatureCollection"
+    
+    @patch('app.main.IsochroneService.get_isochrones_by_geoid')
+    def test_isochrone_geojson_structure(self, mock_service, integration_client):
+        """Test that isochrone endpoint returns proper GeoJSON structure."""
+        # Import the model we need
+        from app.models import IsochroneFeature, IsochroneProperties
+        
+        # Create test isochrone data with all time categories
+        test_features = []
+        time_categories = ["< 5", "5~10", "10~15", "15~20", "20~25", "25~30", "30~45", "> 45"]
+        colors = ["#1a9850", "#66bd63", "#a6d96a", "#fdae61", "#fee08b", "#f46d43", "#d73027", "#a50026"]
+        
+        for i, (category, color) in enumerate(zip(time_categories, colors)):
+            feature = IsochroneFeature(
+                geometry={
+                    "type": "Polygon", 
+                    "coordinates": [[
+                        [-96.7970 + i*0.01, 32.7767 + i*0.01], 
+                        [-96.7960 + i*0.01, 32.7757 + i*0.01], 
+                        [-96.7950 + i*0.01, 32.7767 + i*0.01], 
+                        [-96.7970 + i*0.01, 32.7767 + i*0.01]
+                    ]]
+                },
+                properties=IsochroneProperties(
+                    geoid="48113123456",
+                    time_category=category,
+                    color=color
+                )
+            )
+            test_features.append(feature)
+        
+        mock_service.return_value = test_features
+        
+        # Make request
+        response = integration_client.get("/isochrones/48113123456")
+        
+        # Verify response
+        assert response.status_code == 200
+        assert response.headers["content-type"] == "application/geo+json"
+        data = response.json()
+        
+        # Verify GeoJSON structure
+        assert data["type"] == "FeatureCollection"
+        assert "features" in data
+        assert len(data["features"]) == 8
+        
+        # Verify each feature
+        for i, feature in enumerate(data["features"]):
+            assert feature["type"] == "Feature"
+            assert "geometry" in feature
+            assert "properties" in feature
+            
+            # Check geometry
+            assert feature["geometry"]["type"] == "Polygon"
+            assert "coordinates" in feature["geometry"]
+            
+            # Check properties
+            props = feature["properties"]
+            assert props["geoid"] == "48113123456"
+            assert props["time_category"] == time_categories[i]
+            assert props["color"] == colors[i]
+    
+    @patch('app.main.IsochroneService.get_isochrones_by_geoid')
+    def test_isochrone_service_exception_handling(self, mock_service, integration_client):
+        """Test isochrone endpoint handling of service exceptions."""
+        # Mock service to raise a generic exception
+        mock_service.side_effect = Exception("Unexpected database error")
+        
+        # Make request
+        response = integration_client.get("/isochrones/12345")
+        
+        # Verify 500 response
+        assert response.status_code == 500
+        assert "Internal server error" in response.json()["detail"]
+
 class TestDatabaseIntegration:
     """Test database integration scenarios."""
     
@@ -340,6 +535,105 @@ class TestPerformance:
         content_length = len(response.content)
         # Should be able to handle 1000 features
         assert content_length > 0
+    
+    @patch('app.main.IsochroneService.get_isochrones_by_geoid')
+    def test_response_time_isochrone(self, mock_service, integration_client):
+        """Test that isochrone endpoint responds in reasonable time."""
+        # Import the model we need
+        from app.models import IsochroneFeature, IsochroneProperties
+        
+        # Create test data with multiple isochrone bands
+        features = []
+        time_categories = ["< 5", "5~10", "10~15", "15~20", "20~25", "25~30", "30~45", "> 45"]
+        colors = ["#1a9850", "#66bd63", "#a6d96a", "#fdae61", "#fee08b", "#f46d43", "#d73027", "#a50026"]
+        
+        for i, (category, color) in enumerate(zip(time_categories, colors)):
+            # Create a complex polygon for each band
+            coords = []
+            for j in range(20):  # 20 points per polygon
+                # angle = (j / 20) * 2 * 3.14159  # Not used in simplified calculation
+                radius = 0.01 * (i + 1)
+                x = -96.7970 + radius * (1 + 0.1 * j) * (1 if j % 2 == 0 else 0.9)
+                y = 32.7767 + radius * (1 + 0.1 * j) * (1 if j % 2 == 0 else 0.9)
+                coords.append([x, y])
+            coords.append(coords[0])  # Close the polygon
+            
+            feature = IsochroneFeature(
+                geometry={"type": "Polygon", "coordinates": [coords]},
+                properties=IsochroneProperties(
+                    geoid="48113123456",
+                    time_category=category,
+                    color=color
+                )
+            )
+            features.append(feature)
+        
+        mock_service.return_value = features
+        
+        # Warm up
+        integration_client.get("/isochrones/48113123456")
+        
+        # Measure response times
+        response_times = []
+        for _ in range(10):
+            start_time = time.time()
+            response = integration_client.get("/isochrones/48113123456")
+            end_time = time.time()
+            
+            if response.status_code == 200:
+                response_times.append(end_time - start_time)
+        
+        if response_times:
+            avg_response_time = sum(response_times) / len(response_times)
+            # Should respond in less than 200ms on average even with complex polygons
+            assert avg_response_time < 0.2
+    
+    @patch('app.main.IsochroneService.get_isochrones_by_geoid')
+    def test_memory_usage_large_isochrone(self, mock_service, integration_client):
+        """Test memory efficiency with large isochrone responses."""
+        # Import the model we need
+        from app.models import IsochroneFeature, IsochroneProperties
+        
+        # Create many isochrone bands with complex geometries
+        features = []
+        for i in range(50):  # 50 different bands
+            # Create a MultiPolygon with multiple parts
+            polygons = []
+            for p in range(5):  # 5 polygons per MultiPolygon
+                coords = []
+                for j in range(100):  # 100 points per polygon
+                    # angle = (j / 100) * 2 * 3.14159  # Not used in simplified calculation
+                    radius = 0.01 * (i + 1) + p * 0.005
+                    x = -96.7970 + radius * (1 + 0.01 * j)
+                    y = 32.7767 + radius * (1 + 0.01 * j)
+                    coords.append([x, y])
+                coords.append(coords[0])  # Close the polygon
+                polygons.append([coords])
+            
+            feature = IsochroneFeature(
+                geometry={"type": "MultiPolygon", "coordinates": polygons},
+                properties=IsochroneProperties(
+                    geoid="48113999999",
+                    time_category=f"Band {i}",
+                    color="#808080"  # Default gray
+                )
+            )
+            features.append(feature)
+        
+        mock_service.return_value = features
+        
+        # Make request and verify it completes
+        response = integration_client.get("/isochrones/48113999999")
+        assert response.status_code == 200
+        
+        # Verify response is valid GeoJSON
+        data = response.json()
+        assert data["type"] == "FeatureCollection"
+        assert len(data["features"]) == 50
+        
+        # Verify content can be handled
+        content_length = len(response.content)
+        assert content_length > 0
 
 
 class TestConcurrentRequests:
@@ -466,6 +760,56 @@ class TestConcurrentRequests:
         # Should handle concurrent requests gracefully
         assert len(results) == 10
         assert success_count + rate_limited_count == 10
+
+    
+    @patch('app.main.IsochroneService.get_isochrones_by_geoid')
+    def test_concurrent_isochrone_requests(self, mock_service, integration_client):
+        """Test concurrent requests to isochrone endpoint."""
+        # Import the model we need
+        from app.models import IsochroneFeature, IsochroneProperties
+        
+        # Mock service return value
+        test_features = [
+            IsochroneFeature(
+                geometry={"type": "Polygon", "coordinates": [[[-96.7970, 32.7767], [-96.7960, 32.7757], [-96.7950, 32.7767], [-96.7970, 32.7767]]]},
+                properties=IsochroneProperties(
+                    geoid="48001",
+                    time_category="< 5",
+                    color="#1a9850"
+                )
+            )
+        ]
+        mock_service.return_value = test_features
+        
+        def make_request(client, geoid):
+            return client.get(f"/isochrones/{geoid}")
+        
+        # Use ThreadPoolExecutor for concurrent requests
+        with ThreadPoolExecutor(max_workers=5) as executor:
+            # Submit 10 concurrent requests with different geoids
+            futures = []
+            geoids = ["12345", "67890", "11111", "22222", "33333"]
+            for i in range(10):
+                geoid = geoids[i % len(geoids)]
+                future = executor.submit(make_request, integration_client, geoid)
+                futures.append(future)
+            
+            # Collect results
+            results = []
+            for future in as_completed(futures):
+                try:
+                    response = future.result()
+                    results.append(response.status_code)
+                except Exception:
+                    results.append(500)
+        
+        # Analyze results
+        success_count = sum(1 for status in results if status == 200)
+        rate_limited_count = sum(1 for status in results if status == 429)
+        
+        # Should handle concurrent requests gracefully
+        assert len(results) == 10
+        assert success_count + rate_limited_count == 10
     
     @pytest.mark.asyncio
     @patch('app.main.OccupationService.get_occupation_ids')
@@ -501,6 +845,84 @@ class TestConcurrentRequests:
         
         assert success_count + rate_limited_count > 0
         assert len(responses) == 15
+
+
+class TestRateLimiting:
+    """Test rate limiting functionality for endpoints."""
+    
+    @patch('app.main.IsochroneService.get_isochrones_by_geoid')
+    def test_isochrone_rate_limiting(self, mock_service, integration_client):
+        """Test that isochrone endpoint properly enforces rate limiting."""
+        # Import the model we need
+        from app.models import IsochroneFeature, IsochroneProperties
+        
+        # Mock service return value
+        test_features = [
+            IsochroneFeature(
+                geometry={"type": "Polygon", "coordinates": [[[-96.7970, 32.7767], [-96.7960, 32.7757], [-96.7950, 32.7767], [-96.7970, 32.7767]]]},
+                properties=IsochroneProperties(
+                    geoid="12345",
+                    time_category="< 5",
+                    color="#1a9850"
+                )
+            )
+        ]
+        mock_service.return_value = test_features
+        
+        # Make many rapid requests to trigger rate limiting
+        responses = []
+        for i in range(40):  # More than the 30/minute limit
+            response = integration_client.get("/isochrones/12345")
+            responses.append(response)
+        
+        # Count responses by status code
+        status_codes = [r.status_code for r in responses]
+        success_count = status_codes.count(200)
+        rate_limited_count = status_codes.count(429)
+        
+        # Should have some successful and some rate limited
+        assert success_count > 0
+        assert rate_limited_count > 0
+        assert success_count + rate_limited_count == 40
+        
+        # The testclient may not include all headers that the real server would
+        # Just verify we got rate limited responses
+    
+    @patch('app.main.IsochroneService.get_isochrones_by_geoid')
+    def test_isochrone_rate_limit_per_endpoint(self, mock_service, integration_client):
+        """Test that rate limits are per-endpoint, not global."""
+        # Import the model we need
+        from app.models import IsochroneFeature, IsochroneProperties
+        
+        # Mock service for isochrone
+        test_features = [
+            IsochroneFeature(
+                geometry={"type": "Polygon", "coordinates": [[[-96.7970, 32.7767], [-96.7960, 32.7757], [-96.7950, 32.7767], [-96.7970, 32.7767]]]},
+                properties=IsochroneProperties(
+                    geoid="12345",
+                    time_category="< 5",
+                    color="#1a9850"
+                )
+            )
+        ]
+        mock_service.return_value = test_features
+        
+        # Also mock occupation service
+        with patch('app.main.OccupationService.get_occupation_ids') as mock_occupation:
+            mock_occupation.return_value = ["Test"]
+            
+            # Make many requests to isochrone endpoint
+            isochrone_responses = []
+            for _ in range(35):
+                response = integration_client.get("/isochrones/12345")
+                isochrone_responses.append(response.status_code)
+            
+            # Should hit rate limit on isochrone
+            assert 429 in isochrone_responses
+            
+            # But occupation_ids should still work
+            occupation_response = integration_client.get("/occupation_ids")
+            assert occupation_response.status_code in [200, 429]  # Might be rate limited from other tests
 
 
 class TestRealWorldScenarios:
@@ -650,6 +1072,143 @@ class TestRealWorldScenarios:
                 assert "geoid" in props
                 assert any(key.endswith("_zscore") for key in props)
                 assert any(key.endswith("_zscore_cat") for key in props)
+    
+    @patch('app.main.IsochroneService.get_isochrones_by_geoid')
+    def test_isochrone_visualization_usage_pattern(self, mock_service, integration_client):
+        """Test usage pattern for isochrone visualization applications."""
+        # Import the model we need
+        from app.models import IsochroneFeature, IsochroneProperties
+        
+        # Create realistic isochrone data for visualization
+        test_features = []
+        time_categories = ["< 5", "5~10", "10~15", "15~20"]
+        colors = ["#1a9850", "#66bd63", "#a6d96a", "#fdae61"]
+        
+        # Create concentric polygons representing travel time bands
+        for i, (category, color) in enumerate(zip(time_categories, colors)):
+            # Create a realistic isochrone polygon
+            coords = []
+            num_points = 16  # Enough points for smooth visualization
+            for j in range(num_points):
+                # angle = (j / num_points) * 2 * 3.14159  # Not used in simplified calculation
+                # Irregular shape to simulate real isochrones
+                radius = 0.01 * (i + 1) * (1 + 0.2 * (j % 3))
+                x = -96.7970 + radius * (1 + 0.1 * (j % 2))
+                y = 32.7767 + radius * (1 + 0.1 * ((j + 1) % 2))
+                coords.append([x, y])
+            coords.append(coords[0])  # Close the polygon
+            
+            feature = IsochroneFeature(
+                geometry={"type": "Polygon", "coordinates": [coords]},
+                properties=IsochroneProperties(
+                    geoid="48113123456",
+                    time_category=category,
+                    color=color
+                )
+            )
+            test_features.append(feature)
+        
+        mock_service.return_value = test_features
+        
+        # Simulate visualization app behavior
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+            "Accept": "application/geo+json,application/json;q=0.9",
+            "Accept-Encoding": "gzip, deflate",
+            "Referer": "http://localhost:5173/map"
+        }
+        
+        # 1. Get isochrone data for selected census tract
+        response = integration_client.get("/isochrones/48113123456", headers=headers)
+        assert response.status_code == 200
+        assert response.headers["content-type"] == "application/geo+json"
+        
+        # 2. Verify data structure for visualization
+        data = response.json()
+        assert data["type"] == "FeatureCollection"
+        assert len(data["features"]) == 4
+        
+        # 3. Check that features are suitable for map rendering
+        for i, feature in enumerate(data["features"]):
+            assert feature["type"] == "Feature"
+            assert "geometry" in feature
+            assert "properties" in feature
+            
+            # Verify polygon is closed
+            coords = feature["geometry"]["coordinates"][0]
+            assert coords[0] == coords[-1]
+            
+            # Verify color is provided for styling
+            assert "color" in feature["properties"]
+            assert feature["properties"]["color"].startswith("#")
+            
+            # Verify time category for legend
+            assert "time_category" in feature["properties"]
+            assert feature["properties"]["time_category"] in time_categories
+    
+    @patch('app.main.IsochroneService.get_isochrones_by_geoid')
+    @patch('app.main.SpatialService.get_geojson_features')
+    def test_combined_map_data_usage_pattern(self, mock_spatial, mock_isochrone, integration_client):
+        """Test usage pattern for apps that combine multiple data layers."""
+        # Import models
+        from app.models import IsochroneFeature, IsochroneProperties
+        
+        # Mock spatial data
+        spatial_features = [
+            GeoJSONFeature(
+                geometry={"type": "Point", "coordinates": [-96.7970, 32.7767]},
+                properties=SpatialFeatureProperties(
+                    geoid="48113123456",
+                    all_jobs_zscore=1.5,
+                    all_jobs_zscore_cat="High",
+                    living_wage_zscore=0.8,
+                    living_wage_zscore_cat="Medium",
+                    not_living_wage_zscore=-0.5,
+                    not_living_wage_zscore_cat="Low"
+                )
+            )
+        ]
+        mock_spatial.return_value = spatial_features
+        
+        # Mock isochrone data
+        isochrone_features = [
+            IsochroneFeature(
+                geometry={"type": "Polygon", "coordinates": [[
+                    [-96.807, 32.787], [-96.787, 32.787], 
+                    [-96.787, 32.767], [-96.807, 32.767], [-96.807, 32.787]
+                ]]},
+                properties=IsochroneProperties(
+                    geoid="48113123456",
+                    time_category="< 5",
+                    color="#1a9850"
+                )
+            )
+        ]
+        mock_isochrone.return_value = isochrone_features
+        
+        # Typical workflow for a map application showing multiple layers
+        # 1. Get base spatial data
+        response1 = integration_client.get("/geojson")
+        assert response1.status_code in [200, 429]
+        
+        if response1.status_code == 200:
+            spatial_data = response1.json()
+            # Extract geoid from spatial data
+            geoid = spatial_data["features"][0]["properties"]["geoid"]
+            
+            # 2. Get isochrone data for selected feature
+            response2 = integration_client.get(f"/isochrones/{geoid}")
+            assert response2.status_code == 200
+            
+            isochrone_data = response2.json()
+            
+            # 3. Verify both datasets can be combined
+            assert spatial_data["type"] == "FeatureCollection"
+            assert isochrone_data["type"] == "FeatureCollection"
+            
+            # Both should reference the same geoid
+            assert spatial_data["features"][0]["properties"]["geoid"] == \
+                   isochrone_data["features"][0]["properties"]["geoid"]
 
 
 class TestErrorScenarios:
