@@ -80,3 +80,21 @@ class OccupationGeoJSONFeature(BaseModel):
 class OccupationGeoJSONFeatureCollection(BaseModel):
     type: str = "FeatureCollection"
     features: List[OccupationGeoJSONFeature]
+
+# Isochrone Models
+class IsochroneProperties(BaseModel):
+    """Properties for isochrone features"""
+    geoid: str
+    time_category: str
+    color: str
+
+class IsochroneFeature(BaseModel):
+    """GeoJSON feature for isochrone"""
+    type: str = "Feature"
+    geometry: dict
+    properties: IsochroneProperties
+
+class IsochroneFeatureCollection(BaseModel):
+    """GeoJSON FeatureCollection for isochrones"""
+    type: str = "FeatureCollection"
+    features: List[IsochroneFeature]

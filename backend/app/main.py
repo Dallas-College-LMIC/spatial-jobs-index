@@ -7,8 +7,8 @@ from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 from typing import cast, Any
 from .database import DatabaseConfig, init_database, get_db_session
-from .models import OccupationsResponse, OccupationItem, GeoJSONFeatureCollection, OccupationGeoJSONFeatureCollection
-from .services import OccupationService, SpatialService
+from .models import OccupationsResponse, OccupationItem, GeoJSONFeatureCollection, OccupationGeoJSONFeatureCollection, IsochroneFeatureCollection
+from .services import OccupationService, SpatialService, IsochroneService
 
 load_dotenv()
 
@@ -85,6 +85,32 @@ def get_occupation_spatial_data(category: str, request: Request, session: Sessio
             raise HTTPException(status_code=404, detail=f"No data found for occupation category: {category}")
         
         geojson_collection = OccupationGeoJSONFeatureCollection(features=features)
+        
+        return Response(
+            content=geojson_collection.model_dump_json(),
+            media_type="application/geo+json",
+            headers={"Content-Disposition": "inline"},
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+@app.get("/isochrones/{geoid}")
+@limiter.limit("30/minute")
+def get_isochrones(geoid: str, request: Request, session: Session = Depends(get_db_session)):
+    """Get isochrone travel time bands for a specific census tract"""
+    try:
+        # Validate geoid format (should be numeric)
+        if not geoid.isdigit():
+            raise HTTPException(status_code=400, detail="Invalid geoid format. Must be numeric.")
+        
+        features = IsochroneService.get_isochrones_by_geoid(session, geoid)
+        
+        if not features:
+            raise HTTPException(status_code=404, detail=f"No isochrone data found for geoid: {geoid}")
+        
+        geojson_collection = IsochroneFeatureCollection(features=features)
         
         return Response(
             content=geojson_collection.model_dump_json(),

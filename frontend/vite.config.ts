@@ -14,7 +14,8 @@ export default defineConfig({
       input: {
         main: 'index.html',
         occupation: 'access_occupation.html',
-        wage: 'access_wagelvl.html'
+        wage: 'access_wagelvl.html',
+        travelTime: 'travel_time.html'
       }
     },
     // Ensure source maps for debugging

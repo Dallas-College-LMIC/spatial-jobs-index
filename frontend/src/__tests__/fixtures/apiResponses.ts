@@ -87,3 +87,87 @@ export const mockEmptyGeoJSONResponse: GeoJSONResponse = {
   type: 'FeatureCollection',
   features: [],
 };
+
+export const mockIsochroneResponse = {
+  type: 'FeatureCollection',
+  features: [
+    {
+      type: 'Feature',
+      geometry: {
+        type: 'Polygon',
+        coordinates: [
+          [
+            [-97.0336, 32.8999],
+            [-97.0336, 32.9099],
+            [-97.0236, 32.9099],
+            [-97.0236, 32.8999],
+            [-97.0336, 32.8999],
+          ],
+        ],
+      },
+      properties: {
+        time_band: '< 5 min',
+        travel_time_minutes: 3,
+      },
+    },
+    {
+      type: 'Feature',
+      geometry: {
+        type: 'Polygon',
+        coordinates: [
+          [
+            [-97.0436, 32.8899],
+            [-97.0436, 32.9199],
+            [-97.0136, 32.9199],
+            [-97.0136, 32.8899],
+            [-97.0436, 32.8899],
+          ],
+        ],
+      },
+      properties: {
+        time_band: '5-10 min',
+        travel_time_minutes: 7,
+      },
+    },
+    {
+      type: 'Feature',
+      geometry: {
+        type: 'Polygon',
+        coordinates: [
+          [
+            [-97.0536, 32.8799],
+            [-97.0536, 32.9299],
+            [-97.0036, 32.9299],
+            [-97.0036, 32.8799],
+            [-97.0536, 32.8799],
+          ],
+        ],
+      },
+      properties: {
+        time_band: '10-15 min',
+        travel_time_minutes: 12,
+      },
+    },
+    {
+      type: 'Feature',
+      geometry: {
+        type: 'MultiPolygon',
+        coordinates: [
+          [
+            [
+              [-97.0636, 32.8699],
+              [-97.0636, 32.9399],
+              [-96.9936, 32.9399],
+              [-96.9936, 32.8699],
+              [-97.0636, 32.8699],
+            ],
+          ],
+        ],
+      },
+      properties: {
+        time_band: '15-20 min',
+        travel_time_minutes: 18,
+      },
+    },
+  ],
+};

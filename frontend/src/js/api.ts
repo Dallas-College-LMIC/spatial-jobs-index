@@ -340,6 +340,20 @@ export class ApiService {
   }
 
   /**
+   * Get isochrone data for a specific census tract
+   */
+  async getIsochroneData(geoid: string, signal?: AbortSignal): Promise<any> {
+    console.log(`[ApiService] Fetching isochrone data for tract: ${geoid}`);
+    return this.fetchData<any>(
+      `/isochrones/${geoid}`,
+      {
+        timeout: undefined, // No timeout - let the request complete
+      },
+      signal
+    );
+  }
+
+  /**
    * Health check endpoint
    */
   async healthCheck(): Promise<boolean> {
