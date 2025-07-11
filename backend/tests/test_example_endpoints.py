@@ -15,20 +15,20 @@ class TestOccupationEndpoints:
     def test_get_occupation_ids_with_mock(self, test_client):
         """Test /occupation_ids endpoint with mocked service."""
         # Mock the service method to avoid database issues with SQLite
-        with patch.object(OccupationService, 'get_occupation_ids') as mock_get_ids:
-            mock_get_ids.return_value = [
-                "Healthcare Support",
-                "Computer and Mathematical",
-                "Education and Training"
+        with patch.object(OccupationService, 'get_occupations_with_names') as mock_get_names:
+            mock_get_names.return_value = [
+                {"code": "31-0000", "name": "Healthcare Support"},
+                {"code": "15-0000", "name": "Computer and Mathematical"},
+                {"code": "25-0000", "name": "Education and Training"}
             ]
             
             response = test_client.get("/occupation_ids")
             
             assert response.status_code == 200
             data = response.json()
-            assert "occupation_ids" in data
-            assert len(data["occupation_ids"]) == 3
-            assert "Healthcare Support" in data["occupation_ids"]
+            assert "occupations" in data
+            assert len(data["occupations"]) == 3
+            assert any(occ["name"] == "Healthcare Support" for occ in data["occupations"])
     
     @pytest.mark.integration
     @pytest.mark.skip(reason="Requires PostgreSQL with jsi_data schema")
@@ -130,8 +130,8 @@ class TestErrorHandling:
     @pytest.mark.api
     def test_database_error_handling(self, test_client):
         """Test handling of database errors."""
-        with patch.object(OccupationService, 'get_occupation_ids') as mock_get_ids:
-            mock_get_ids.side_effect = Exception("Database connection error")
+        with patch.object(OccupationService, 'get_occupations_with_names') as mock_get_names:
+            mock_get_names.side_effect = Exception("Database connection error")
             
             response = test_client.get("/occupation_ids")
             

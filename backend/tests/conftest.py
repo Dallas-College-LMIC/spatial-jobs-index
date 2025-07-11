@@ -13,6 +13,10 @@ from sqlalchemy.pool import StaticPool
 from fastapi.testclient import TestClient
 from httpx import AsyncClient, ASGITransport
 
+# Set testing environment BEFORE importing app modules
+os.environ["TESTING"] = "1"
+os.environ["SQL_ECHO"] = "false"
+
 from app.database import DatabaseConfig, get_db_session
 from app.main import app
 
@@ -90,6 +94,14 @@ def test_engine():
                 not_living_wage_zscore FLOAT,
                 not_living_wage_zscore_cat VARCHAR,
                 geom TEXT
+            )
+        """))
+        
+        # Create occupation_codes table
+        conn.execute(text("""
+            CREATE TABLE IF NOT EXISTS occupation_codes (
+                occupation_code VARCHAR NOT NULL PRIMARY KEY,
+                occupation_name VARCHAR
             )
         """))
         conn.commit()
@@ -274,12 +286,10 @@ def setup_test_environment():
     Set up the test environment before any tests run.
     
     This fixture runs automatically at the start of the test session.
+    Environment variables are already set at module level before imports.
     """
-    # Set testing environment variable
-    os.environ["TESTING"] = "1"
-    
-    # Disable SQL echo during tests for cleaner output
-    os.environ["SQL_ECHO"] = "false"
+    # Environment variables are already set at module import time
+    # This fixture is kept for any additional setup/teardown needed
     
     yield
     

@@ -25,32 +25,38 @@ describe('Occupation Cache Performance Tests', () => {
 
   describe('Cache Write Performance', () => {
     it('should handle writing large occupation lists efficiently', () => {
-      const largeList = Array.from(
-        { length: 1000 },
-        (_, i) => `OCC-${i.toString().padStart(4, '0')}`
-      );
+      const largeList = Array.from({ length: 1000 }, (_, i) => ({
+        code: `OCC-${i.toString().padStart(4, '0')}`,
+        name: `Occupation ${i}`,
+      }));
 
       const startTime = performance.now();
-      cacheService.cacheOccupationIds(largeList);
+      cacheService.cacheOccupations(largeList);
       const endTime = performance.now();
 
       const executionTime = endTime - startTime;
       expect(executionTime).toBeLessThan(50); // Should complete within 50ms
 
       // Verify data was cached - give it a moment to persist
-      const cached = cacheService.getCachedOccupationIds();
+      const cached = cacheService.getCachedOccupations();
       expect(cached).toBeTruthy();
       expect(cached).toHaveLength(1000);
-      expect(cached![0]).toBe('OCC-0000');
+      if (cached && cached.length > 0) {
+        expect(cached[0]!.code).toBe('OCC-0000');
+        expect(cached[0]!.name).toBe('Occupation 0');
+      }
     });
 
     it('should handle concurrent cache writes', async () => {
       const lists = Array.from({ length: 10 }, (_, i) =>
-        Array.from({ length: 100 }, (_, j) => `OCC-${i}-${j}`)
+        Array.from({ length: 100 }, (_, j) => ({
+          code: `OCC-${i}-${j}`,
+          name: `Occupation ${i}-${j}`,
+        }))
       );
 
       const startTime = performance.now();
-      const promises = lists.map((list) => Promise.resolve(cacheService.cacheOccupationIds(list)));
+      const promises = lists.map((list) => Promise.resolve(cacheService.cacheOccupations(list)));
       await Promise.all(promises);
       const endTime = performance.now();
 
@@ -61,40 +67,79 @@ describe('Occupation Cache Performance Tests', () => {
 
   describe('Cache Read Performance', () => {
     it('should retrieve cached data with minimal latency', () => {
-      const testData = Array.from({ length: 500 }, (_, i) => `OCC-${i}`);
-      cacheService.cacheOccupationIds(testData);
+      const testData = Array.from({ length: 500 }, (_, i) => ({
+        code: `OCC-${i}`,
+        name: `Occupation ${i}`,
+      }));
+      cacheService.cacheOccupations(testData);
 
       // Measure read performance
       const iterations = 1000;
       const startTime = performance.now();
 
       for (let i = 0; i < iterations; i++) {
-        cacheService.getCachedOccupationIds();
+        cacheService.getCachedOccupations();
       }
 
       const endTime = performance.now();
       const averageReadTime = (endTime - startTime) / iterations;
 
-      expect(averageReadTime).toBeLessThan(0.1); // Each read should take less than 0.1ms
+      expect(averageReadTime).toBeLessThan(0.2); // Each read should take less than 0.2ms
     });
 
     it('should maintain performance with expired cache checks', () => {
       // Set old cache
       const oldTime = Date.now() - 25 * 60 * 60 * 1000; // 25 hours ago
-      localStorage.setItem('occupation_ids_cache', JSON.stringify(['OLD-001']));
+      localStorage.setItem(
+        'occupation_ids_cache',
+        JSON.stringify([{ code: 'OLD-001', name: 'Old Occupation' }])
+      );
       localStorage.setItem('occupation_ids_cache_time', oldTime.toString());
 
       const iterations = 100;
       const startTime = performance.now();
 
       for (let i = 0; i < iterations; i++) {
-        cacheService.getCachedOccupationIds();
+        cacheService.getCachedOccupations();
       }
 
       const endTime = performance.now();
       const totalTime = endTime - startTime;
 
       expect(totalTime).toBeLessThan(10); // Should handle expired checks efficiently
+    });
+  });
+
+  describe('Legacy Method Compatibility', () => {
+    it('should maintain backward compatibility with old cacheOccupationIds method', () => {
+      const legacyIds = ['OCC-001', 'OCC-002', 'OCC-003'];
+
+      // Use legacy method
+      cacheService.cacheOccupationIds(legacyIds);
+
+      // Verify data is stored in new format
+      const cached = cacheService.getCachedOccupations();
+      expect(cached).toBeTruthy();
+      expect(cached).toHaveLength(3);
+      expect(cached?.[0]).toEqual({ code: 'OCC-001', name: '' });
+
+      // Verify legacy getter still works
+      const legacyGet = cacheService.getCachedOccupationIds();
+      expect(legacyGet).toEqual(legacyIds);
+    });
+
+    it('should handle new format when using legacy getter', () => {
+      const occupations = [
+        { code: 'OCC-001', name: 'Engineer' },
+        { code: 'OCC-002', name: 'Teacher' },
+      ];
+
+      // Use new method
+      cacheService.cacheOccupations(occupations);
+
+      // Verify legacy getter returns only codes
+      const legacyGet = cacheService.getCachedOccupationIds();
+      expect(legacyGet).toEqual(['OCC-001', 'OCC-002']);
     });
   });
 

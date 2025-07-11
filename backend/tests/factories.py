@@ -9,7 +9,7 @@ from faker import Faker
 from geoalchemy2.elements import WKTElement
 import random
 
-from app.models import OccupationLvlData, TTIClone
+from app.models import OccupationLvlData, TTIClone, OccupationCode
 
 
 fake = Faker()
@@ -21,6 +21,16 @@ class BaseFactory(SQLAlchemyModelFactory):
     class Meta:
         abstract = True
         sqlalchemy_session_persistence = "commit"
+
+
+class OccupationCodeFactory(BaseFactory):
+    """Factory for OccupationCode model."""
+    
+    class Meta:
+        model = OccupationCode
+    
+    occupation_code = factory.Sequence(lambda n: f"{11 + n % 90:02d}-{1000 + n:04d}")
+    occupation_name = factory.Faker("job")
 
 
 class OccupationLvlDataFactory(BaseFactory):

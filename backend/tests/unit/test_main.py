@@ -86,34 +86,40 @@ class TestApplicationLifecycle:
 class TestOccupationIdsEndpoint:
     """Test /occupation_ids endpoint."""
     
-    @patch('app.main.OccupationService.get_occupation_ids')
-    def test_get_occupation_ids_success(self, mock_get_ids, mock_client, mock_occupation_data):
+    @patch('app.main.OccupationService.get_occupations_with_names')
+    def test_get_occupation_ids_success(self, mock_get_occupations, mock_client):
         """Test successful retrieval of occupation IDs."""
-        mock_get_ids.return_value = mock_occupation_data
+        mock_occupations = [
+            {"code": "11-1021", "name": "General Managers"},
+            {"code": "15-1251", "name": "Computer Programmers"}
+        ]
+        mock_get_occupations.return_value = mock_occupations
         
         response = mock_client.get("/occupation_ids")
         
         assert response.status_code == 200
         data = response.json()
-        assert "occupation_ids" in data
-        assert data["occupation_ids"] == mock_occupation_data
-        mock_get_ids.assert_called_once()
+        assert "occupations" in data
+        assert len(data["occupations"]) == 2
+        assert data["occupations"][0]["code"] == "11-1021"
+        assert data["occupations"][0]["name"] == "General Managers"
+        mock_get_occupations.assert_called_once()
         
-    @patch('app.main.OccupationService.get_occupation_ids')
-    def test_get_occupation_ids_empty_list(self, mock_get_ids, mock_client):
+    @patch('app.main.OccupationService.get_occupations_with_names')
+    def test_get_occupation_ids_empty_list(self, mock_get_occupations, mock_client):
         """Test endpoint with empty occupation list."""
-        mock_get_ids.return_value = []
+        mock_get_occupations.return_value = []
         
         response = mock_client.get("/occupation_ids")
         
         assert response.status_code == 200
         data = response.json()
-        assert data["occupation_ids"] == []
+        assert data["occupations"] == []
         
-    @patch('app.main.OccupationService.get_occupation_ids')
-    def test_get_occupation_ids_service_error(self, mock_get_ids, mock_client):
+    @patch('app.main.OccupationService.get_occupations_with_names')
+    def test_get_occupation_ids_service_error(self, mock_get_occupations, mock_client):
         """Test error handling when service raises exception."""
-        mock_get_ids.side_effect = Exception("Database connection failed")
+        mock_get_occupations.side_effect = Exception("Database connection failed")
         
         response = mock_client.get("/occupation_ids")
         
@@ -123,10 +129,10 @@ class TestOccupationIdsEndpoint:
         assert "Internal server error" in data["detail"]
         assert "Database connection failed" in data["detail"]
         
-    @patch('app.main.OccupationService.get_occupation_ids')
-    def test_get_occupation_ids_rate_limiting(self, mock_get_ids, mock_client):
+    @patch('app.main.OccupationService.get_occupations_with_names')
+    def test_get_occupation_ids_rate_limiting(self, mock_get_occupations, mock_client):
         """Test rate limiting on occupation_ids endpoint (30/minute)."""
-        mock_get_ids.return_value = ["Test"]
+        mock_get_occupations.return_value = [{"code": "11-1021", "name": "Test"}]
         
         # Reset rate limiter
         from app.main import app
@@ -146,21 +152,28 @@ class TestOccupationIdsEndpoint:
         error_msg = error_data.get("error", error_data.get("detail", ""))
         assert "Rate limit exceeded" in error_msg
     
-    @patch('app.main.OccupationService.get_occupation_ids')
-    def test_get_occupation_ids_response_model_validation(self, mock_get_ids, mock_client):
+    @patch('app.main.OccupationService.get_occupations_with_names')
+    def test_get_occupation_ids_response_model_validation(self, mock_get_occupations, mock_client):
         """Test that response follows the correct Pydantic model."""
         # Test via the client to ensure proper response validation
-        mock_get_ids.return_value = ["Healthcare", "Technology"]
+        mock_occupations = [
+            {"code": "29-1141", "name": "Healthcare"},
+            {"code": "15-1251", "name": "Technology"}
+        ]
+        mock_get_occupations.return_value = mock_occupations
         
         response = mock_client.get("/occupation_ids")
         
         assert response.status_code == 200
         data = response.json()
         
-        # Validate the response structure matches OccupationIdsResponse
-        assert "occupation_ids" in data
-        assert isinstance(data["occupation_ids"], list)
-        assert data["occupation_ids"] == ["Healthcare", "Technology"]
+        # Validate the response structure matches OccupationsResponse
+        assert "occupations" in data
+        assert isinstance(data["occupations"], list)
+        assert len(data["occupations"]) == 2
+        assert all("code" in occ and "name" in occ for occ in data["occupations"])
+        assert data["occupations"][0]["code"] == "29-1141"
+        assert data["occupations"][0]["name"] == "Healthcare"
 
 
 class TestGeojsonEndpoint:
@@ -324,11 +337,11 @@ class TestErrorHandling:
 class TestDependencyInjection:
     """Test FastAPI dependency injection system."""
     
-    @patch('app.main.OccupationService.get_occupation_ids')
+    @patch('app.main.OccupationService.get_occupations_with_names')
     def test_database_session_injection(self, mock_service, mock_client):
         """Test that database session is properly injected."""
         # Test via the client to ensure dependency injection works
-        mock_service.return_value = ["Test"]
+        mock_service.return_value = [{"code": "11-1021", "name": "Test"}]
         
         response = mock_client.get("/occupation_ids")
         
@@ -339,11 +352,11 @@ class TestDependencyInjection:
         call_args = mock_service.call_args
         assert len(call_args[0]) == 1  # One positional argument (the session)
     
-    @patch('app.main.OccupationService.get_occupation_ids')
-    def test_request_injection_for_rate_limiting(self, mock_get_ids, mock_client):
+    @patch('app.main.OccupationService.get_occupations_with_names')
+    def test_request_injection_for_rate_limiting(self, mock_get_occupations, mock_client):
         """Test that Request object is properly injected for rate limiting."""
         # The rate limiter needs the Request object to extract client IP
-        mock_get_ids.return_value = ["Test"]
+        mock_get_occupations.return_value = [{"code": "11-1021", "name": "Test"}]
         
         response = mock_client.get("/occupation_ids")
         
@@ -354,10 +367,10 @@ class TestDependencyInjection:
 class TestCORSBehavior:
     """Test CORS behavior in detail."""
     
-    @patch('app.main.OccupationService.get_occupation_ids')
-    def test_cors_allowed_origins(self, mock_get_ids, mock_client):
+    @patch('app.main.OccupationService.get_occupations_with_names')
+    def test_cors_allowed_origins(self, mock_get_occupations, mock_client):
         """Test CORS with allowed origins."""
-        mock_get_ids.return_value = []
+        mock_get_occupations.return_value = []
         
         allowed_origins = [
             "https://dallas-college-lmic.github.io",
@@ -376,10 +389,10 @@ class TestCORSBehavior:
             if response.status_code == 200:
                 assert response.headers.get("access-control-allow-origin") == origin
     
-    @patch('app.main.OccupationService.get_occupation_ids')
-    def test_cors_disallowed_origin(self, mock_get_ids, mock_client):
+    @patch('app.main.OccupationService.get_occupations_with_names')
+    def test_cors_disallowed_origin(self, mock_get_occupations, mock_client):
         """Test CORS with disallowed origin."""
-        mock_get_ids.return_value = []
+        mock_get_occupations.return_value = []
         
         response = mock_client.get(
             "/occupation_ids",
@@ -418,7 +431,7 @@ class TestResponseFormats:
         assert "detail" in error_data
         
         # Test 500 error
-        with patch('app.main.OccupationService.get_occupation_ids') as mock_service:
+        with patch('app.main.OccupationService.get_occupations_with_names') as mock_service:
             mock_service.side_effect = Exception("Test error")
             response = mock_client.get("/occupation_ids")
             assert response.status_code == 500
@@ -426,19 +439,22 @@ class TestResponseFormats:
             assert "detail" in error_data
             assert "Internal server error" in error_data["detail"]
     
-    @patch('app.main.OccupationService.get_occupation_ids')
+    @patch('app.main.OccupationService.get_occupations_with_names')
     @patch('app.main.SpatialService.get_geojson_features')
     def test_success_response_formats(self, mock_spatial_service, mock_occupation_service, mock_client):
         """Test that successful responses follow expected formats."""
         # Test occupation_ids format
-        mock_occupation_service.return_value = ["Test1", "Test2"]
+        mock_occupation_service.return_value = [
+            {"code": "11-1021", "name": "Test1"},
+            {"code": "15-1251", "name": "Test2"}
+        ]
         response = mock_client.get("/occupation_ids")
         
         assert response.status_code == 200
         data = response.json()
         assert isinstance(data, dict)
-        assert "occupation_ids" in data
-        assert isinstance(data["occupation_ids"], list)
+        assert "occupations" in data
+        assert isinstance(data["occupations"], list)
         
         # Test geojson format
         mock_spatial_service.return_value = []

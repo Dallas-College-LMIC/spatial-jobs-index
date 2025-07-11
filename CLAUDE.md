@@ -256,6 +256,10 @@ nix build .#frontend
 - **context7**: Use for up-to-date library documentation
 - **nixos**: Use for Nix package/option queries
 - **browsermcp**: Use for browser automation tasks
+- **postgres**: Database analysis and optimization tools for PostgreSQL
+  - Health monitoring: Check indexes, vacuum status, connections
+  - Query optimization: Analyze execution plans and suggest indexes
+  - Schema exploration: List tables, views, and their structures
 
 ## Best Practices
 

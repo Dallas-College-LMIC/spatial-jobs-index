@@ -142,7 +142,7 @@ describe('OccupationMapController', () => {
       expect(mockApiService.getOccupationIds).toHaveBeenCalled();
       expect(mockCacheService.set).toHaveBeenCalledWith(
         'occupation_ids',
-        mockOccupationIdsResponse.occupation_ids,
+        mockOccupationIdsResponse.occupations,
         24 * 60 * 60 // 24 hours in seconds
       );
     });
@@ -177,10 +177,14 @@ describe('OccupationMapController', () => {
 
   describe('populateOccupationDropdown', () => {
     it('should populate dropdown with occupation IDs', () => {
-      const occupationIds = ['11-1011', '11-1021', '11-1031'];
+      const occupations = [
+        { code: '11-1011', name: 'Chief Executives' },
+        { code: '11-1021', name: 'General and Operations Managers' },
+        { code: '11-1031', name: 'Legislators' },
+      ];
 
       // The method should be called without throwing errors
-      expect(() => controller['populateOccupationDropdown'](occupationIds)).not.toThrow();
+      expect(() => controller['populateOccupationDropdown'](occupations)).not.toThrow();
 
       // Verify jQuery calls are made
       expect((global as any).$).toHaveBeenCalledWith('#occupation-select');
@@ -188,16 +192,19 @@ describe('OccupationMapController', () => {
     });
 
     it('should initialize select2 and setup change listener', () => {
-      const occupationIds = ['11-1011'];
+      const occupations = [{ code: '11-1011', name: 'Chief Executives' }];
       const mockSelect = (global as any).$('#occupation-select');
 
-      controller['populateOccupationDropdown'](occupationIds);
+      controller['populateOccupationDropdown'](occupations);
 
-      expect(mockSelect.select2).toHaveBeenCalledWith({
-        placeholder: 'Search and select an occupation...',
-        allowClear: true,
-        width: '100%',
-      });
+      expect(mockSelect.select2).toHaveBeenCalledWith(
+        expect.objectContaining({
+          placeholder: 'Search by occupation code or name...',
+          allowClear: true,
+          width: '100%',
+          matcher: expect.any(Function),
+        })
+      );
       // Verify that the dropdown change handler setup was called
       expect(document.getElementById).toHaveBeenCalled();
     });

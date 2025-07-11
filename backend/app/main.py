@@ -7,7 +7,7 @@ from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 from typing import cast, Any
 from .database import DatabaseConfig, init_database, get_db_session
-from .models import OccupationIdsResponse, GeoJSONFeatureCollection, OccupationGeoJSONFeatureCollection, IsochroneFeatureCollection
+from .models import OccupationsResponse, OccupationItem, GeoJSONFeatureCollection, OccupationGeoJSONFeatureCollection, IsochroneFeatureCollection
 from .services import OccupationService, SpatialService, IsochroneService
 
 load_dotenv()
@@ -46,12 +46,13 @@ async def startup_event():
         init_database(db_config)
 
 
-@app.get("/occupation_ids", response_model=OccupationIdsResponse)
+@app.get("/occupation_ids", response_model=OccupationsResponse)
 @limiter.limit("30/minute")
 def get_occupation_ids(request: Request, session: Session = Depends(get_db_session)):
     try:
-        occupation_ids = OccupationService.get_occupation_ids(session)
-        return OccupationIdsResponse(occupation_ids=occupation_ids)
+        occupations = OccupationService.get_occupations_with_names(session)
+        occupation_items = [OccupationItem(**occ) for occ in occupations]
+        return OccupationsResponse(occupations=occupation_items)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 

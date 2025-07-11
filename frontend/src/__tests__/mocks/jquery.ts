@@ -3,7 +3,7 @@ import { vi } from 'vitest';
 // Mock jQuery and Select2
 export const mockSelect2 = vi.fn().mockReturnThis();
 
-export const mockJQuery = vi.fn((_selector: any) => {
+export const mockJQuery: any = vi.fn((_selector: any) => {
   const element = {
     find: vi.fn().mockReturnThis(),
     remove: vi.fn().mockReturnThis(),
@@ -18,6 +18,9 @@ export const mockJQuery = vi.fn((_selector: any) => {
   };
   return element;
 });
+
+// Add jQuery utility functions
+mockJQuery.trim = vi.fn((str: string) => (str || '').trim());
 
 // Make jQuery available globally
 (globalThis as any).$ = mockJQuery;

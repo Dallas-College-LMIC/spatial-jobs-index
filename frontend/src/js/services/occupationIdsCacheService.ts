@@ -1,7 +1,15 @@
 import { ICacheService } from './cacheService';
 
 /**
- * Simple cache service for occupation IDs with localStorage fallback
+ * Occupation data structure
+ */
+export interface Occupation {
+  code: string;
+  name: string;
+}
+
+/**
+ * Simple cache service for occupation data with localStorage fallback
  */
 export class OccupationIdsCacheService {
   private cacheService: ICacheService;
@@ -13,23 +21,41 @@ export class OccupationIdsCacheService {
   }
 
   /**
-   * Cache occupation IDs
+   * Cache occupations
    */
-  cacheOccupationIds(occupationIds: string[]): void {
-    this.cacheService.set(this.CACHE_KEY, occupationIds, this.CACHE_TTL);
+  cacheOccupations(occupations: Occupation[]): void {
+    this.cacheService.set(this.CACHE_KEY, occupations, this.CACHE_TTL);
   }
 
   /**
-   * Get cached occupation IDs
+   * Get cached occupations
    */
-  getCachedOccupationIds(): string[] | null {
-    return this.cacheService.get<string[]>(this.CACHE_KEY);
+  getCachedOccupations(): Occupation[] | null {
+    return this.cacheService.get<Occupation[]>(this.CACHE_KEY);
   }
 
   /**
-   * Clear cached occupation IDs
+   * Clear cached occupations
    */
   clearCache(): void {
     this.cacheService.remove(this.CACHE_KEY);
+  }
+
+  /**
+   * Legacy method for backward compatibility - caches occupation IDs only
+   * @deprecated Use cacheOccupations instead
+   */
+  cacheOccupationIds(occupationIds: string[]): void {
+    const occupations = occupationIds.map((id) => ({ code: id, name: '' }));
+    this.cacheOccupations(occupations);
+  }
+
+  /**
+   * Legacy method for backward compatibility - returns occupation codes only
+   * @deprecated Use getCachedOccupations instead
+   */
+  getCachedOccupationIds(): string[] | null {
+    const occupations = this.getCachedOccupations();
+    return occupations ? occupations.map((occ) => occ.code) : null;
   }
 }

@@ -204,3 +204,13 @@ with patch.object(OccupationService, 'get_occupation_ids') as mock_service:
 - Check `htmlcov/index.html` for detailed coverage reports
 - SQLite test errors often indicate schema mismatch issues
 - Rate limit errors in tests may need limiter reset
+
+## Database Analysis
+
+The postgres MCP server is available for database analysis tasks:
+- **Performance**: Analyze query execution plans and get index recommendations
+- **Health monitoring**: Check database health, indexes, vacuum status
+- **Schema exploration**: List and inspect database objects
+- **Query analysis**: Find slow queries and performance bottlenecks
+
+Use these tools when debugging performance issues or planning database optimizations.

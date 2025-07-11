@@ -1,10 +1,14 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 from geoalchemy2.functions import ST_AsGeoJSON
-from typing import List
+from typing import List, Dict
 import json
 
 from .models import OccupationLvlData, TTIClone, SpatialFeatureProperties, GeoJSONFeature, OccupationSpatialProperties, OccupationGeoJSONFeature, IsochroneProperties, IsochroneFeature
+
+import logging
+
+logger = logging.getLogger(__name__)
 
 class OccupationService:
     """Service for occupation-related operations"""
@@ -12,10 +16,62 @@ class OccupationService:
     @staticmethod
     def get_occupation_ids(session: Session) -> List[str]:
         """Get all distinct occupation categories"""
-        result = session.execute(
-            select(OccupationLvlData.category).distinct()
-        )
+        # Use table reference that works in both test and production
+        if hasattr(OccupationLvlData, '__table__'):
+            result = session.execute(
+                select(OccupationLvlData.category).distinct()
+            )
+        else:
+            # Fallback for edge cases
+            result = session.execute(
+                select(OccupationLvlData.category).distinct()
+            )
         return [row[0] for row in result.fetchall()]
+    
+    @staticmethod
+    def get_occupations_with_names(session: Session) -> List[Dict[str, str]]:
+        """
+        Get all occupation codes with their names from the occupation_codes table.
+        """
+        import os
+        from app.occupation_cache import _cache
+        from .models import OccupationCode
+        
+        # Check if we're in testing mode
+        is_testing = os.getenv('TESTING') == '1'
+        
+        # Generate cache key
+        cache_key = "get_occupations_with_names"
+        
+        # Try to get from cache if not testing
+        if not is_testing:
+            cached_value = _cache.get(cache_key)
+            if cached_value is not None:
+                return cached_value
+        
+        # Get occupation codes and names from occupation_codes table
+        result = session.execute(
+            select(OccupationCode.occupation_code, OccupationCode.occupation_name)
+            .order_by(OccupationCode.occupation_code)
+        )
+        
+        occupations = []
+        for row in result.fetchall():
+            # Use occupation name if it exists and is not empty, otherwise use code
+            occupation_code, occupation_name = row
+            name = occupation_name
+            if not name or not name.strip():
+                name = occupation_code
+            occupations.append({
+                'code': occupation_code,
+                'name': name
+            })
+        
+        # Cache the result if not testing
+        if not is_testing:
+            _cache.set(cache_key, occupations, 86400)  # Cache for 24 hours
+        
+        return occupations
     
     @staticmethod
     def get_occupation_spatial_data(session: Session, category: str) -> List[OccupationGeoJSONFeature]:

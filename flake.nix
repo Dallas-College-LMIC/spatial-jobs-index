@@ -39,7 +39,13 @@
         backendOverlay = backendWorkspace.mkPyprojectOverlay { 
           sourcePreference = "wheel"; 
         };
-        pyprojectOverrides = _final: _prev: {};
+        pyprojectOverrides = final: prev: {
+          pyghtcast = prev.pyghtcast.overrideAttrs (old: {
+            nativeBuildInputs = (old.nativeBuildInputs or []) ++ [
+              final.poetry-core
+            ];
+          });
+        };
         
         pythonSet = (pkgs.callPackage pyproject-nix.build.packages {
           inherit python;
