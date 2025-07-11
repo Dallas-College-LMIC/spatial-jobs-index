@@ -35,6 +35,13 @@ class TTIClone(Base):
     not_living_wage_zscore_cat = Column(String)
     geom = Column(Geometry('GEOMETRY'))
 
+class OccupationCode(Base):
+    __tablename__ = 'occupation_codes'
+    __table_args__ = {} if TESTING else {'schema': 'jsi_data'}
+    
+    occupation_code = Column(String, primary_key=True)
+    occupation_name = Column(String)
+
 # Pydantic response models
 class OccupationIdsResponse(BaseModel):
     occupation_ids: List[str]

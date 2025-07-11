@@ -96,6 +96,14 @@ def test_engine():
                 geom TEXT
             )
         """))
+        
+        # Create occupation_codes table
+        conn.execute(text("""
+            CREATE TABLE IF NOT EXISTS occupation_codes (
+                occupation_code VARCHAR NOT NULL PRIMARY KEY,
+                occupation_name VARCHAR
+            )
+        """))
         conn.commit()
     
     yield engine

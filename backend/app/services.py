@@ -31,11 +31,11 @@ class OccupationService:
     @staticmethod
     def get_occupations_with_names(session: Session) -> List[Dict[str, str]]:
         """
-        Get all distinct occupation categories with their names.
-        First tries to get names from Lightcast API, falls back to static mapping if needed.
+        Get all occupation codes with their names from the occupation_codes table.
         """
         import os
-        from app.occupation_cache import _cache, OCCUPATION_NAMES
+        from app.occupation_cache import _cache
+        from .models import OccupationCode
         
         # Check if we're in testing mode
         is_testing = os.getenv('TESTING') == '1'
@@ -49,41 +49,23 @@ class OccupationService:
             if cached_value is not None:
                 return cached_value
         
-        # Get occupation codes from database
+        # Get occupation codes and names from occupation_codes table
         result = session.execute(
-            select(OccupationLvlData.category).distinct()
+            select(OccupationCode.occupation_code, OccupationCode.occupation_name)
+            .order_by(OccupationCode.occupation_code)
         )
-        occupation_codes = [row[0] for row in result.fetchall()]
         
-        # Try to get names from Lightcast API first
-        occupations_dict = {}
-        try:
-            from app.lightcast_api import get_lightcast_client
-            client = get_lightcast_client()
-            lightcast_occupations = client.get_occupations()
-            
-            # Create a lookup dict from Lightcast data
-            for occ in lightcast_occupations:
-                occupations_dict[occ['code']] = occ['name']
-                
-            logger.info(f"Successfully loaded {len(lightcast_occupations)} occupation names")
-        except Exception as e:
-            logger.warning(f"Failed to fetch from Lightcast API, using static mapping: {str(e)}")
-            # Fall back to static mapping
-            occupations_dict = OCCUPATION_NAMES
-        
-        # Map codes to names
         occupations = []
-        for code in occupation_codes:
-            # Use Lightcast name if available, otherwise static mapping, otherwise code itself
-            name = occupations_dict.get(code, OCCUPATION_NAMES.get(code, code))
+        for row in result.fetchall():
+            # Use occupation name if it exists and is not empty, otherwise use code
+            occupation_code, occupation_name = row
+            name = occupation_name
+            if not name or not name.strip():
+                name = occupation_code
             occupations.append({
-                'code': code,
+                'code': occupation_code,
                 'name': name
             })
-        
-        # Sort by code for consistent ordering
-        occupations.sort(key=lambda x: x['code'])
         
         # Cache the result if not testing
         if not is_testing:

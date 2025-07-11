@@ -92,6 +92,185 @@ class TestOccupationService:
         assert "Database connection error" in str(exc_info.value)
         mock_session.execute.assert_called_once()
     
+    def test_get_occupations_with_names_queries_occupation_codes_table(self):
+        """Test get_occupations_with_names queries occupation_codes table directly"""
+        # Mock session
+        mock_session = Mock(spec=Session)
+        
+        # Mock result returns tuples of (occupation_code, occupation_name) from occupation_codes table
+        mock_result = Mock()
+        mock_result.fetchall.return_value = [
+            ("11-1021", "General and Operations Managers"),
+            ("15-1251", "Computer Programmers"),
+            ("29-1141", "Registered Nurses"),
+            ("99-9999", "Unknown Occupation")  # All codes should have names in occupation_codes table
+        ]
+        
+        mock_session.execute.return_value = mock_result
+        
+        # Call service method
+        result = OccupationService.get_occupations_with_names(mock_session)
+        
+        # Assertions
+        assert len(result) == 4
+        assert mock_session.execute.call_count == 1  # Only one query now
+        
+        # Verify the format: List[Dict[str, str]] with 'code' and 'name' keys
+        for item in result:
+            assert isinstance(item, dict)
+            assert 'code' in item
+            assert 'name' in item
+            assert isinstance(item['code'], str)
+            assert isinstance(item['name'], str)
+        
+        # Check specific mappings
+        occupation_dict = {occ['code']: occ['name'] for occ in result}
+        assert occupation_dict['11-1021'] == "General and Operations Managers"
+        assert occupation_dict['15-1251'] == "Computer Programmers"
+        assert occupation_dict['29-1141'] == "Registered Nurses"
+        assert occupation_dict['99-9999'] == "Unknown Occupation"
+    
+    def test_get_occupations_with_names_empty_occupation_codes_table(self):
+        """Test get_occupations_with_names when occupation_codes table is empty"""
+        # Mock session
+        mock_session = Mock(spec=Session)
+        
+        # Query returns empty result from occupation_codes table
+        mock_result = Mock()
+        mock_result.fetchall.return_value = []
+        
+        mock_session.execute.return_value = mock_result
+        
+        # Call service method
+        result = OccupationService.get_occupations_with_names(mock_session)
+        
+        # Assertions
+        assert len(result) == 0
+        assert mock_session.execute.call_count == 1
+    
+    def test_get_occupations_with_names_with_empty_names(self):
+        """Test get_occupations_with_names with some occupation codes having empty names"""
+        # Mock session
+        mock_session = Mock(spec=Session)
+        
+        # Query returns tuples with some empty/None names
+        mock_result = Mock()
+        mock_result.fetchall.return_value = [
+            ("11-1021", "General and Operations Managers"),
+            ("15-1251", ""),  # Empty string name
+            ("53-3032", "Heavy and Tractor-Trailer Truck Drivers"),
+            ("99-0000", "   ")  # Whitespace-only name
+        ]
+        
+        mock_session.execute.return_value = mock_result
+        
+        # Call service method
+        result = OccupationService.get_occupations_with_names(mock_session)
+        
+        # Assertions
+        assert len(result) == 4
+        
+        # Check mappings
+        occupation_dict = {occ['code']: occ['name'] for occ in result}
+        assert occupation_dict['11-1021'] == "General and Operations Managers"
+        assert occupation_dict['53-3032'] == "Heavy and Tractor-Trailer Truck Drivers"
+        # Empty names should use code as name
+        assert occupation_dict['15-1251'] == "15-1251"
+        assert occupation_dict['99-0000'] == "99-0000"
+    
+    def test_get_occupations_with_names_sorted_by_code(self):
+        """Test get_occupations_with_names returns results sorted by occupation code"""
+        # Mock session
+        mock_session = Mock(spec=Session)
+        
+        # Query returns sorted results (simulating ORDER BY in the SQL query)
+        mock_result = Mock()
+        mock_result.fetchall.return_value = [
+            ("11-1021", "General and Operations Managers"),
+            ("15-1251", "Computer Programmers"),
+            ("29-1141", "Registered Nurses"),
+            ("53-3032", "Truck Drivers")
+        ]
+        
+        mock_session.execute.return_value = mock_result
+        
+        # Call service method
+        result = OccupationService.get_occupations_with_names(mock_session)
+        
+        # Assertions
+        assert len(result) == 4
+        
+        # Check sorting
+        codes = [occ['code'] for occ in result]
+        assert codes == sorted(codes)
+        assert codes == ["11-1021", "15-1251", "29-1141", "53-3032"]
+    
+    def test_get_occupations_with_names_database_error(self):
+        """Test get_occupations_with_names handling database error on occupation_codes query"""
+        # Mock session to raise error on execute
+        mock_session = Mock(spec=Session)
+        mock_session.execute.side_effect = SQLAlchemyError("Connection timeout")
+        
+        # Call service method and expect exception
+        with pytest.raises(SQLAlchemyError) as exc_info:
+            OccupationService.get_occupations_with_names(mock_session)
+        
+        assert "Connection timeout" in str(exc_info.value)
+        assert mock_session.execute.call_count == 1
+    
+    def test_get_occupations_with_names_null_occupation_name(self):
+        """Test get_occupations_with_names handles null occupation names gracefully"""
+        # Mock session
+        mock_session = Mock(spec=Session)
+        
+        # Query returns one null name
+        mock_result = Mock()
+        mock_result.fetchall.return_value = [
+            ("11-1021", "General and Operations Managers"),
+            ("15-1251", None)  # Null name
+        ]
+        
+        mock_session.execute.return_value = mock_result
+        
+        # Call service method
+        result = OccupationService.get_occupations_with_names(mock_session)
+        
+        # Assertions
+        assert len(result) == 2
+        assert result[0]['code'] == "11-1021"
+        assert result[0]['name'] == "General and Operations Managers"
+        assert result[1]['code'] == "15-1251"
+        assert result[1]['name'] == "15-1251"  # Should fall back to code when name is None
+    
+    
+    def test_get_occupations_with_names_duplicate_codes_in_table(self):
+        """Test get_occupations_with_names handles duplicate codes in occupation_codes table"""
+        # Mock session
+        mock_session = Mock(spec=Session)
+        
+        # Query returns duplicate entries (should handle all of them)
+        mock_result = Mock()
+        mock_result.fetchall.return_value = [
+            ("11-1021", "General Managers"),
+            ("11-1021", "Operations Managers"),  # Duplicate code
+            ("15-1251", "Programmers")
+        ]
+        
+        mock_session.execute.return_value = mock_result
+        
+        # Call service method
+        result = OccupationService.get_occupations_with_names(mock_session)
+        
+        # Assertions
+        # The service returns all rows, including duplicates
+        assert len(result) == 3
+        assert result[0]['code'] == "11-1021"
+        assert result[0]['name'] == "General Managers"
+        assert result[1]['code'] == "11-1021"
+        assert result[1]['name'] == "Operations Managers"
+        assert result[2]['code'] == "15-1251"
+        assert result[2]['name'] == "Programmers"
+    
     def test_get_occupation_spatial_data_empty_result(self):
         """Test get_occupation_spatial_data with no matching category"""
         # Mock session and result

@@ -9,6 +9,7 @@ from sqlalchemy import Column
 from app.models import (
     OccupationLvlData,
     TTIClone,
+    OccupationCode,
     OccupationIdsResponse,
     SpatialFeatureProperties,
     GeoJSONFeature,
@@ -90,7 +91,8 @@ class TestOccupationLvlData:
     def test_table_name_and_schema(self):
         """Test table name and schema are correctly set."""
         assert OccupationLvlData.__tablename__ == 'occupation_lvl_data'
-        assert OccupationLvlData.__table_args__['schema'] == 'jsi_data'
+        # During testing, __table_args__ is empty dict (no schema)
+        assert OccupationLvlData.__table_args__ == {}
     
     def test_category_column(self):
         """Test category column properties."""
@@ -111,7 +113,8 @@ class TestTTIClone:
     def test_table_name_and_schema(self):
         """Test table name and schema are correctly set."""
         assert TTIClone.__tablename__ == 'tti_clone'
-        assert TTIClone.__table_args__['schema'] == 'jsi_data'
+        # During testing, __table_args__ is empty dict (no schema)
+        assert TTIClone.__table_args__ == {}
     
     def test_column_definitions(self):
         """Test all column definitions."""
@@ -163,6 +166,55 @@ class TestTTIClone:
         assert tti.not_living_wage_zscore == 0.0
         assert tti.not_living_wage_zscore_cat == "Medium"
         assert tti.geom == mock_geom
+
+
+class TestOccupationCode:
+    """Test cases for OccupationCode ORM model."""
+    
+    def test_table_name_and_schema(self):
+        """Test table name and schema are correctly set."""
+        assert OccupationCode.__tablename__ == 'occupation_codes'
+        # During testing, __table_args__ is empty dict (no schema)
+        assert OccupationCode.__table_args__ == {}
+    
+    def test_column_definitions(self):
+        """Test all column definitions."""
+        # Check occupation_code column
+        assert hasattr(OccupationCode, 'occupation_code')
+        assert isinstance(OccupationCode.occupation_code.property.columns[0], Column)
+        assert OccupationCode.occupation_code.property.columns[0].type.python_type is str
+        
+        # Check occupation_name column
+        assert hasattr(OccupationCode, 'occupation_name')
+        assert isinstance(OccupationCode.occupation_name.property.columns[0], Column)
+        assert OccupationCode.occupation_name.property.columns[0].type.python_type is str
+    
+    def test_occupation_code_instance_creation(self):
+        """Test creating an instance of OccupationCode."""
+        occupation_code = OccupationCode(
+            occupation_code="11-1021",
+            occupation_name="General and Operations Managers"
+        )
+        assert occupation_code.occupation_code == "11-1021"
+        assert occupation_code.occupation_name == "General and Operations Managers"
+    
+    def test_occupation_code_instance_with_empty_values(self):
+        """Test creating an instance with empty string values."""
+        occupation_code = OccupationCode(
+            occupation_code="",
+            occupation_name=""
+        )
+        assert occupation_code.occupation_code == ""
+        assert occupation_code.occupation_name == ""
+    
+    def test_occupation_code_instance_with_special_characters(self):
+        """Test creating an instance with special characters in the name."""
+        occupation_code = OccupationCode(
+            occupation_code="29-1141",
+            occupation_name="Registered Nurses (RN's)"
+        )
+        assert occupation_code.occupation_code == "29-1141"
+        assert occupation_code.occupation_name == "Registered Nurses (RN's)"
 
 
 class TestOccupationIdsResponse:

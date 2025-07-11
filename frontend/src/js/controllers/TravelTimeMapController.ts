@@ -1,6 +1,5 @@
 import { BaseMapController } from './baseMapController';
 import { ErrorHandler } from '../utils/errorHandler';
-import type { MapClickEvent } from '../../types/mapbox';
 
 interface IsochroneResponse {
   type: 'FeatureCollection';
@@ -55,7 +54,7 @@ export class TravelTimeMapController extends BaseMapController {
 
     // Load census tract data and set up everything in sequence
     await this.loadData({
-      onAfterLoad: (data) => {
+      onAfterLoad: () => {
         // Data is already loaded into the 'census-tracts' source by loadData
         
         // Add census tract layers

@@ -55,7 +55,7 @@ export class OccupationMapController extends BaseMapController {
       const cachedData = this.cacheService.get<Array<{ code: string; name: string }>>(
         this.CACHE_KEY
       );
-      if (cachedData) {
+      if (cachedData && cachedData.length > 0) {
         console.log('Using cached occupation IDs');
         this.populateOccupationDropdown(cachedData);
         this.hideLoading('loading');

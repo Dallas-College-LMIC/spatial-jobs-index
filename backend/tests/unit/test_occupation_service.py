@@ -3,7 +3,7 @@ from unittest.mock import Mock
 from sqlalchemy.orm import Session
 
 from app.services import OccupationService
-from app.occupation_cache import SimpleCache, cache_with_ttl, OCCUPATION_NAMES
+from app.occupation_cache import SimpleCache, cache_with_ttl
 
 
 class TestOccupationService:
@@ -32,14 +32,17 @@ class TestOccupationService:
     
     def test_get_occupations_with_names_returns_dict_list(self):
         """Test that get_occupations_with_names returns list of dicts with code and name."""
-        # Mock session and result
+        # Mock session with occupation_codes table query
         mock_session = Mock(spec=Session)
+        
+        # Mock result from occupation_codes table
         mock_result = Mock()
         mock_result.fetchall.return_value = [
-            ('11-1021',),
-            ('15-1251',),
-            ('99-9999',)
+            ('11-1021', 'General and Operations Managers'),
+            ('15-1251', 'Computer Programmers'),
+            ('99-9999', 'All Other Occupations')
         ]
+        
         mock_session.execute.return_value = mock_result
         
         # Clear any cache
@@ -67,11 +70,18 @@ class TestOccupationService:
         assert occupation_dict['99-9999'] == "All Other Occupations"
     
     def test_get_occupations_with_names_unknown_code(self):
-        """Test that unknown occupation codes use the code as the name."""
-        # Mock session and result with unknown code
+        """Test that NULL occupation names use the code as the name."""
+        # Mock session with occupation_codes table query
         mock_session = Mock(spec=Session)
+        
+        # Mock result with NULL name
         mock_result = Mock()
-        mock_result.fetchall.return_value = [('99-0000',)]
+        mock_result.fetchall.return_value = [
+            ('99-0000', None),  # NULL name
+            ('99-0001', ''),    # Empty string name
+            ('99-0002', '   ')  # Whitespace-only name
+        ]
+        
         mock_session.execute.return_value = mock_result
         
         # Clear cache
@@ -81,21 +91,27 @@ class TestOccupationService:
         # Call the method
         result = OccupationService.get_occupations_with_names(mock_session)
         
-        # Assert unknown code uses code as name
-        assert len(result) == 1
-        assert result[0]['code'] == '99-0000'
-        assert result[0]['name'] == '99-0000'  # Should fallback to code
+        # Assert
+        assert len(result) == 3
+        occupation_dict = {occ['code']: occ['name'] for occ in result}
+        assert occupation_dict['99-0000'] == '99-0000'  # NULL falls back to code
+        assert occupation_dict['99-0001'] == '99-0001'  # Empty string falls back to code
+        assert occupation_dict['99-0002'] == '99-0002'  # Whitespace-only falls back to code
     
     def test_get_occupations_with_names_sorted(self):
         """Test that occupations are returned sorted by code."""
-        # Mock session and result in random order
+        # Mock session with occupation_codes table query
         mock_session = Mock(spec=Session)
+        
+        # Mock result already sorted by occupation_code (as per ORDER BY in query)
         mock_result = Mock()
         mock_result.fetchall.return_value = [
-            ('53-3032',),
-            ('11-1021',),
-            ('29-1141',)
+            ('11-1021', 'General and Operations Managers'),
+            ('15-1251', 'Computer Programmers'),
+            ('29-1141', 'Registered Nurses'),
+            ('53-3032', 'Heavy and Tractor-Trailer Truck Drivers')
         ]
+        
         mock_session.execute.return_value = mock_result
         
         # Clear cache
@@ -110,11 +126,16 @@ class TestOccupationService:
         assert codes == sorted(codes)
     
     def test_get_occupations_with_names_caching(self):
-        """Test that occupation data is cached properly."""
-        # Mock session and result
+        """Test that occupation data caching behavior in test mode."""
+        import os
+        # Mock session with occupation_codes table query
         mock_session = Mock(spec=Session)
+        
+        # First request - single query to occupation_codes
         mock_result = Mock()
-        mock_result.fetchall.return_value = [('11-1021',)]
+        mock_result.fetchall.return_value = [('11-1021', 'General and Operations Managers')]
+        
+        # Set up for first call
         mock_session.execute.return_value = mock_result
         
         # Clear cache
@@ -124,17 +145,22 @@ class TestOccupationService:
         # First call - should hit database
         result1 = OccupationService.get_occupations_with_names(mock_session)
         assert len(result1) == 1
-        assert mock_session.execute.call_count == 1
+        assert mock_session.execute.call_count == 1  # One query
         
         # Reset mock to simulate adding more data
-        mock_result.fetchall.return_value = [('11-1021',), ('15-1251',)]
+        mock_session.reset_mock()
+        mock_result.fetchall.return_value = [
+            ('11-1021', 'General and Operations Managers'),
+            ('15-1251', 'Computer Programmers')
+        ]
+        mock_session.execute.return_value = mock_result
         
-        # Second call - should return cached data (still 1 item)
+        # Second call - in test mode (TESTING=1), caching is disabled
         result2 = OccupationService.get_occupations_with_names(mock_session)
-        assert len(result2) == 1  # Should still be 1 due to cache
-        assert result2 == result1
-        # execute should still have been called only once due to caching
-        assert mock_session.execute.call_count == 1
+        
+        # In test mode, we should get fresh data from DB
+        assert len(result2) == 2  # Fresh data from DB
+        assert mock_session.execute.call_count == 1  # Database was queried again
     
     def test_get_occupation_spatial_data(self):
         """Test getting spatial data for a specific occupation."""
@@ -244,29 +270,5 @@ class TestOccupationCache:
         assert call_count == 2
 
 
-class TestOccupationNameMapping:
-    """Test the static occupation name mappings."""
-    
-    def test_occupation_names_dict_structure(self):
-        """Test that OCCUPATION_NAMES has the expected structure."""
-        assert isinstance(OCCUPATION_NAMES, dict)
-        assert len(OCCUPATION_NAMES) > 0
-        
-        # Check a few known entries
-        assert OCCUPATION_NAMES.get('11-1021') == "General and Operations Managers"
-        assert OCCUPATION_NAMES.get('15-1252') == "Software Developers"
-        assert OCCUPATION_NAMES.get('29-1141') == "Registered Nurses"
-    
-    def test_all_occupation_codes_valid_format(self):
-        """Test that all occupation codes follow the XX-XXXX format."""
-        import re
-        pattern = re.compile(r'^\d{2}-\d{4}$')
-        
-        for code in OCCUPATION_NAMES.keys():
-            assert pattern.match(code), f"Invalid code format: {code}"
-    
-    def test_all_occupation_names_non_empty(self):
-        """Test that all occupation names are non-empty strings."""
-        for code, name in OCCUPATION_NAMES.items():
-            assert isinstance(name, str)
-            assert len(name) > 0, f"Empty name for code: {code}"
+# Removed TestOccupationNameMapping class as it tests static mappings
+# which are no longer used - the new implementation uses the occupation_codes database table

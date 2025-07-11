@@ -29,7 +29,7 @@ export class ApiService {
     this.defaultConfig = {
       retries: 3,
       retryDelay: 1000,
-      timeout: 30000,
+      timeout: 60000, // Increased to 60 seconds
       headers: {
         'Content-Type': 'application/json',
       },

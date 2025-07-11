@@ -70,11 +70,15 @@ async def async_integration_client():
 class TestFullRequestResponseCycle:
     """Test complete request/response cycles with real data flow."""
     
-    @patch('app.main.OccupationService.get_occupation_ids')
+    @patch('app.main.OccupationService.get_occupations_with_names')
     def test_occupation_ids_full_cycle(self, mock_service, integration_client):
         """Test full cycle: service -> endpoint -> response."""
         # Mock service to return test data
-        test_data = ["Healthcare Support", "Computer and Mathematical", "Education and Training"]
+        test_data = [
+            {"code": "11-1021", "name": "General and Operations Managers"},
+            {"code": "15-1251", "name": "Computer Programmers"},
+            {"code": "29-1141", "name": "Registered Nurses"}
+        ]
         mock_service.return_value = test_data
         
         # Make request
@@ -83,9 +87,13 @@ class TestFullRequestResponseCycle:
         # Verify response
         assert response.status_code == 200
         data = response.json()
-        assert "occupation_ids" in data
-        assert len(data["occupation_ids"]) == 3
-        assert set(data["occupation_ids"]) == set(test_data)
+        assert "occupations" in data
+        assert len(data["occupations"]) == 3
+        
+        # Verify the structure and content
+        for i, occupation in enumerate(data["occupations"]):
+            assert occupation["code"] == test_data[i]["code"]
+            assert occupation["name"] == test_data[i]["name"]
         
         # Verify service was called
         mock_service.assert_called_once()
