@@ -56,6 +56,30 @@ uv run python -m uvicorn app.main:app --reload
 # Or in nix shell: python -m uvicorn app.main:app --reload
 ```
 
+### Frontend Commands
+
+**Development server:**
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+**Build for production:**
+```bash
+cd frontend
+npm run build
+```
+
+### Manual Quality Checks
+
+These commands are useful for:
+- Running checks before committing to catch issues early
+- Debugging CI failures locally
+- Manual code quality verification
+
+#### Backend Quality Checks
+
 **Linting and auto-fix:**
 ```bash
 nix develop -c ruff check backend/
@@ -73,20 +97,7 @@ cd backend
 uv run pytest --cov=app --cov-report=html
 ```
 
-### Frontend Commands
-
-**Development server:**
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-**Build for production:**
-```bash
-cd frontend
-npm run build
-```
+#### Frontend Quality Checks
 
 **Run tests:**
 ```bash
@@ -252,3 +263,4 @@ nix build .#frontend
 2. Run linting and type checking before committing
 3. Follow existing code patterns
 4. Update this file when adding new workflows
+
