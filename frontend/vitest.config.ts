@@ -23,7 +23,7 @@ export default defineConfig({
     coverage: {
       enabled: true, // Enable coverage by default for CI
       provider: 'v8',
-      reporter: ['text', 'json', 'html'],
+      reporter: ['text', 'json', 'html', 'lcov'],
       reportsDirectory: './coverage',
       include: [
         'src/**/*.{js,ts}',
