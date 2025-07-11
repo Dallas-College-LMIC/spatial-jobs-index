@@ -21,7 +21,7 @@ export default defineConfig({
     
     // Coverage configuration
     coverage: {
-      enabled: false, // Enable with --coverage flag
+      enabled: true, // Enable coverage by default for CI
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
       reportsDirectory: './coverage',
@@ -37,12 +37,12 @@ export default defineConfig({
         'dist/',
         'src/__tests__/**',
       ],
-      // thresholds: {
-      //   branches: 70,
-      //   functions: 70,
-      //   lines: 80,
-      //   statements: 80,
-      // },
+      thresholds: {
+        branches: 70,
+        functions: 70,
+        lines: 80,
+        statements: 80,
+      },
     },
     
     // Test file patterns

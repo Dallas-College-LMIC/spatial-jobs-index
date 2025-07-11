@@ -59,7 +59,7 @@ jobs:
       
       - name: Run backend tests
         run: |
-          nix develop .#backend -c bash -c "cd backend && uv run pytest --cov=app --cov-report=xml --cov-report=term-missing"
+          nix develop .#backend -c bash -c "cd backend && pytest --cov=app --cov-report=xml --cov-report=term-missing"
       
       - name: Run linting
         run: |

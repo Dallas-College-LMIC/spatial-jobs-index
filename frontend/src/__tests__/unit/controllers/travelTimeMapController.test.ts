@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import '../../mocks/mapbox-gl';
-import type { MapClickEvent } from '../../../types/mapbox';
 
 // Create hoisted mock for MapManager
 const { mockMapManager, mockCanvas } = vi.hoisted(() => {
@@ -160,7 +159,7 @@ describe('TravelTimeMapController', () => {
       // Create new controller with failing API
       const newController = new TravelTimeMapController('test-container');
       newController['apiService'] = mockApiService;
-      newController['mapManager'] = mockMapManager;
+      newController['mapManager'] = mockMapManager as any;
 
       await newController.initialize();
 
@@ -639,7 +638,7 @@ describe('TravelTimeMapController', () => {
           properties: { geoid: '48001950100.0' }
         }]
       };
-      mousemoveHandler(mockEvent);
+      mousemoveHandler?.(mockEvent);
 
       expect(mockCanvas.style.cursor).toBe('pointer');
     });
@@ -656,7 +655,7 @@ describe('TravelTimeMapController', () => {
       // Get and call the mouseleave handler
       const mouseleaveHandler = mockMapManager._handlers['mouseleave-census-tracts-fill'];
       expect(mouseleaveHandler).toBeDefined();
-      mouseleaveHandler();
+      mouseleaveHandler?.();
 
       expect(mockCanvas.style.cursor).toBe('');
     });

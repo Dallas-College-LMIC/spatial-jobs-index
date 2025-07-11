@@ -55,9 +55,14 @@
           pyprojectOverrides
         ]);
         
-        # Backend virtual environment
+        # Backend virtual environment for production
         backendVenv = (pythonSet.mkVirtualEnv "spatial-index-api-env" 
           backendWorkspace.deps.default).overrideAttrs
+          (old: { venvIgnoreCollisions = [ "*" ]; });
+        
+        # Backend development virtual environment with all dependencies
+        backendDevVenv = (pythonSet.mkVirtualEnv "spatial-index-api-dev-env" 
+          backendWorkspace.deps.all).overrideAttrs
           (old: { venvIgnoreCollisions = [ "*" ]; });
         
         # Docker image for backend
@@ -208,8 +213,38 @@
         };
         
         devShells = {
-          # Backend development shell
+          # Backend development shell with pre-installed dependencies (uv2nix)
           backend = pkgs.mkShell {
+            buildInputs = [ 
+              backendDevVenv  # Virtual environment with all dependencies
+              pkgs.ruff 
+              pkgs.uv 
+              pkgs.gcc 
+              pkgs.stdenv.cc.cc.lib 
+              pkgs.pre-commit 
+            ];
+            
+            env = {
+              # Don't create venv using uv
+              UV_NO_SYNC = "1";
+              # Force uv to use Python interpreter from venv
+              UV_PYTHON = "${backendDevVenv}/bin/python";
+              # Prevent uv from downloading managed Python's
+              UV_PYTHON_DOWNLOADS = "never";
+            };
+            
+            shellHook = ''
+              unset PYTHONPATH
+              echo "Backend development shell activated (pure uv2nix)"
+              echo "All Python dependencies are pre-installed via Nix"
+              echo "Run 'cd backend' to enter the backend directory"
+              echo "Run 'python -m uvicorn app.main:app --reload' to start the API"
+              echo "Run 'pytest' to run tests (all dependencies available)"
+            '';
+          };
+          
+          # Backend development shell - impure (manual dependency management)
+          backend-impure = pkgs.mkShell {
             buildInputs = [ 
               python 
               pkgs.ruff 
@@ -231,8 +266,9 @@
             
             shellHook = ''
               unset PYTHONPATH
-              echo "Backend development shell activated"
+              echo "Backend development shell activated (impure)"
               echo "Run 'cd backend' to enter the backend directory"
+              echo "Run 'uv sync' to install dependencies"
               echo "Run 'uv run python -m uvicorn app.main:app --reload' to start the API"
             '';
           };
@@ -255,8 +291,9 @@
           # Combined development shell
           default = pkgs.mkShell {
             buildInputs = [
+              # Backend with pre-installed dependencies
+              backendDevVenv
               # Backend tools
-              python 
               pkgs.ruff 
               pkgs.uv 
               pkgs.gcc 
@@ -270,16 +307,15 @@
               pkgs.direnv
               # Database tools
               pkgs.postgresql
-            ] ++ (with pkgs.python313Packages; [
-              mypy
-              python-lsp-server
-              python-lsp-ruff
-              pylsp-mypy
-            ]);
+            ];
             
             env = {
+              # Don't create venv using uv
+              UV_NO_SYNC = "1";
+              # Force uv to use Python interpreter from venv
+              UV_PYTHON = "${backendDevVenv}/bin/python";
+              # Prevent uv from downloading managed Python's
               UV_PYTHON_DOWNLOADS = "never";
-              UV_PYTHON = python.interpreter;
             };
             
             shellHook = ''
@@ -295,8 +331,11 @@
               echo "  nix build .#frontend       - Build frontend for production"
               echo "  nix build .#backend-docker - Build backend Docker image"
               echo ""
-              echo "  nix develop .#backend  - Enter backend-only dev shell"
+              echo "  nix develop .#backend  - Enter backend-only dev shell (with deps)"
+              echo "  nix develop .#backend-impure - Enter backend shell (manual deps)"
               echo "  nix develop .#frontend - Enter frontend-only dev shell"
+              echo ""
+              echo "Backend Python dependencies are pre-installed via Nix"
             '';
           };
         };
