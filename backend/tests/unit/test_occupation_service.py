@@ -127,7 +127,6 @@ class TestOccupationService:
     
     def test_get_occupations_with_names_caching(self):
         """Test that occupation data caching behavior in test mode."""
-        import os
         # Mock session with occupation_codes table query
         mock_session = Mock(spec=Session)
         
