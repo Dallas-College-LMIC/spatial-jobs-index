@@ -70,7 +70,7 @@ async def async_integration_client():
 class TestFullRequestResponseCycle:
     """Test complete request/response cycles with real data flow."""
     
-    @patch('app.main.OccupationService.get_occupations_with_names')
+    @patch('app.services.OccupationService.get_occupations_with_names')
     def test_occupation_ids_full_cycle(self, mock_service, integration_client):
         """Test full cycle: service -> endpoint -> response."""
         # Mock service to return test data
@@ -98,7 +98,7 @@ class TestFullRequestResponseCycle:
         # Verify service was called
         mock_service.assert_called_once()
     
-    @patch('app.main.OccupationService.get_occupation_spatial_data')
+    @patch('app.services.OccupationService.get_occupation_spatial_data')
     def test_occupation_spatial_data_full_cycle(self, mock_service, integration_client):
         """Test full cycle for occupation spatial data endpoint."""
         # Create test occupation spatial data
@@ -147,7 +147,7 @@ class TestFullRequestResponseCycle:
         args = mock_service.call_args[0]
         assert args[1] == "51-3091"  # Second argument is the category
     
-    @patch('app.main.OccupationService.get_occupation_spatial_data')
+    @patch('app.services.OccupationService.get_occupation_spatial_data')
     def test_occupation_spatial_data_not_found(self, mock_service, integration_client):
         """Test occupation spatial data endpoint with non-existent category."""
         # Mock service to return empty list
@@ -160,7 +160,7 @@ class TestFullRequestResponseCycle:
         assert response.status_code == 404
         assert "No data found" in response.json()["detail"]
     
-    @patch('app.main.SpatialService.get_geojson_features')
+    @patch('app.services.SpatialService.get_geojson_features')
     def test_geojson_full_cycle(self, mock_service, integration_client):
         """Test full GeoJSON cycle with spatial data."""
         # Create test spatial data
@@ -190,7 +190,7 @@ class TestFullRequestResponseCycle:
         assert data["features"][0]["properties"]["geoid"] == "12345"
 
 
-    @patch('app.main.IsochroneService.get_isochrones_by_geoid')
+    @patch('app.services.IsochroneService.get_isochrones_by_geoid')
     def test_isochrone_full_cycle(self, mock_service, integration_client):
         """Test full cycle for isochrone endpoint."""
         # Import the model we need
@@ -238,7 +238,7 @@ class TestFullRequestResponseCycle:
         args = mock_service.call_args[0]
         assert args[1] == "12345"  # Second argument is the geoid
     
-    @patch('app.main.IsochroneService.get_isochrones_by_geoid')
+    @patch('app.services.IsochroneService.get_isochrones_by_geoid')
     def test_isochrone_not_found(self, mock_service, integration_client):
         """Test isochrone endpoint with non-existent geoid."""
         # Mock service to return empty list
@@ -260,7 +260,7 @@ class TestFullRequestResponseCycle:
         assert response.status_code == 400
         assert "Invalid geoid format" in response.json()["detail"]
     
-    @patch('app.main.IsochroneService.get_isochrones_by_geoid')
+    @patch('app.services.IsochroneService.get_isochrones_by_geoid')
     def test_isochrone_empty_geoid(self, mock_service, integration_client):
         """Test isochrone endpoint with empty geoid string."""
         # This should be caught by FastAPI path validation
@@ -269,7 +269,7 @@ class TestFullRequestResponseCycle:
         # Verify 404 response (path not found)
         assert response.status_code == 404
     
-    @patch('app.main.IsochroneService.get_isochrones_by_geoid')
+    @patch('app.services.IsochroneService.get_isochrones_by_geoid')
     def test_isochrone_special_characters_geoid(self, mock_service, integration_client):
         """Test isochrone endpoint with special characters in geoid."""
         # Test various invalid geoid formats
@@ -282,7 +282,7 @@ class TestFullRequestResponseCycle:
             if response.status_code == 400:
                 assert "Invalid geoid format" in response.json()["detail"]
     
-    @patch('app.main.IsochroneService.get_isochrones_by_geoid')
+    @patch('app.services.IsochroneService.get_isochrones_by_geoid')
     def test_isochrone_valid_numeric_geoids(self, mock_service, integration_client):
         """Test isochrone endpoint with various valid numeric geoids."""
         # Import the model we need
@@ -311,7 +311,7 @@ class TestFullRequestResponseCycle:
             data = response.json()
             assert data["type"] == "FeatureCollection"
     
-    @patch('app.main.IsochroneService.get_isochrones_by_geoid')
+    @patch('app.services.IsochroneService.get_isochrones_by_geoid')
     def test_isochrone_geojson_structure(self, mock_service, integration_client):
         """Test that isochrone endpoint returns proper GeoJSON structure."""
         # Import the model we need
@@ -372,7 +372,7 @@ class TestFullRequestResponseCycle:
             assert props["time_category"] == time_categories[i]
             assert props["color"] == colors[i]
     
-    @patch('app.main.IsochroneService.get_isochrones_by_geoid')
+    @patch('app.services.IsochroneService.get_isochrones_by_geoid')
     def test_isochrone_service_exception_handling(self, mock_service, integration_client):
         """Test isochrone endpoint handling of service exceptions."""
         # Mock service to raise a generic exception
@@ -388,7 +388,7 @@ class TestFullRequestResponseCycle:
 class TestDatabaseIntegration:
     """Test database integration scenarios."""
     
-    @patch('app.main.OccupationService.get_occupation_ids')
+    @patch('app.services.OccupationService.get_occupations_with_names')
     def test_database_connection_pool(self, mock_service, integration_client):
         """Test that connection pooling works correctly."""
         mock_service.return_value = []
@@ -398,6 +398,8 @@ class TestDatabaseIntegration:
         for _ in range(20):
             response = integration_client.get("/occupation_ids")
             responses.append(response)
+            if response.status_code == 500:
+                print(f"Error response: {response.json()}")
         
         # All requests should succeed (or be rate limited)
         success_count = sum(1 for r in responses if r.status_code == 200)
@@ -406,7 +408,7 @@ class TestDatabaseIntegration:
         assert success_count + rate_limited_count == len(responses)
         assert success_count > 0  # At least some should succeed
     
-    @patch('app.main.OccupationService.get_occupation_ids')
+    @patch('app.services.OccupationService.get_occupations_with_names')
     def test_database_transaction_isolation(self, mock_service, integration_client):
         """Test that transactions are properly isolated."""
         # Simulate different responses for different "transactions"
@@ -418,23 +420,23 @@ class TestDatabaseIntegration:
         
         # Get initial state
         response1 = integration_client.get("/occupation_ids")
-        initial_data = response1.json()["occupation_ids"] if response1.status_code == 200 else []
+        initial_data = response1.json()["occupations"] if response1.status_code == 200 else []
         
         # Make another request - simulating isolation
         response2 = integration_client.get("/occupation_ids")
         if response2.status_code == 200:
-            current_data = response2.json()["occupation_ids"]
+            current_data = response2.json()["occupations"]
             assert current_data == initial_data  # No uncommitted changes visible
         
         # Final request shows "committed" data
         response3 = integration_client.get("/occupation_ids")
         if response3.status_code == 200:
-            final_data = response3.json()["occupation_ids"]
+            final_data = response3.json()["occupations"]
             assert len(final_data) > len(initial_data)
     
     def test_database_error_recovery(self, integration_client):
         """Test that the application recovers from database errors."""
-        with patch('app.main.OccupationService.get_occupation_ids') as mock_service:
+        with patch('app.services.OccupationService.get_occupations_with_names') as mock_service:
             # First, ensure normal operation works
             mock_service.return_value = []
             response1 = integration_client.get("/occupation_ids")
@@ -456,7 +458,7 @@ class TestDatabaseIntegration:
 class TestPerformance:
     """Test performance characteristics of the API."""
     
-    @patch('app.main.OccupationService.get_occupation_ids')
+    @patch('app.services.OccupationService.get_occupations_with_names')
     def test_response_time_occupation_ids(self, mock_service, integration_client):
         """Test that occupation_ids endpoint responds quickly."""
         mock_service.return_value = ["Test1", "Test2"]
@@ -479,7 +481,7 @@ class TestPerformance:
             # Should respond in less than 100ms on average
             assert avg_response_time < 0.1
     
-    @patch('app.main.SpatialService.get_geojson_features')
+    @patch('app.services.SpatialService.get_geojson_features')
     def test_response_time_geojson(self, mock_service, integration_client):
         """Test that geojson endpoint responds in reasonable time."""
         # Create 100 features
@@ -511,7 +513,7 @@ class TestPerformance:
         # Should respond in less than 500ms even with 100 features
         assert response_time < 0.5
     
-    @patch('app.main.SpatialService.get_geojson_features')
+    @patch('app.services.SpatialService.get_geojson_features')
     def test_memory_usage_large_geojson(self, mock_service, integration_client):
         """Test memory efficiency with large GeoJSON responses."""
         # Create 1000 features
@@ -544,7 +546,7 @@ class TestPerformance:
         # Should be able to handle 1000 features
         assert content_length > 0
     
-    @patch('app.main.IsochroneService.get_isochrones_by_geoid')
+    @patch('app.services.IsochroneService.get_isochrones_by_geoid')
     def test_response_time_isochrone(self, mock_service, integration_client):
         """Test that isochrone endpoint responds in reasonable time."""
         # Import the model we need
@@ -596,7 +598,7 @@ class TestPerformance:
             # Should respond in less than 200ms on average even with complex polygons
             assert avg_response_time < 0.2
     
-    @patch('app.main.IsochroneService.get_isochrones_by_geoid')
+    @patch('app.services.IsochroneService.get_isochrones_by_geoid')
     def test_memory_usage_large_isochrone(self, mock_service, integration_client):
         """Test memory efficiency with large isochrone responses."""
         # Import the model we need
@@ -647,10 +649,10 @@ class TestPerformance:
 class TestConcurrentRequests:
     """Test behavior under concurrent load."""
     
-    @patch('app.main.OccupationService.get_occupation_ids')
+    @patch('app.services.OccupationService.get_occupations_with_names')
     def test_concurrent_occupation_requests(self, mock_service, integration_client):
         """Test multiple concurrent requests to occupation_ids endpoint."""
-        mock_service.return_value = ["Test"]
+        mock_service.return_value = [{"code": "11-1021", "name": "Test"}]
         
         def make_request(client):
             return client.get("/occupation_ids")
@@ -681,11 +683,11 @@ class TestConcurrentRequests:
         assert success_count + rate_limited_count == 20
         assert success_count > 0  # At least some should succeed
     
-    @patch('app.main.OccupationService.get_occupation_ids')
-    @patch('app.main.SpatialService.get_geojson_features')
+    @patch('app.services.OccupationService.get_occupations_with_names')
+    @patch('app.services.SpatialService.get_geojson_features')
     def test_mixed_endpoint_concurrent_requests(self, mock_spatial, mock_occupation, integration_client):
         """Test concurrent requests to different endpoints."""
-        mock_occupation.return_value = ["Test"]
+        mock_occupation.return_value = [{"code": "11-1021", "name": "Test"}]
         mock_spatial.return_value = []
         
         def make_occupation_request(client):
@@ -721,7 +723,7 @@ class TestConcurrentRequests:
         assert occupation_success > 0 or sum(1 for s in results['occupation'] if s == 429) > 0
         assert geojson_success > 0 or sum(1 for s in results['geojson'] if s == 429) > 0
     
-    @patch('app.main.OccupationService.get_occupation_spatial_data')
+    @patch('app.services.OccupationService.get_occupation_spatial_data')
     def test_concurrent_occupation_data_requests(self, mock_service, integration_client):
         """Test concurrent requests to occupation_data endpoint."""
         # Mock service return value
@@ -770,7 +772,7 @@ class TestConcurrentRequests:
         assert success_count + rate_limited_count == 10
 
     
-    @patch('app.main.IsochroneService.get_isochrones_by_geoid')
+    @patch('app.services.IsochroneService.get_isochrones_by_geoid')
     def test_concurrent_isochrone_requests(self, mock_service, integration_client):
         """Test concurrent requests to isochrone endpoint."""
         # Import the model we need
@@ -820,11 +822,11 @@ class TestConcurrentRequests:
         assert success_count + rate_limited_count == 10
     
     @pytest.mark.asyncio
-    @patch('app.main.OccupationService.get_occupation_ids')
-    @patch('app.main.SpatialService.get_geojson_features')
+    @patch('app.services.OccupationService.get_occupations_with_names')
+    @patch('app.services.SpatialService.get_geojson_features')
     async def test_async_concurrent_requests(self, mock_spatial, mock_occupation, async_integration_client):
         """Test async concurrent requests."""
-        mock_occupation.return_value = ["Test"]
+        mock_occupation.return_value = [{"code": "11-1021", "name": "Test"}]
         mock_spatial.return_value = []
         
         async def make_request(client: AsyncClient, endpoint: str):
@@ -858,7 +860,7 @@ class TestConcurrentRequests:
 class TestRateLimiting:
     """Test rate limiting functionality for endpoints."""
     
-    @patch('app.main.IsochroneService.get_isochrones_by_geoid')
+    @patch('app.services.IsochroneService.get_isochrones_by_geoid')
     def test_isochrone_rate_limiting(self, mock_service, integration_client):
         """Test that isochrone endpoint properly enforces rate limiting."""
         # Import the model we need
@@ -896,7 +898,7 @@ class TestRateLimiting:
         # The testclient may not include all headers that the real server would
         # Just verify we got rate limited responses
     
-    @patch('app.main.IsochroneService.get_isochrones_by_geoid')
+    @patch('app.services.IsochroneService.get_isochrones_by_geoid')
     def test_isochrone_rate_limit_per_endpoint(self, mock_service, integration_client):
         """Test that rate limits are per-endpoint, not global."""
         # Import the model we need
@@ -916,8 +918,8 @@ class TestRateLimiting:
         mock_service.return_value = test_features
         
         # Also mock occupation service
-        with patch('app.main.OccupationService.get_occupation_ids') as mock_occupation:
-            mock_occupation.return_value = ["Test"]
+        with patch('app.services.OccupationService.get_occupations_with_names') as mock_occupation:
+            mock_occupation.return_value = [{"code": "11-1021", "name": "Test"}]
             
             # Make many requests to isochrone endpoint
             isochrone_responses = []
@@ -936,10 +938,10 @@ class TestRateLimiting:
 class TestRealWorldScenarios:
     """Test real-world usage patterns."""
     
-    @patch('app.main.OccupationService.get_occupation_ids')
+    @patch('app.services.OccupationService.get_occupations_with_names')
     def test_browser_like_request_pattern(self, mock_service, integration_client):
         """Test request pattern similar to a web browser."""
-        mock_service.return_value = ["Test"]
+        mock_service.return_value = [{"code": "11-1021", "name": "Test"}]
         
         # 1. OPTIONS preflight for CORS
         response = integration_client.options(
@@ -964,7 +966,7 @@ class TestRealWorldScenarios:
         assert response.status_code in [200, 429]
         
         # 3. Follow-up request for geojson
-        with patch('app.main.SpatialService.get_geojson_features') as mock_spatial:
+        with patch('app.services.SpatialService.get_geojson_features') as mock_spatial:
             mock_spatial.return_value = []
             response = integration_client.get(
                 "/geojson",
@@ -976,11 +978,11 @@ class TestRealWorldScenarios:
             )
             assert response.status_code in [200, 429]
     
-    @patch('app.main.OccupationService.get_occupation_ids')
-    @patch('app.main.SpatialService.get_geojson_features')
+    @patch('app.services.OccupationService.get_occupations_with_names')
+    @patch('app.services.SpatialService.get_geojson_features')
     def test_api_client_usage_pattern(self, mock_spatial, mock_occupation, integration_client):
         """Test usage pattern typical of an API client."""
-        mock_occupation.return_value = ["Test1", "Test2"]
+        mock_occupation.return_value = [{"code": "11-1021", "name": "Test1"}, {"code": "15-1251", "name": "Test2"}]
         mock_spatial.return_value = []
         
         # API clients often make repeated requests with consistent headers
@@ -1000,19 +1002,19 @@ class TestRealWorldScenarios:
         # Verify response formats are consistent
         if response1.status_code == 200:
             data = response1.json()
-            assert "occupation_ids" in data
-            assert isinstance(data["occupation_ids"], list)
+            assert "occupations" in data
+            assert isinstance(data["occupations"], list)
         
         if response2.status_code == 200:
             data = response2.json()
             assert data["type"] == "FeatureCollection"
             assert "features" in data
     
-    @patch('app.main.OccupationService.get_occupation_ids')
-    @patch('app.main.SpatialService.get_geojson_features')
+    @patch('app.services.OccupationService.get_occupations_with_names')
+    @patch('app.services.SpatialService.get_geojson_features')
     def test_mobile_app_usage_pattern(self, mock_spatial, mock_occupation, integration_client):
         """Test usage pattern typical of a mobile application."""
-        mock_occupation.return_value = ["Test"]
+        mock_occupation.return_value = [{"code": "11-1021", "name": "Test"}]
         mock_spatial.return_value = []
         
         # Mobile apps often have specific characteristics
@@ -1032,12 +1034,12 @@ class TestRealWorldScenarios:
             response = integration_client.get("/geojson", headers=headers)
             assert response.status_code in [200, 429]
     
-    @patch('app.main.OccupationService.get_occupation_ids')
-    @patch('app.main.SpatialService.get_geojson_features')
+    @patch('app.services.OccupationService.get_occupations_with_names')
+    @patch('app.services.SpatialService.get_geojson_features')
     def test_data_visualization_usage_pattern(self, mock_spatial, mock_occupation, integration_client):
         """Test usage pattern for data visualization applications."""
         # Visualization apps often need both metadata and spatial data
-        mock_occupation.return_value = ["Healthcare", "Technology", "Education"]
+        mock_occupation.return_value = [{"code": "29-1141", "name": "Healthcare"}, {"code": "15-1251", "name": "Technology"}, {"code": "25-1021", "name": "Education"}]
         
         # 1. Get available occupation categories
         response = integration_client.get("/occupation_ids")
@@ -1081,7 +1083,7 @@ class TestRealWorldScenarios:
                 assert any(key.endswith("_zscore") for key in props)
                 assert any(key.endswith("_zscore_cat") for key in props)
     
-    @patch('app.main.IsochroneService.get_isochrones_by_geoid')
+    @patch('app.services.IsochroneService.get_isochrones_by_geoid')
     def test_isochrone_visualization_usage_pattern(self, mock_service, integration_client):
         """Test usage pattern for isochrone visualization applications."""
         # Import the model we need
@@ -1154,8 +1156,8 @@ class TestRealWorldScenarios:
             assert "time_category" in feature["properties"]
             assert feature["properties"]["time_category"] in time_categories
     
-    @patch('app.main.IsochroneService.get_isochrones_by_geoid')
-    @patch('app.main.SpatialService.get_geojson_features')
+    @patch('app.services.IsochroneService.get_isochrones_by_geoid')
+    @patch('app.services.SpatialService.get_geojson_features')
     def test_combined_map_data_usage_pattern(self, mock_spatial, mock_isochrone, integration_client):
         """Test usage pattern for apps that combine multiple data layers."""
         # Import models
@@ -1232,8 +1234,8 @@ class TestErrorScenarios:
         response = integration_client.get("/occupation_ids/invalid")
         assert response.status_code == 404
     
-    @patch('app.main.OccupationService.get_occupation_ids')
-    @patch('app.main.SpatialService.get_geojson_features')
+    @patch('app.services.OccupationService.get_occupations_with_names')
+    @patch('app.services.SpatialService.get_geojson_features')
     def test_partial_service_failure(self, mock_spatial, mock_occupation, integration_client):
         """Test behavior when one service fails but others work."""
         # Mock occupation service to fail
@@ -1248,12 +1250,12 @@ class TestErrorScenarios:
         response = integration_client.get("/geojson")
         assert response.status_code in [200, 429]
     
-    @patch('app.main.OccupationService.get_occupation_ids')
-    @patch('app.main.SpatialService.get_geojson_features')
+    @patch('app.services.OccupationService.get_occupations_with_names')
+    @patch('app.services.SpatialService.get_geojson_features')
     def test_recovery_after_errors(self, mock_spatial, mock_occupation, integration_client):
         """Test that the API recovers properly after errors."""
         # Initially both services work
-        mock_occupation.return_value = ["Test"]
+        mock_occupation.return_value = [{"code": "11-1021", "name": "Test"}]
         mock_spatial.return_value = []
         
         # Cause an error
@@ -1263,7 +1265,7 @@ class TestErrorScenarios:
         
         # Should recover after error is resolved
         mock_occupation.side_effect = None
-        mock_occupation.return_value = ["Test"]
+        mock_occupation.return_value = [{"code": "11-1021", "name": "Test"}]
         response = integration_client.get("/occupation_ids")
         assert response.status_code in [200, 429]
         
