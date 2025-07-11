@@ -1,0 +1,207 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>LMIC DFW Employment Access Index - Travel Time Analysis</title>
+
+        <script src="https://api.mapbox.com/mapbox-gl-js/v1.12.0/mapbox-gl.js"></script>
+        <link
+            href="https://api.mapbox.com/mapbox-gl-js/v1.12.0/mapbox-gl.css"
+            rel="stylesheet"
+        />
+        <link
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css"
+            rel="stylesheet"
+            integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl"
+            crossorigin="anonymous"
+        />
+        <script
+            src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0"
+            crossorigin="anonymous"
+        ></script>
+        <script type="module" src="/src/js/travel-time-main.ts"></script>
+        <style>
+            #legend {
+                position: absolute;
+                bottom: 40px;
+                right: 10px;
+                background: white;
+                padding: 15px;
+                border-radius: 5px;
+                box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+                font-size: 12px;
+                width: 250px;
+                z-index: 1;
+            }
+            #header {
+                font-weight: bold;
+                font-size: 14px;
+                margin-bottom: 10px;
+                color: #333;
+            }
+            .legend-item {
+                display: flex;
+                align-items: center;
+                margin: 0.25rem 0;
+                font-size: 12px;
+            }
+            .legend-color {
+                width: 18px;
+                height: 18px;
+                margin-right: 8px;
+                border: 1px solid rgba(0,0,0,0.1);
+            }
+            .tract-info {
+                font-size: 0.85rem;
+                margin-top: 0.5rem;
+                padding: 0.5rem;
+                background-color: #f8f9fa;
+                border-radius: 0.25rem;
+            }
+            #clear-selection {
+                margin-top: 0.5rem;
+                background-color: #d96b27;
+                border-color: #d96b27;
+                color: white;
+                font-size: 12px;
+                padding: 5px 10px;
+            }
+            #clear-selection:hover {
+                background-color: #c45a1f;
+                border-color: #c45a1f;
+            }
+            hr {
+                margin: 10px 0;
+                border-color: #e0e0e0;
+            }
+        </style>
+    </head>
+
+    <body>
+        <nav
+            class="navbar navbar-expand-lg navbar-dark g-0 p-0 m-0"
+            id="banner"
+        >
+            <a
+                class="navbar-brand p-0"
+                href="https://www.dallascollege.edu/business-industry/lmic/pages/default.aspx"
+            >
+                <img
+                    src="https://raw.githubusercontent.com/Dallas-College-LMIC/spatial-jobs-index/e8094a75034b8627e629a350e0f1a2a81a0f468a/DCLOGO_RGB_MASTER_MARK-V-WHITE.png"
+                    id="dc_logo"
+                />
+            </a>
+            <button
+                class="navbar-toggler"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#bannertoggle"
+            >
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div
+                class="collapse navbar-collapse p-0 justify-content-start"
+                id="bannertoggle"
+            >
+                <ul class="navbar-nav p-0">
+                    <a class="nav-link" href="index.html"> Project Home </a>
+                    <a class="nav-link" href="access_wagelvl.html">
+                        Job Access by Wage Level
+                    </a>
+                    <a class="nav-link" href="access_occupation.html">
+                        Job Access by Occupation
+                    </a>
+                    <a class="nav-link">
+                        Job Access by School of (in progress)
+                    </a>
+                    <a class="nav-link active" href="travel_time.html">
+                        Travel Time Analysis
+                    </a>
+                </ul>
+            </div>
+        </nav>
+
+        <div class="container-fluid p-0" id="mainmap"></div>
+
+        <div id="legend">
+            <div class="container g-0">
+                <div class="row g-0 justify-content-start">
+                    <div class="col-auto" id="header">
+                        Travel Time Analysis
+                    </div>
+                </div>
+                <div class="row g-0 justify-content-center">
+                    <div class="col-12">
+                        <p style="font-size: 0.85rem; margin-top: 0.5rem;">
+                            Click on a census tract to see travel times
+                        </p>
+                    </div>
+                </div>
+                <div class="row g-0 justify-content-center">
+                    <hr />
+                    <div class="col-12" id="legend-content">
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: #1a9850;"></div>
+                            <span>&lt; 5 minutes</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: #66bd63;"></div>
+                            <span>5 - 10 minutes</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: #a6d96a;"></div>
+                            <span>10 - 15 minutes</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: #fdae61;"></div>
+                            <span>15 - 20 minutes</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: #fee08b;"></div>
+                            <span>20 - 25 minutes</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: #f46d43;"></div>
+                            <span>25 - 30 minutes</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: #d73027;"></div>
+                            <span>30 - 45 minutes</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: #a50026;"></div>
+                            <span>&gt; 45 minutes</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="row g-0 justify-content-center">
+                    <hr />
+                    <div class="col-12">
+                        <div id="selected-tract" class="tract-info" style="display: none;">
+                            <strong>Selected Tract:</strong> <span id="tract-id"></span>
+                        </div>
+                        <button 
+                            id="clear-selection" 
+                            class="btn btn-secondary btn-sm w-100" 
+                            style="display: none;"
+                        >
+                            Clear Selection
+                        </button>
+                    </div>
+                </div>
+                <div class="row g-0 justify-content-center">
+                    <div class="col-12">
+                        <div id="loading" class="text-center mt-2" style="display: none;">
+                            <div class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></div>
+                            <span class="loading-text">Loading travel times...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </body>
+</html>

@@ -4,7 +4,7 @@ from geoalchemy2.functions import ST_AsGeoJSON
 from typing import List
 import json
 
-from .models import OccupationLvlData, TTIClone, SpatialFeatureProperties, GeoJSONFeature, OccupationSpatialProperties, OccupationGeoJSONFeature
+from .models import OccupationLvlData, TTIClone, SpatialFeatureProperties, GeoJSONFeature, OccupationSpatialProperties, OccupationGeoJSONFeature, IsochroneProperties, IsochroneFeature
 
 class OccupationService:
     """Service for occupation-related operations"""
@@ -81,6 +81,68 @@ class SpatialService:
             )
             
             feature = GeoJSONFeature(
+                geometry=json.loads(row.geometry),
+                properties=properties
+            )
+            features.append(feature)
+        
+        return features
+
+class IsochroneService:
+    """Service for isochrone travel time operations"""
+    
+    # Color mapping for travel time categories
+    TIME_CATEGORY_COLORS = {
+        "< 5": "#1a9850",
+        "5~10": "#66bd63",
+        "10~15": "#a6d96a",
+        "15~20": "#fdae61",
+        "20~25": "#fee08b",
+        "25~30": "#f46d43",
+        "30~45": "#d73027",
+        "> 45": "#a50026"
+    }
+    
+    @classmethod
+    def get_isochrones_by_geoid(cls, session: Session, geoid: str) -> List[IsochroneFeature]:
+        """Get all isochrone bands for a specific census tract"""
+        from sqlalchemy import text
+        
+        # Query the isochrone table
+        query = text("""
+            SELECT 
+                geoid,
+                traveltime_category,
+                ST_AsGeoJSON(geom) as geometry
+            FROM jsi_data.isochrone_table
+            WHERE geoid = :geoid
+            ORDER BY 
+                CASE traveltime_category
+                    WHEN '< 5' THEN 1
+                    WHEN '5~10' THEN 2
+                    WHEN '10~15' THEN 3
+                    WHEN '15~20' THEN 4
+                    WHEN '20~25' THEN 5
+                    WHEN '25~30' THEN 6
+                    WHEN '30~45' THEN 7
+                    WHEN '> 45' THEN 8
+                END
+        """)
+        
+        result = session.execute(query, {"geoid": geoid})
+        features = []
+        
+        for row in result.fetchall():
+            time_category = row.traveltime_category
+            color = cls.TIME_CATEGORY_COLORS.get(time_category, "#808080")  # Default gray if not found
+            
+            properties = IsochroneProperties(
+                geoid=str(row.geoid),
+                time_category=time_category,
+                color=color
+            )
+            
+            feature = IsochroneFeature(
                 geometry=json.loads(row.geometry),
                 properties=properties
             )
