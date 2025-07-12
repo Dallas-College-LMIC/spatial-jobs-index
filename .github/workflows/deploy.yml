@@ -41,6 +41,8 @@ jobs:
     needs: changes
     if: ${{ needs.changes.outputs.backend == 'true' }}
     runs-on: ubuntu-latest
+    outputs:
+      deploy-status: ${{ steps.set-status.outputs.status }}
     steps:
       - uses: actions/checkout@v4
 
@@ -71,6 +73,20 @@ jobs:
           docker tag spatial-jobs-index-api:latest ghcr.io/dallas-college-lmic/spatial-jobs-index-api:latest
           docker push ghcr.io/dallas-college-lmic/spatial-jobs-index-api:latest
 
+      - name: Get current running version
+        id: get-current
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            cd ~/projects/spatial-jobs-index-api
+            # Get current running image tag from docker compose
+            CURRENT_TAG=$(docker compose ps --format json | jq -r '.Image' | grep -oE 'spatial-jobs-index-api:.*' | cut -d: -f2 || echo "latest")
+            echo "PREVIOUS_TAG=$CURRENT_TAG" > /tmp/deploy-version.txt
+            echo "Current running tag: $CURRENT_TAG"
+
       - name: Deploy to VPS
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -79,6 +95,8 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
             cd ~/projects/spatial-jobs-index-api
+            # Tag the new deployment with commit SHA
+            export DEPLOY_TAG=${{ github.event.workflow_run.head_sha }}
             docker compose pull
             docker compose up -d
             sleep 10
@@ -91,9 +109,22 @@ jobs:
             fi
             echo "🚀 Deployment completed successfully!"
 
+      - name: Set deployment status
+        id: set-status
+        if: always()
+        run: |
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "status=success" >> $GITHUB_OUTPUT
+          else
+            echo "status=failed" >> $GITHUB_OUTPUT
+          fi
+
   deploy-frontend:
-    needs: changes
-    if: ${{ needs.changes.outputs.frontend == 'true' }}
+    needs: [changes, deploy-backend]
+    # Run if frontend changed AND (backend didn't change OR backend deployed successfully)
+    if: |
+      needs.changes.outputs.frontend == 'true' &&
+      (needs.changes.outputs.backend != 'true' || needs.deploy-backend.result == 'success')
     runs-on: ubuntu-latest
     environment:
       name: github-pages
@@ -133,3 +164,53 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+  rollback-backend:
+    needs: [changes, deploy-backend, deploy-frontend]
+    # Only run if backend was deployed, frontend was supposed to deploy but failed
+    if: |
+      always() &&
+      needs.changes.outputs.backend == 'true' &&
+      needs.changes.outputs.frontend == 'true' &&
+      needs.deploy-backend.result == 'success' &&
+      needs.deploy-frontend.result == 'failure'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Rollback backend deployment
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            cd ~/projects/spatial-jobs-index-api
+            echo "⚠️ Frontend deployment failed - rolling back backend to previous version"
+
+            # Get the previous tag saved during deployment
+            if [ -f /tmp/deploy-version.txt ]; then
+              source /tmp/deploy-version.txt
+              echo "Rolling back to tag: $PREVIOUS_TAG"
+
+              # Update docker-compose.yml to use previous tag
+              export DEPLOY_TAG=$PREVIOUS_TAG
+              docker compose pull
+              docker compose up -d
+
+              # Health check
+              sleep 10
+              if curl -f -s http://localhost:8000/docs > /dev/null; then
+                echo "✅ Rollback successful - API is responding with previous version"
+              else
+                echo "❌ Rollback health check failed"
+                docker compose logs --tail=20
+                exit 1
+              fi
+            else
+              echo "❌ Cannot rollback - no previous version information found"
+              exit 1
+            fi
+
+      - name: Notify rollback completed
+        run: |
+          echo "::warning::Backend was rolled back due to frontend deployment failure"
+          echo "Both services remain on their previous versions for consistency"
