@@ -1,0 +1,93 @@
+name: Build
+
+# This workflow handles building artifacts after CI passes.
+# Both frontend and backend must build successfully for the workflow to succeed.
+# Built artifacts are cached in Cachix for the Deploy workflow to use.
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types:
+      - completed
+    branches:
+      - master
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      frontend: ${{ steps.filter.outputs.frontend }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            backend:
+              - 'backend/**'
+              - 'flake.nix'
+              - 'flake.lock'
+            frontend:
+              - 'frontend/**'
+              - 'flake.nix'
+              - 'flake.lock'
+
+  build-backend:
+    needs: changes
+    if: ${{ needs.changes.outputs.backend == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - uses: cachix/install-nix-action@v25
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+
+      - uses: cachix/cachix-action@v14
+        with:
+          name: dallas-college-lmic
+          authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
+
+      - name: Build Docker image with Nix
+        run: nix build .#backend-docker
+
+      - name: Verify Docker image
+        run: |
+          docker load < result
+          docker images | grep spatial-jobs-index-api
+
+  build-frontend:
+    needs: changes
+    if: ${{ needs.changes.outputs.frontend == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - uses: cachix/install-nix-action@v25
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+
+      - uses: cachix/cachix-action@v14
+        with:
+          name: dallas-college-lmic
+          authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
+
+      - name: Build frontend with Nix
+        run: nix build .#frontend
+
+      - name: Verify build artifacts
+        run: |
+          ls -la result/
+          test -f result/index.html
+          test -f result/access_occupation.html
+          test -f result/access_wagelvl.html
+          test -f result/travel_time.html

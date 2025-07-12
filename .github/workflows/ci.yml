@@ -1,5 +1,9 @@
 name: CI
 
+# This workflow runs tests and quality checks.
+# On success, it triggers the Build workflow, which then triggers Deploy.
+# Workflow chain: CI → Build → Deploy
+
 on:
   push:
     branches: [master]

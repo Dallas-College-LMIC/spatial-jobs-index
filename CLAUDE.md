@@ -214,26 +214,46 @@ This project uses several MCP (Model Context Protocol) servers configured in `.m
 
 ## CI/CD Workflows
 
-The monorepo uses GitHub Actions workflows located in `.github/workflows/`:
+The monorepo uses a three-stage GitHub Actions pipeline located in `.github/workflows/`:
+
+### Workflow Chain
+```
+Push to master → CI (tests) → Build (artifacts) → Deploy (services)
+```
 
 ### CI Workflow (`ci.yml`)
+- **Purpose**: Runs tests and quality checks only
 - **Path-based execution**: Only runs tests for components that changed
 - **Granular filters**:
   - Backend changes trigger Python tests, linting, and type checking
-  - Frontend changes trigger npm tests and Nix build verification
+  - Frontend changes trigger npm tests and type checking
   - Documentation-only changes skip CI entirely
-- **Cachix integration**: All Nix builds use shared cache for speed
 - **Coverage reporting**: Uploads to Codecov with component-specific flags
+- **On success**: Triggers the Build workflow
+
+### Build Workflow (`build.yml`)
+- **Purpose**: Builds deployable artifacts after CI passes
+- **Triggered by**: Successful CI completion
+- **Backend build**:
+  - Builds Docker image with Nix
+  - Verifies image was created successfully
+- **Frontend build**:
+  - Builds static site with Nix
+  - Verifies all expected files exist
+- **Cachix integration**: All builds are cached for deployment
+- **Both builds must succeed**: Workflow fails if either build fails
 
 ### Deploy Workflow (`deploy.yml`)
-- **Triggered by**: Successful CI completion on main branch
+- **Purpose**: Deploys pre-built artifacts to production
+- **Triggered by**: Successful Build completion
 - **Backend deployment**:
-  - Builds Docker image with Nix
+  - Pulls Docker image from Cachix
   - Pushes to GitHub Container Registry
   - Deploys to VPS via SSH
 - **Frontend deployment**:
-  - Builds static site with Nix
+  - Pulls static site from Cachix
   - Deploys to GitHub Pages
+- **No building**: All artifacts come from Cachix
 
 ### Required GitHub Secrets
 - `CACHIX_AUTH_TOKEN`: For Nix build caching
@@ -242,18 +262,29 @@ The monorepo uses GitHub Actions workflows located in `.github/workflows/`:
 
 ## Deployment
 
-### Backend Docker Deployment
+### Manual Deployment (Local Testing)
+
+**Backend Docker:**
 ```bash
 nix build .#backend-docker
 docker load < result
 docker run -p 8000:8000 spatial-jobs-index-api:latest
 ```
 
-### Frontend Static Deployment
+**Frontend Static Site:**
 ```bash
 nix build .#frontend
 # Deploy result/ directory to static host
 ```
+
+### Automated Deployment
+Deployment happens automatically via GitHub Actions:
+1. Push to master branch
+2. CI runs tests and quality checks
+3. Build workflow creates deployable artifacts
+4. Deploy workflow pushes to production
+
+See the [CI/CD Workflows](#cicd-workflows) section for details.
 
 ## Debugging Tips
 

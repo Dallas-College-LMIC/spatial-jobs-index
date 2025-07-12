@@ -1,8 +1,11 @@
 name: Deploy
 
+# This workflow handles deployment only. All building happens in the Build workflow.
+# The Nix commands here pull pre-built artifacts from Cachix rather than building from source.
+
 on:
   workflow_run:
-    workflows: ["CI"]
+    workflows: ["Build"]
     types:
       - completed
     branches:
@@ -56,8 +59,10 @@ jobs:
           name: dallas-college-lmic
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
 
-      - name: Build Docker image with Nix
-        run: nix build .#backend-docker
+      - name: Pull Docker image from cache
+        run: |
+          # This pulls the pre-built image from Cachix (built in Build workflow)
+          nix build .#backend-docker
 
       - name: Load and push docker image
         run: |
@@ -111,8 +116,10 @@ jobs:
           name: dallas-college-lmic
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
 
-      - name: Build with Nix
-        run: nix build .#frontend
+      - name: Pull frontend build from cache
+        run: |
+          # This pulls the pre-built frontend from Cachix (built in Build workflow)
+          nix build .#frontend
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
