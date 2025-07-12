@@ -25,7 +25,7 @@ describe('Occupation Cache Performance Tests', () => {
 
   describe('Cache Write Performance', () => {
     it('should handle writing large occupation lists efficiently', () => {
-      const largeList = Array.from({ length: 1000 }, (_, i) => ({
+      const largeList = Array.from({ length: 1000 }, (_: any, i: number) => ({
         code: `OCC-${i.toString().padStart(4, '0')}`,
         name: `Occupation ${i}`,
       }));
@@ -48,8 +48,8 @@ describe('Occupation Cache Performance Tests', () => {
     });
 
     it('should handle concurrent cache writes', async () => {
-      const lists = Array.from({ length: 10 }, (_, i) =>
-        Array.from({ length: 100 }, (_, j) => ({
+      const lists = Array.from({ length: 10 }, (_: any, i: number) =>
+        Array.from({ length: 100 }, (_: any, j: number) => ({
           code: `OCC-${i}-${j}`,
           name: `Occupation ${i}-${j}`,
         }))
@@ -67,7 +67,7 @@ describe('Occupation Cache Performance Tests', () => {
 
   describe('Cache Read Performance', () => {
     it('should retrieve cached data with minimal latency', () => {
-      const testData = Array.from({ length: 500 }, (_, i) => ({
+      const testData = Array.from({ length: 500 }, (_: any, i: number) => ({
         code: `OCC-${i}`,
         name: `Occupation ${i}`,
       }));
@@ -165,7 +165,7 @@ describe('Occupation Cache Performance Tests', () => {
         memoryCache.set(`key-${i}`, `value-${i}`);
       }
 
-      const testKeys = Array.from({ length: 20 }, (_, i) => `key-${i * 2}`);
+      const testKeys = Array.from({ length: 20 }, (_: any, i: number) => `key-${i * 2}`);
       const accessTimes: number[] = [];
 
       // Measure individual access times
@@ -188,9 +188,9 @@ describe('Occupation Cache Performance Tests', () => {
 
   describe('Cache Size and Memory Usage', () => {
     it('should efficiently store large datasets in localStorage', () => {
-      const datasets = Array.from({ length: 10 }, (_, i) => ({
+      const datasets = Array.from({ length: 10 }, (_: any, i: number) => ({
         id: `dataset-${i}`,
-        data: Array.from({ length: 100 }, (_, j) => ({
+        data: Array.from({ length: 100 }, (_: any, j: number) => ({
           occupation: `OCC-${i}-${j}`,
           title: `Occupation Title ${i}-${j}`,
           category: `Category ${i % 5}`,
@@ -226,7 +226,7 @@ describe('Occupation Cache Performance Tests', () => {
           localStorage.setItem(`large-item-${i}`, largeData);
           itemsStored++;
         }
-      } catch (e) {
+      } catch {
         quotaExceeded = true;
       }
 
@@ -270,15 +270,15 @@ describe('Occupation Cache Performance Tests', () => {
         title: 'Civil Engineers',
         description:
           'Perform engineering duties in planning, designing, and overseeing construction...',
-        skills: Array.from({ length: 20 }, (_, i) => `Skill ${i}`),
-        related: Array.from({ length: 10 }, (_, i) => `Related occupation ${i}`),
+        skills: Array.from({ length: 20 }, (_: any, i: number) => `Skill ${i}`),
+        related: Array.from({ length: 10 }, (_: any, i: number) => `Related occupation ${i}`),
       };
 
       const jsonString = JSON.stringify(occupationData);
       const originalSize = jsonString.length;
 
       // Simulate simple compression (remove whitespace, use shorter keys)
-      const compressed = JSON.stringify(occupationData, (key, value) => {
+      const compressed = JSON.stringify(occupationData, (key: string, value: any) => {
         if (key === 'description') return value.substring(0, 50) + '...';
         if (key === 'skills') return value.slice(0, 5);
         if (key === 'related') return value.slice(0, 3);
@@ -294,7 +294,7 @@ describe('Occupation Cache Performance Tests', () => {
 
   describe('Cache Warming and Preloading', () => {
     it('should efficiently preload occupation data', async () => {
-      const occupationIds = Array.from({ length: 100 }, (_, i) => `OCC-${i}`);
+      const occupationIds = Array.from({ length: 100 }, (_: any, i: number) => `OCC-${i}`);
       const mockData = occupationIds.map((id) => ({
         id,
         data: { title: `Occupation ${id}`, category: 'Test' },
@@ -307,7 +307,7 @@ describe('Occupation Cache Performance Tests', () => {
       for (let i = 0; i < mockData.length; i += batchSize) {
         const batch = mockData.slice(i, i + batchSize);
         await Promise.all(
-          batch.map((item) => Promise.resolve(memoryCache.set(item.id, item.data)))
+          batch.map((item: any) => Promise.resolve(memoryCache.set(item.id, item.data)))
         );
       }
 
@@ -367,7 +367,7 @@ describe('Occupation Cache Performance Tests', () => {
           keysToRemove.push(key);
         }
       }
-      keysToRemove.forEach((key) => {
+      keysToRemove.forEach((key: string) => {
         localStorage.removeItem(key);
       });
 

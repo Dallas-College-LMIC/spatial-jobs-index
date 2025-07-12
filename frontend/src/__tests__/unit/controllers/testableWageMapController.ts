@@ -34,7 +34,10 @@ export class TestableWageMapController extends WageMapController {
     return this.updateExportLink();
   }
 
-  public testSetupDropdownChangeHandler(elementId: string, handler: (value: string) => void): void {
+  public testSetupDropdownChangeHandler(
+    elementId: string,
+    handler: (_value: string) => void
+  ): void {
     return this.setupDropdownChangeHandler(elementId, handler);
   }
 
@@ -42,7 +45,7 @@ export class TestableWageMapController extends WageMapController {
     // Call our own implementation that uses test methods
     const layerOrder = this.getLayers().map((l) => l.id);
 
-    this.testSetupDropdownChangeHandler('tti', (chosenLayer) => {
+    this.testSetupDropdownChangeHandler('tti', (chosenLayer: string) => {
       // Update visibility for all layers
       layerOrder.forEach((layerId) => {
         (this as any).mapManager.setLayerVisibility(

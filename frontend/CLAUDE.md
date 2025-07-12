@@ -34,7 +34,7 @@ The project uses a modern Vite build system with modular ES6 architecture:
 - **MSW**: Mock Service Worker for API mocking in tests
 
 ### Data Integration
-- Maps fetch GeoJSON data from API endpoints 
+- Maps fetch GeoJSON data from API endpoints
 - Environment variables: `VITE_API_BASE_URL` (Vite prefix required for client access)
 - Default API endpoint: localhost:8000 for development
 - Data includes census tract geometries with employment access z-scores
@@ -143,7 +143,7 @@ src/
 - Property name patterns: `{category}_zscore` and `{category}_zscore_cat`
 
 ### Performance Optimizations
-- **Client-Side Caching**: 
+- **Client-Side Caching**:
   - Occupation IDs cached via dedicated `occupationIdsCacheService` with 24-hour TTL
   - Generic caching infrastructure provided by `cacheService`
   - Automatic cache invalidation on expiry

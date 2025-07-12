@@ -8,12 +8,12 @@ interface RequestConfig {
 }
 
 interface RequestInterceptor {
-  (config: RequestConfig): RequestConfig | Promise<RequestConfig>;
+  (_config: RequestConfig): RequestConfig | Promise<RequestConfig>;
 }
 
 interface ResponseInterceptor {
-  onSuccess?: (response: Response) => Response | Promise<Response>;
-  onError?: (error: Error) => Error | Promise<Error>;
+  onSuccess?: (_response: Response) => Response | Promise<Response>;
+  onError?: (_error: Error) => Error | Promise<Error>;
 }
 
 export class ApiService {

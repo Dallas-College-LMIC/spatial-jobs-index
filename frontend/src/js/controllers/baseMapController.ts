@@ -17,9 +17,9 @@ export interface DataLoadConfig {
   /** Callback to execute before loading starts */
   onBeforeLoad?: () => void | Promise<void>;
   /** Callback to execute after successful load */
-  onAfterLoad?: (data: GeoJSONResponse) => void | Promise<void>;
+  onAfterLoad?: (_data: GeoJSONResponse) => void | Promise<void>;
   /** Callback to execute on error */
-  onError?: (error: Error) => void | Promise<void>;
+  onError?: (_error: Error) => void | Promise<void>;
   /** Whether to update export link after loading */
   updateExportLink?: boolean;
   /** Abort signal for cancelling the request */
@@ -351,7 +351,7 @@ export abstract class BaseMapController {
   /**
    * Setup dropdown change handler with support for native and jQuery/Select2
    */
-  protected setupDropdownChangeHandler(elementId: string, handler: (value: string) => void): void {
+  protected setupDropdownChangeHandler(elementId: string, handler: (_value: string) => void): void {
     const element = document.getElementById(elementId) as HTMLSelectElement | null;
 
     if (!element) {
@@ -365,7 +365,7 @@ export abstract class BaseMapController {
 
       // Check if Select2 is initialized on this element
       if ($element.data('select2')) {
-        $element.on('change', (e) => {
+        $element.on('change', (e: any) => {
           const value = $(e.target).val() as string;
           handler(value);
         });

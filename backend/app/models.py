@@ -14,7 +14,7 @@ TESTING = os.getenv('TESTING') == '1'
 class OccupationLvlData(Base):
     __tablename__ = 'occupation_lvl_data'
     __table_args__ = {} if TESTING else {'schema': 'jsi_data'}
-    
+
     geoid = Column(String, primary_key=True)
     category = Column(String, primary_key=True)
     openings_2024_zscore = Column(Float)
@@ -25,7 +25,7 @@ class OccupationLvlData(Base):
 class TTIClone(Base):
     __tablename__ = 'tti_clone'
     __table_args__ = {} if TESTING else {'schema': 'jsi_data'}
-    
+
     geoid = Column(String, primary_key=True)
     all_jobs_zscore = Column(Float)
     all_jobs_zscore_cat = Column(String)
@@ -38,7 +38,7 @@ class TTIClone(Base):
 class OccupationCode(Base):
     __tablename__ = 'occupation_codes'
     __table_args__ = {} if TESTING else {'schema': 'jsi_data'}
-    
+
     occupation_code = Column(String, primary_key=True)
     occupation_name = Column(String)
 

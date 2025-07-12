@@ -9,23 +9,23 @@ set -e
 if command -v git &> /dev/null && [ -d .git ]; then
     # Get uncommitted changes
     CHANGED_FILES=$(git status --porcelain 2>/dev/null | wc -l)
-    
+
     if [ "$CHANGED_FILES" -gt 0 ]; then
         echo "📊 Session Summary:"
         echo "- Modified files: $CHANGED_FILES"
-        
+
         # Show file categories
         PYTHON_FILES=$(git status --porcelain 2>/dev/null | grep -c "\.py" || true)
         TS_FILES=$(git status --porcelain 2>/dev/null | grep -cE "\.(ts|tsx|js|jsx)" || true)
-        
+
         if [ "$PYTHON_FILES" -gt 0 ]; then
             echo "  - Python files: $PYTHON_FILES"
         fi
-        
+
         if [ "$TS_FILES" -gt 0 ]; then
             echo "  - TypeScript/JavaScript files: $TS_FILES"
         fi
-        
+
         echo ""
         echo "💡 Remember to:"
         echo "  - Review changes: git diff"

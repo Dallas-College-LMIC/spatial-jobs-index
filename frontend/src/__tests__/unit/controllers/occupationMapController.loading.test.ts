@@ -127,7 +127,7 @@ describe('OccupationMapController - Loading States', () => {
         addControl: vi.fn(),
         removeControl: vi.fn(),
       },
-      onStyleLoad: vi.fn((callback) => {
+      onStyleLoad: vi.fn((callback: () => void) => {
         setTimeout(() => callback(), 0);
       }),
       addSource: vi.fn(),

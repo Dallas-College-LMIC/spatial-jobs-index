@@ -20,8 +20,11 @@ interface ImportMetaEnv {
   readonly VITE_API_BASE_URL: string;
 }
 
-interface ImportMeta {
-  readonly env: ImportMetaEnv;
+// Augment the global ImportMeta interface from Vite
+declare global {
+  interface ImportMeta {
+    readonly env: ImportMetaEnv;
+  }
 }
 
 export {};

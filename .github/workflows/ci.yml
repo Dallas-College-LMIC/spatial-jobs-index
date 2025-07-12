@@ -47,28 +47,28 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - uses: cachix/install-nix-action@v25
         with:
           nix_path: nixpkgs=channel:nixos-unstable
-      
+
       - uses: cachix/cachix-action@v14
         with:
           name: dallas-college-lmic
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
-      
+
       - name: Run backend tests
         run: |
           nix develop .#backend -c bash -c "cd backend && pytest --cov=app --cov-report=xml --cov-report=term-missing"
-      
+
       - name: Run linting
         run: |
           nix develop .#backend -c bash -c "cd backend && ruff check"
-      
+
       - name: Run type checking
         run: |
           nix develop .#backend -c bash -c "cd backend && mypy app/"
-      
+
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
@@ -83,44 +83,44 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - uses: actions/setup-node@v4
         with:
           node-version: '18'
           cache: 'npm'
           cache-dependency-path: frontend/package-lock.json
-      
+
       - name: Install dependencies
         working-directory: frontend
         run: npm ci
-      
+
       - name: Run tests
         working-directory: frontend
         run: npm test
-      
+
       - name: Run type checking
         working-directory: frontend
         run: npm run type-check
-      
+
       - name: Generate coverage report
         working-directory: frontend
         run: npm run test:coverage
-      
+
       - uses: cachix/install-nix-action@v25
         with:
           nix_path: nixpkgs=channel:nixos-unstable
-      
+
       - uses: cachix/cachix-action@v14
         with:
           name: dallas-college-lmic
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
-      
+
       - name: Build with Nix
         run: nix build .#frontend
-      
+
       - name: Check build artifacts
         run: ls -la result/
-      
+
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
         with:

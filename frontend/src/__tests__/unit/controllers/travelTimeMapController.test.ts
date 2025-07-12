@@ -238,11 +238,8 @@ describe('TravelTimeMapController', () => {
 
       // Check that the setup was called after timeout
       await new Promise((resolve) => setTimeout(resolve, 200));
-      
-      expect(mockMapManager.map.on).toHaveBeenCalledWith(
-        'click',
-        expect.any(Function)
-      );
+
+      expect(mockMapManager.map.on).toHaveBeenCalledWith('click', expect.any(Function));
       expect(mockMapManager.map.on).toHaveBeenCalledWith(
         'mousemove',
         'census-tracts-fill',
@@ -273,10 +270,10 @@ describe('TravelTimeMapController', () => {
 
       // Wait for setup to complete
       await new Promise((resolve) => setTimeout(resolve, 200));
-      
+
       // Get the click handler from the mock
       const clickHandler = mockMapManager.map.on.mock.calls.find(
-        call => call[0] === 'click' && typeof call[1] === 'function'
+        (call) => call[0] === 'click' && typeof call[1] === 'function'
       )?.[1];
       expect(clickHandler).toBeDefined();
       await clickHandler(mockEvent);
@@ -316,9 +313,9 @@ describe('TravelTimeMapController', () => {
 
       // Wait for setup to complete
       await new Promise((resolve) => setTimeout(resolve, 200));
-      
+
       const clickHandler = mockMapManager.map.on.mock.calls.find(
-        call => call[0] === 'click' && typeof call[1] === 'function'
+        (call) => call[0] === 'click' && typeof call[1] === 'function'
       )?.[1];
       await clickHandler(mockEvent);
 
@@ -341,9 +338,9 @@ describe('TravelTimeMapController', () => {
 
       // Wait for setup to complete
       await new Promise((resolve) => setTimeout(resolve, 200));
-      
+
       const clickHandler = mockMapManager.map.on.mock.calls.find(
-        call => call[0] === 'click' && typeof call[1] === 'function'
+        (call) => call[0] === 'click' && typeof call[1] === 'function'
       )?.[1];
       await clickHandler(mockEvent);
 
@@ -367,9 +364,9 @@ describe('TravelTimeMapController', () => {
 
       // Wait for setup to complete
       await new Promise((resolve) => setTimeout(resolve, 200));
-      
+
       const clickHandler = mockMapManager.map.on.mock.calls.find(
-        call => call[0] === 'click' && typeof call[1] === 'function'
+        (call) => call[0] === 'click' && typeof call[1] === 'function'
       )?.[1];
       await clickHandler(mockEvent);
 
@@ -532,7 +529,7 @@ describe('TravelTimeMapController', () => {
       const clearButton = document.getElementById('clear-selection');
       // Wait for setup to complete
       await new Promise((resolve) => setTimeout(resolve, 200));
-      
+
       const clearSelectionSpy = vi.spyOn(controller as any, 'clearSelection');
 
       clearButton?.click();
@@ -625,18 +622,20 @@ describe('TravelTimeMapController', () => {
   describe('cursor handling', () => {
     it('should change cursor on mousemove', async () => {
       await controller.initialize();
-      
+
       // Wait for setup to complete
       await new Promise((resolve) => setTimeout(resolve, 200));
 
       // Get and call the mousemove handler
       const mousemoveHandler = mockMapManager._handlers['mousemove-census-tracts-fill'];
       expect(mousemoveHandler).toBeDefined();
-      
+
       const mockEvent = {
-        features: [{
-          properties: { geoid: '48001950100.0' }
-        }]
+        features: [
+          {
+            properties: { geoid: '48001950100.0' },
+          },
+        ],
       };
       mousemoveHandler?.(mockEvent);
 
@@ -645,7 +644,7 @@ describe('TravelTimeMapController', () => {
 
     it('should reset cursor on mouseleave', async () => {
       await controller.initialize();
-      
+
       // Wait for setup to complete
       await new Promise((resolve) => setTimeout(resolve, 200));
 
@@ -661,4 +660,3 @@ describe('TravelTimeMapController', () => {
     });
   });
 });
-

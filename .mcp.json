@@ -2,11 +2,11 @@
     "mcpServers": {
 	"browsermcp": {
 	    "command": "npx",
-    	    "args": ["@browsermcp/mcp@latest"]	    
+    	    "args": ["@browsermcp/mcp@latest"]
 	},
 	"context7": {
 	    "command": "npx",
-    	    "args": ["-y", "@upstash/context7-mcp"]	    
+    	    "args": ["-y", "@upstash/context7-mcp"]
 	},
 	"nixos": {
 	      "command": "uvx",

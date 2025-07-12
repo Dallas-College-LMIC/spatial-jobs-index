@@ -12,13 +12,13 @@ export default defineConfig({
   test: {
     // Test environment
     environment: 'happy-dom',
-    
+
     // Global test APIs
     globals: true,
-    
+
     // Setup files
     setupFiles: ['./src/__tests__/setup.ts'],
-    
+
     // Coverage configuration
     coverage: {
       enabled: true, // Enable coverage by default for CI
@@ -44,22 +44,22 @@ export default defineConfig({
         statements: 75,
       },
     },
-    
+
     // Test file patterns
     include: ['src/**/*.{test,spec}.{js,ts}'],
-    
+
     // Exclude patterns
     exclude: ['node_modules', 'dist', '.idea', '.git', '.cache'],
-    
+
     // Reporter
     reporters: ['default'],
-    
+
     // Test timeout
     testTimeout: 10000,
-    
+
     // Hook timeout
     hookTimeout: 10000,
-    
+
     // Mock configuration
     mockReset: true,
     restoreMocks: true,

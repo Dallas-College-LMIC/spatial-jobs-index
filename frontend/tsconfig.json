@@ -9,7 +9,7 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "preserve",
-    
+
     /* Strict Type-Checking Options */
     "strict": true,
     "noImplicitAny": true,
@@ -19,19 +19,19 @@
     "strictPropertyInitialization": true,
     "noImplicitThis": true,
     "alwaysStrict": true,
-    
+
     /* Additional Checks */
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedIndexedAccess": true,
-    
+
     /* Module Resolution Options */
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
-    
+
     /* Advanced Options */
     "skipLibCheck": true,
     "types": ["vite/client", "node", "vitest/globals"]

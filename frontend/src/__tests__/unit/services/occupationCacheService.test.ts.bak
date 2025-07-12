@@ -52,7 +52,7 @@ describe('OccupationCacheService', () => {
   beforeEach(() => {
     mockLocalStorage = createMockLocalStorage();
     global.localStorage = mockLocalStorage;
-    
+
     // Create mock cache service with spies
     mockCacheService = {
       get: vi.fn(),
@@ -60,7 +60,7 @@ describe('OccupationCacheService', () => {
       remove: vi.fn(),
       clear: vi.fn()
     };
-    
+
     occupationCache = new OccupationCacheService(mockCacheService);
     vi.clearAllMocks();
   });
@@ -73,7 +73,7 @@ describe('OccupationCacheService', () => {
     it('should initialize with default configuration', () => {
       const cache = new OccupationCacheService(mockCacheService);
       const debugInfo = cache.getDebugInfo();
-      
+
       expect(debugInfo.config.maxMemoryEntries).toBe(50);
       expect(debugInfo.config.maxMemorySize).toBe(500 * 1024 * 1024);
       expect(debugInfo.config.persistentCacheTTL).toBe(7 * 24 * 60 * 60);
@@ -87,10 +87,10 @@ describe('OccupationCacheService', () => {
         persistentCacheTTL: 24 * 60 * 60,
         enablePersistence: false
       };
-      
+
       const cache = new OccupationCacheService(mockCacheService, customConfig);
       const debugInfo = cache.getDebugInfo();
-      
+
       expect(debugInfo.config.maxMemoryEntries).toBe(100);
       expect(debugInfo.config.maxMemorySize).toBe(1024 * 1024 * 1024);
       expect(debugInfo.config.persistentCacheTTL).toBe(24 * 60 * 60);
@@ -99,7 +99,7 @@ describe('OccupationCacheService', () => {
 
     it('should initialize cache statistics', () => {
       const stats = occupationCache.getStats();
-      
+
       expect(stats.hits).toBe(0);
       expect(stats.misses).toBe(0);
       expect(stats.evictions).toBe(0);
@@ -112,9 +112,9 @@ describe('OccupationCacheService', () => {
   describe('get', () => {
     it('should return null for cache miss', async () => {
       const result = await occupationCache.get('17-2051');
-      
+
       expect(result).toBeNull();
-      
+
       const stats = occupationCache.getStats();
       expect(stats.misses).toBe(1);
       expect(stats.totalRequests).toBe(1);
@@ -123,12 +123,12 @@ describe('OccupationCacheService', () => {
     it('should return data from memory cache', async () => {
       // First set data in cache
       await occupationCache.set('17-2051', mockGeoJSONData);
-      
+
       // Then get it
       const result = await occupationCache.get('17-2051');
-      
+
       expect(result).toEqual(mockGeoJSONData);
-      
+
       const stats = occupationCache.getStats();
       expect(stats.hits).toBe(1);
       expect(stats.totalRequests).toBe(1);
@@ -137,16 +137,16 @@ describe('OccupationCacheService', () => {
     it('should return data from persistent cache and move to memory', async () => {
       // Mock persistent cache to return data
       mockCacheService.get = vi.fn().mockReturnValue(mockGeoJSONData);
-      
+
       const result = await occupationCache.get('17-2051');
-      
+
       expect(result).toEqual(mockGeoJSONData);
       expect(mockCacheService.get).toHaveBeenCalledWith('occupation_17-2051');
-      
+
       const stats = occupationCache.getStats();
       expect(stats.hits).toBe(1);
       expect(stats.totalRequests).toBe(1);
-      
+
       // Verify data was moved to memory cache
       const debugInfo = occupationCache.getDebugInfo();
       expect(debugInfo.memoryEntries).toBe(1);
@@ -155,11 +155,11 @@ describe('OccupationCacheService', () => {
     it('should update access metadata on memory cache hit', async () => {
       // Set data in cache
       await occupationCache.set('17-2051', mockGeoJSONData);
-      
+
       // Get it multiple times
       await occupationCache.get('17-2051');
       await occupationCache.get('17-2051');
-      
+
       const stats = occupationCache.getStats();
       expect(stats.hits).toBe(2);
       expect(stats.totalRequests).toBe(2);
@@ -172,11 +172,11 @@ describe('OccupationCacheService', () => {
         remove: vi.fn(),
         clear: vi.fn()
       };
-      
+
       const cache = new OccupationCacheService(noPersistMockService, { enablePersistence: false });
-      
+
       const result = await cache.get('17-2051');
-      
+
       expect(result).toBeNull();
       expect(noPersistMockService.get).not.toHaveBeenCalled();
     });
@@ -185,18 +185,18 @@ describe('OccupationCacheService', () => {
   describe('set', () => {
     it('should store data in both memory and persistent cache', async () => {
       await occupationCache.set('17-2051', mockGeoJSONData);
-      
+
       // Verify data is in memory cache
       const result = await occupationCache.get('17-2051');
       expect(result).toEqual(mockGeoJSONData);
-      
+
       // Verify persistent cache was called
       expect(mockCacheService.set).toHaveBeenCalledWith(
         'occupation_17-2051',
         mockGeoJSONData,
         7 * 24 * 60 * 60
       );
-      
+
       const debugInfo = occupationCache.getDebugInfo();
       expect(debugInfo.memoryEntries).toBe(1);
       expect(debugInfo.stats.memoryUsage).toBeGreaterThan(0);
@@ -209,13 +209,13 @@ describe('OccupationCacheService', () => {
         remove: vi.fn(),
         clear: vi.fn()
       };
-      
+
       const cache = new OccupationCacheService(noPersistMockService, { enablePersistence: false });
-      
+
       await cache.set('17-2051', mockGeoJSONData);
-      
+
       expect(noPersistMockService.set).not.toHaveBeenCalled();
-      
+
       const result = await cache.get('17-2051');
       expect(result).toEqual(mockGeoJSONData);
     });
@@ -224,27 +224,27 @@ describe('OccupationCacheService', () => {
 
   describe('memory management', () => {
     it('should evict LRU entries when memory limit is reached', async () => {
-      // Create cache with small memory limit  
+      // Create cache with small memory limit
       const smallMockCacheService = {
         get: vi.fn(),
         set: vi.fn(),
         remove: vi.fn(),
         clear: vi.fn()
       };
-      
+
       const cache = new OccupationCacheService(smallMockCacheService, {
         maxMemoryEntries: 2,
         maxMemorySize: 100 // Very small to force eviction
       });
-      
+
       // Add entries that will exceed memory limit
       await cache.set('17-2051', mockGeoJSONData);
       await cache.set('17-2052', mockGeoJSONData);
       await cache.set('17-2053', mockGeoJSONData); // Should trigger eviction
-      
+
       const stats = cache.getStats();
       expect(stats.evictions).toBeGreaterThan(0);
-      
+
       const debugInfo = cache.getDebugInfo();
       expect(debugInfo.memoryEntries).toBeLessThanOrEqual(2);
     });
@@ -253,24 +253,24 @@ describe('OccupationCacheService', () => {
       // Create cache with entry count limit
       const countMockCacheService = {
         get: vi.fn(),
-        set: vi.fn(), 
+        set: vi.fn(),
         remove: vi.fn(),
         clear: vi.fn()
       };
-      
+
       const cache = new OccupationCacheService(countMockCacheService, {
         maxMemoryEntries: 2,
         maxMemorySize: 1024 * 1024 * 1024 // Large memory limit
       });
-      
+
       // Add more entries than the limit
       await cache.set('17-2051', mockGeoJSONData);
       await cache.set('17-2052', mockGeoJSONData);
       await cache.set('17-2053', mockGeoJSONData); // Should trigger eviction
-      
+
       const stats = cache.getStats();
       expect(stats.evictions).toBeGreaterThan(0);
-      
+
       const debugInfo = cache.getDebugInfo();
       expect(debugInfo.memoryEntries).toBeLessThanOrEqual(2);
     });
@@ -279,35 +279,35 @@ describe('OccupationCacheService', () => {
       const lruMockCacheService = {
         get: vi.fn(),
         set: vi.fn(),
-        remove: vi.fn(), 
+        remove: vi.fn(),
         clear: vi.fn()
       };
-      
+
       const cache = new OccupationCacheService(lruMockCacheService, {
         maxMemoryEntries: 2,
         maxMemorySize: 1024 * 1024 * 1024
       });
-      
+
       // Add two entries
       await cache.set('17-2051', mockGeoJSONData);
       await cache.set('17-2052', mockGeoJSONData);
-      
+
       // Access first entry to make it more recently used
       await cache.get('17-2051');
-      
+
       // Add third entry - should evict the second one (least recently used)
       await cache.set('17-2053', mockGeoJSONData);
-      
+
       // First entry should still be accessible
       const result1 = await cache.get('17-2051');
       expect(result1).toEqual(mockGeoJSONData);
-      
+
       // Second entry should be evicted (but might be in persistent cache)
       // Clear the mock to ensure we're testing memory cache only
       lruMockCacheService.get = vi.fn().mockReturnValue(null);
       const result2 = await cache.get('17-2052');
       expect(result2).toBeNull();
-      
+
       // Third entry should be accessible
       const result3 = await cache.get('17-2053');
       expect(result3).toEqual(mockGeoJSONData);
@@ -320,11 +320,11 @@ describe('OccupationCacheService', () => {
         type: 'FeatureCollection',
         features: Array(100).fill(mockGeoJSONData.features[0])
       };
-      
+
       await occupationCache.set('large-occupation', largeData);
-      
+
       const debugInfo = occupationCache.getDebugInfo();
-      // Memory usage should be calculated and greater than 0  
+      // Memory usage should be calculated and greater than 0
       const stats = occupationCache.getStats();
       expect(stats.memoryUsage).toBeGreaterThan(0);
     });
@@ -337,10 +337,10 @@ describe('OccupationCacheService', () => {
           throw new Error('Blob error');
         }
       } as any;
-      
+
       // Should not throw and should use fallback estimation
       await expect(occupationCache.set('17-2051', mockGeoJSONData)).resolves.not.toThrow();
-      
+
       global.Blob = originalBlob;
     });
   });
@@ -348,10 +348,10 @@ describe('OccupationCacheService', () => {
   describe('related occupations', () => {
     it('should identify related occupations based on SOC code', async () => {
       const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
-      
+
       // Set occupation in major group 17 (Architecture and Engineering)
       await occupationCache.set('17-2051', mockGeoJSONData);
-      
+
       consoleSpy.mockRestore();
     });
   });
@@ -362,19 +362,19 @@ describe('OccupationCacheService', () => {
       // Add some data
       await occupationCache.set('17-2051', mockGeoJSONData);
       await occupationCache.get('17-2051');
-      
+
       // Verify data exists
       let stats = occupationCache.getStats();
       expect(stats.hits).toBe(1);
       expect(stats.totalRequests).toBe(1);
-      
+
       // Clear cache
       occupationCache.clear();
-      
+
       // Verify cache is cleared
       const result = await occupationCache.get('17-2051');
       expect(result).toBeNull();
-      
+
       // Verify statistics are reset
       stats = occupationCache.getStats();
       expect(stats.hits).toBe(0);
@@ -382,7 +382,7 @@ describe('OccupationCacheService', () => {
       expect(stats.evictions).toBe(0);
       expect(stats.memoryUsage).toBe(0);
       expect(stats.totalRequests).toBe(1); // From the get above
-      
+
       // Verify persistent cache was cleared
       expect(mockCacheService.clear).toHaveBeenCalled();
     });
@@ -393,10 +393,10 @@ describe('OccupationCacheService', () => {
       // Test hits
       await occupationCache.set('17-2051', mockGeoJSONData);
       await occupationCache.get('17-2051');
-      
+
       // Test misses
       await occupationCache.get('nonexistent');
-      
+
       const stats = occupationCache.getStats();
       expect(stats.hits).toBe(1);
       expect(stats.misses).toBe(1);
@@ -406,15 +406,15 @@ describe('OccupationCacheService', () => {
 
     it('should provide comprehensive debug information', async () => {
       await occupationCache.set('17-2051', mockGeoJSONData);
-      
+
       const debugInfo = occupationCache.getDebugInfo();
-      
+
       expect(debugInfo).toHaveProperty('memoryEntries');
       expect(debugInfo).toHaveProperty('memoryUsageMB');
       expect(debugInfo).toHaveProperty('hitRate');
       expect(debugInfo).toHaveProperty('config');
       expect(debugInfo).toHaveProperty('stats');
-      
+
       expect(debugInfo.memoryEntries).toBe(1);
       expect(debugInfo.stats.memoryUsage).toBeGreaterThan(0);
       expect(debugInfo.hitRate).toBe(0); // No gets yet
@@ -422,12 +422,12 @@ describe('OccupationCacheService', () => {
 
     it('should calculate hit rate correctly', async () => {
       await occupationCache.set('17-2051', mockGeoJSONData);
-      
+
       // 2 hits, 1 miss
       await occupationCache.get('17-2051');
       await occupationCache.get('17-2051');
       await occupationCache.get('nonexistent');
-      
+
       const debugInfo = occupationCache.getDebugInfo();
       expect(debugInfo.hitRate).toBe(67); // 2/3 * 100 = 66.67, rounded to 67
     });
@@ -444,27 +444,27 @@ describe('OccupationCacheService', () => {
         type: 'FeatureCollection',
         features: []
       };
-      
+
       await expect(occupationCache.set('empty', emptyData)).resolves.not.toThrow();
-      
+
       const result = await occupationCache.get('empty');
       expect(result).toEqual(emptyData);
     });
 
     it('should handle very long occupation IDs', async () => {
       const longId = 'very-long-occupation-id-' + 'x'.repeat(1000);
-      
+
       await expect(occupationCache.set(longId, mockGeoJSONData)).resolves.not.toThrow();
-      
+
       const result = await occupationCache.get(longId);
       expect(result).toEqual(mockGeoJSONData);
     });
 
     it('should handle special characters in occupation IDs', async () => {
       const specialId = '17-2051@#$%^&*()_+{}|:"<>?';
-      
+
       await expect(occupationCache.set(specialId, mockGeoJSONData)).resolves.not.toThrow();
-      
+
       const result = await occupationCache.get(specialId);
       expect(result).toEqual(mockGeoJSONData);
     });

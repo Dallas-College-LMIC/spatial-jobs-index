@@ -26,7 +26,7 @@ The SJI WebApp is an interactive mapping application that visualizes employment 
 
 ### Prerequisites
 
-- Node.js 18+ 
+- Node.js 18+
 - npm 9+
 - A Mapbox API token (set in environment variables)
 

@@ -1,5 +1,3 @@
-/* global mapboxgl */
-
 import { MAP_CONFIG, COLOR_SCHEMES } from './constants';
 import type { GeoJSONResponse } from '../types/api';
 import type {

@@ -80,12 +80,12 @@ def get_occupation_spatial_data(category: str, request: Request, session: Sessio
     """Get spatial data for a specific occupation category"""
     try:
         features = OccupationService.get_occupation_spatial_data(session, category)
-        
+
         if not features:
             raise HTTPException(status_code=404, detail=f"No data found for occupation category: {category}")
-        
+
         geojson_collection = OccupationGeoJSONFeatureCollection(features=features)
-        
+
         return Response(
             content=geojson_collection.model_dump_json(),
             media_type="application/geo+json",
@@ -104,14 +104,14 @@ def get_isochrones(geoid: str, request: Request, session: Session = Depends(get_
         # Validate geoid format (should be numeric)
         if not geoid.isdigit():
             raise HTTPException(status_code=400, detail="Invalid geoid format. Must be numeric.")
-        
+
         features = IsochroneService.get_isochrones_by_geoid(session, geoid)
-        
+
         if not features:
             raise HTTPException(status_code=404, detail=f"No isochrone data found for geoid: {geoid}")
-        
+
         geojson_collection = IsochroneFeatureCollection(features=features)
-        
+
         return Response(
             content=geojson_collection.model_dump_json(),
             media_type="application/geo+json",

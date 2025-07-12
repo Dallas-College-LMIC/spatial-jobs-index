@@ -98,7 +98,7 @@ export class OccupationMapController extends BaseMapController {
   }
 
   private populateOccupationDropdown(occupations: Array<{ code: string; name: string }>): void {
-    const select = $('#occupation-select') as JQuery<HTMLSelectElement>;
+    const select = $('#occupation-select') as any;
 
     // Clear existing options except the first one
     select.find('option:not(:first)').remove();
@@ -106,7 +106,10 @@ export class OccupationMapController extends BaseMapController {
     // Add occupation options with both code and name
     occupations.forEach((occupation) => {
       const displayText = `${occupation.code} - ${occupation.name}`;
-      select.append(new Option(displayText, occupation.code));
+      const option = document.createElement('option');
+      option.value = occupation.code;
+      option.text = displayText;
+      select.append(option);
     });
 
     // Initialize Select2 for searchable dropdown with custom matcher

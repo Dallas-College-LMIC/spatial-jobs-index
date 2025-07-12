@@ -37,7 +37,7 @@ This roadmap outlines the current state and future improvements for the Dallas-F
 
 ### 1. Environment Configuration ⚠️
 **Current**: Basic environment variable setup in place
-**Next Steps**: 
+**Next Steps**:
 - Configure production API endpoints
 - Implement authentication strategy (if needed)
 - Add environment-specific configurations
@@ -82,7 +82,7 @@ class RobustApiService extends ApiService {
           this.handleFinalError(error, endpoint);
           throw error;
         }
-        
+
         // Exponential backoff
         const delay = Math.pow(2, attempt) * 1000;
         await new Promise(resolve => setTimeout(resolve, delay));
@@ -186,9 +186,9 @@ class NavigationManager {
 
 <!-- Improved -->
 <label for="occupation-select" class="visually-hidden">Select occupation type</label>
-<select 
-  class="form-select" 
-  id="occupation-select" 
+<select
+  class="form-select"
+  id="occupation-select"
   aria-label="Select occupation for employment access data"
   aria-describedby="occupation-help"
 >

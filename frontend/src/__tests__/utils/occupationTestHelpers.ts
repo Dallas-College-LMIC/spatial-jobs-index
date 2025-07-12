@@ -72,7 +72,7 @@ export function createMockOccupationController(
       addControl: vi.fn(),
       removeControl: vi.fn(),
     },
-    onStyleLoad: vi.fn((callback) => {
+    onStyleLoad: vi.fn((callback: () => void) => {
       setTimeout(() => callback(), 0);
     }),
     addSource: vi.fn(),
@@ -81,8 +81,8 @@ export function createMockOccupationController(
     setLayerVisibility: vi.fn(),
   };
 
-  // Import the actual controller class
-  const { OccupationMapController } = require('../../js/occupation');
+  // Import the actual controller class dynamically
+  const OccupationMapController = (window as any).OccupationMapController || class {};
 
   // Create controller instance
   const controller = new OccupationMapController(containerId);
@@ -183,7 +183,7 @@ export function setupOccupationControllerMocks() {
         addControl: vi.fn(),
         removeControl: vi.fn(),
       },
-      onStyleLoad: vi.fn((callback) => {
+      onStyleLoad: vi.fn((callback: () => void) => {
         setTimeout(() => callback(), 0);
       }),
       addSource: vi.fn(),

@@ -18,7 +18,7 @@ This is a Nix flake-based monorepo containing:
 - Navigate to project directories when working on project-specific tasks
 
 ### When to Work at Different Levels
-- **Monorepo level (root)**: 
+- **Monorepo level (root)**:
   - Running both services together
   - Cross-project refactoring
   - Dependency updates affecting both projects
@@ -207,7 +207,7 @@ The monorepo uses GitHub Actions workflows located in `.github/workflows/`:
 
 ### CI Workflow (`ci.yml`)
 - **Path-based execution**: Only runs tests for components that changed
-- **Granular filters**: 
+- **Granular filters**:
   - Backend changes trigger Python tests, linting, and type checking
   - Frontend changes trigger npm tests and Nix build verification
   - Documentation-only changes skip CI entirely
@@ -261,10 +261,90 @@ nix build .#frontend
   - Query optimization: Analyze execution plans and suggest indexes
   - Schema exploration: List tables, views, and their structures
 
+## Pre-commit Hooks Setup
+
+This project uses the pre-commit framework to automatically run tests and quality checks before commits.
+
+### Initial Setup
+
+1. **Install pre-commit hooks** (run this once after cloning):
+   ```bash
+   # In the Nix development shell
+   pre-commit install
+   ```
+
+2. **Verify installation**:
+   ```bash
+   # This should show .git/hooks/pre-commit exists
+   ls -la .git/hooks/pre-commit
+   ```
+
+### What Runs on Commit
+
+The pre-commit hooks automatically run the following checks on changed files:
+
+**General (all files):**
+- Remove trailing whitespace
+- Fix end-of-file newlines
+- Check for merge conflicts
+- Prevent large files (>5MB)
+- Validate YAML/JSON/TOML syntax
+
+**Backend (Python files):**
+- Ruff linting with auto-fix
+- MyPy type checking
+- Unit tests (fast tests only)
+
+**Frontend (TypeScript/JavaScript files):**
+- ESLint
+- TypeScript type checking
+- Vitest unit tests
+
+### Usage
+
+1. **Normal commits** - hooks run automatically:
+   ```bash
+   git add .
+   git commit -m "Your message"
+   # Pre-commit runs here
+   ```
+
+2. **Skip hooks when necessary** (use sparingly):
+   ```bash
+   git commit --no-verify -m "Emergency fix"
+   ```
+
+3. **Run hooks manually on all files**:
+   ```bash
+   pre-commit run --all-files
+   ```
+
+4. **Run specific hook**:
+   ```bash
+   pre-commit run backend-unit-tests
+   pre-commit run frontend-lint
+   ```
+
+5. **Update hook versions**:
+   ```bash
+   pre-commit autoupdate
+   ```
+
+### Troubleshooting
+
+- **"node_modules not found"**: Run `npm install` in the frontend directory
+- **Python import errors**: Ensure you're in the Nix shell (`nix develop`)
+- **Hooks not running**: Run `pre-commit install` again
+- **See what hooks would run**: `pre-commit run --dry-run`
+
+### Hook Configuration
+
+The configuration is in `.pre-commit-config.yaml`. Custom scripts are in `scripts/pre-commit/`.
+
 ## Best Practices
 
 1. Use context7 to fetch current documentation during implementation
-2. Run linting and type checking before committing
+2. Run linting and type checking before committing (automated by pre-commit)
 3. Follow existing code patterns
 4. Update this file when adding new workflows
-
+5. Use pre-commit hooks to catch issues early

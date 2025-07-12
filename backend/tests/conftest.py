@@ -52,7 +52,7 @@ def test_db_config(mock_env_vars) -> DatabaseConfig:
 def test_engine():
     """
     Create a test database engine using SQLite in-memory database.
-    
+
     This provides fast, isolated testing without requiring a real PostgreSQL instance.
     """
     # Use SQLite for testing with proper configuration
@@ -62,12 +62,12 @@ def test_engine():
         poolclass=StaticPool,
         echo=False
     )
-    
+
     # Enable foreign key support in SQLite
     with engine.connect() as conn:
         conn.execute(text("PRAGMA foreign_keys=ON"))
         conn.commit()
-    
+
     # Create tables manually without schema since SQLite doesn't support schemas
     with engine.connect() as conn:
         # Create occupation_lvl_data table
@@ -82,7 +82,7 @@ def test_engine():
                 PRIMARY KEY (geoid, category)
             )
         """))
-        
+
         # Create tti_clone table (without geometry for SQLite)
         conn.execute(text("""
             CREATE TABLE IF NOT EXISTS tti_clone (
@@ -96,7 +96,7 @@ def test_engine():
                 geom TEXT
             )
         """))
-        
+
         # Create occupation_codes table
         conn.execute(text("""
             CREATE TABLE IF NOT EXISTS occupation_codes (
@@ -105,9 +105,9 @@ def test_engine():
             )
         """))
         conn.commit()
-    
+
     yield engine
-    
+
     # Cleanup
     engine.dispose()
 
@@ -116,18 +116,18 @@ def test_engine():
 def test_session(test_engine) -> Generator[Session, None, None]:
     """
     Create a test database session for each test function.
-    
+
     This fixture provides database isolation between tests using transactions.
     """
     TestSessionLocal = sessionmaker(bind=test_engine, expire_on_commit=False)
-    
+
     # Start a transaction
     connection = test_engine.connect()
     transaction = connection.begin()
     session = TestSessionLocal(bind=connection)
-    
+
     yield session
-    
+
     # Rollback the transaction to ensure test isolation
     session.close()
     transaction.rollback()
@@ -138,7 +138,7 @@ def test_session(test_engine) -> Generator[Session, None, None]:
 def mock_db_session(test_session):
     """
     Override the get_db_session dependency with test session.
-    
+
     This fixture patches the FastAPI dependency to use our test database.
     """
     def override_get_db():
@@ -146,7 +146,7 @@ def mock_db_session(test_session):
             yield test_session
         finally:
             pass  # Session cleanup is handled by test_session fixture
-    
+
     app.dependency_overrides[get_db_session] = override_get_db
     yield test_session
     app.dependency_overrides.clear()
@@ -156,7 +156,7 @@ def mock_db_session(test_session):
 def test_client(mock_db_session, mock_env_vars) -> TestClient:
     """
     Create a test client for the FastAPI application.
-    
+
     This client can be used for synchronous API testing.
     """
     with TestClient(app) as client:
@@ -167,7 +167,7 @@ def test_client(mock_db_session, mock_env_vars) -> TestClient:
 async def async_test_client(mock_db_session, mock_env_vars) -> AsyncClient:
     """
     Create an async test client for the FastAPI application.
-    
+
     This client should be used for testing async endpoints.
     """
     async with AsyncClient(
@@ -257,7 +257,7 @@ def mock_occupation_spatial_data() -> Dict[str, Any]:
 def reset_rate_limiter():
     """
     Reset rate limiter between tests to avoid rate limit issues.
-    
+
     This fixture automatically runs for every test.
     """
     # Clear any rate limit state
@@ -271,7 +271,7 @@ def reset_rate_limiter():
 def mock_sqlalchemy_query():
     """
     Mock SQLAlchemy query for unit testing without database.
-    
+
     Useful for testing service methods in isolation.
     """
     mock_query = MagicMock()
@@ -284,15 +284,15 @@ def mock_sqlalchemy_query():
 def setup_test_environment():
     """
     Set up the test environment before any tests run.
-    
+
     This fixture runs automatically at the start of the test session.
     Environment variables are already set at module level before imports.
     """
     # Environment variables are already set at module import time
     # This fixture is kept for any additional setup/teardown needed
-    
+
     yield
-    
+
     # Cleanup
     os.environ.pop("TESTING", None)
     os.environ.pop("SQL_ECHO", None)
@@ -302,7 +302,7 @@ def setup_test_environment():
 def capture_logs():
     """
     Capture log messages during tests.
-    
+
     Usage:
         def test_something(capture_logs):
             with capture_logs() as logs:
@@ -312,19 +312,19 @@ def capture_logs():
     """
     import logging
     from io import StringIO
-    
+
     class LogCapture:
         def __init__(self):
             self.output = StringIO()
             self.handler = logging.StreamHandler(self.output)
             self.handler.setLevel(logging.DEBUG)
-            
+
         def __enter__(self):
             logging.getLogger().addHandler(self.handler)
             return self
-            
+
         def __exit__(self, *args):
             logging.getLogger().removeHandler(self.handler)
             self.output = self.output.getvalue()
-            
+
     return LogCapture

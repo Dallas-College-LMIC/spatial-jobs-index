@@ -74,3 +74,6 @@ coverage/
 
 # OS files
 Thumbs.db
+
+# Pre-commit
+.pre-commit

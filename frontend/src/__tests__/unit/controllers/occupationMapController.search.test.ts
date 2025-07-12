@@ -36,6 +36,20 @@ describe('OccupationMapController - Search Functionality', () => {
       disabled: false,
     }));
 
+    // Mock document.createElement for option elements
+    const originalCreateElement = document.createElement.bind(document);
+    vi.spyOn(document, 'createElement').mockImplementation((tagName: string) => {
+      if (tagName === 'option') {
+        return {
+          value: '',
+          text: '',
+          selected: false,
+          disabled: false,
+        } as any;
+      }
+      return originalCreateElement(tagName);
+    });
+
     // Setup mock DOM elements
     document.body.innerHTML = `
       <div id="test-container"></div>
@@ -118,19 +132,18 @@ describe('OccupationMapController - Search Functionality', () => {
 
       controller['populateOccupationDropdown'](occupations);
 
-      // Check that Option constructor was called with correct display format
-      expect(global.Option).toHaveBeenCalledTimes(occupations.length);
+      // Check that option elements were created
+      expect(document.createElement).toHaveBeenCalledWith('option');
+      expect(mockSelect2Instance.append).toHaveBeenCalledTimes(occupations.length);
 
-      // Verify first few occupations have correct format
-      expect(global.Option).toHaveBeenCalledWith('11-1011 - Chief Executives', '11-1011');
-      expect(global.Option).toHaveBeenCalledWith(
-        '11-1021 - General and Operations Managers',
-        '11-1021'
-      );
-      expect(global.Option).toHaveBeenCalledWith(
-        '11-2011 - Advertising and Promotions Managers',
-        '11-2011'
-      );
+      // Verify that append was called for each occupation
+      const appendCalls = mockSelect2Instance.append.mock.calls;
+      expect(appendCalls.length).toBe(occupations.length);
+
+      // Check that options have correct properties set
+      const firstOption = appendCalls[0][0];
+      expect(firstOption.value).toBe('11-1011');
+      expect(firstOption.text).toBe('11-1011 - Chief Executives');
     });
 
     it('should clear existing options except the placeholder', () => {
@@ -330,9 +343,12 @@ describe('OccupationMapController - Search Functionality', () => {
 
       controller['populateOccupationDropdown'](occupations);
 
-      expect(global.Option).toHaveBeenCalledWith(
-        '11-9031 - Education Administrators, Preschool and Childcare Center/Program',
-        '11-9031'
+      expect(document.createElement).toHaveBeenCalledWith('option');
+      const appendCalls = mockSelect2Instance.append.mock.calls;
+      const firstOption = appendCalls[0][0];
+      expect(firstOption.value).toBe('11-9031');
+      expect(firstOption.text).toBe(
+        '11-9031 - Education Administrators, Preschool and Childcare Center/Program'
       );
     });
 
@@ -342,7 +358,11 @@ describe('OccupationMapController - Search Functionality', () => {
 
       controller['populateOccupationDropdown'](occupations);
 
-      expect(global.Option).toHaveBeenCalledWith(`11-1011 - ${longName}`, '11-1011');
+      expect(document.createElement).toHaveBeenCalledWith('option');
+      const appendCalls = mockSelect2Instance.append.mock.calls;
+      const firstOption = appendCalls[0][0];
+      expect(firstOption.value).toBe('11-1011');
+      expect(firstOption.text).toBe(`11-1011 - ${longName}`);
     });
 
     it('should match special characters in search', () => {
@@ -407,8 +427,12 @@ describe('OccupationMapController - Search Functionality', () => {
         24 * 60 * 60
       );
 
-      // Verify Option elements were created with correct format
-      expect(global.Option).toHaveBeenCalledWith('11-1011 - Chief Executives', '11-1011');
+      // Verify option elements were created with correct format
+      expect(document.createElement).toHaveBeenCalledWith('option');
+      const appendCalls = mockSelect2Instance.append.mock.calls;
+      const firstOption = appendCalls[0][0];
+      expect(firstOption.value).toBe('11-1011');
+      expect(firstOption.text).toBe('11-1011 - Chief Executives');
     });
 
     it('should cache the new occupation format correctly', async () => {
@@ -421,7 +445,11 @@ describe('OccupationMapController - Search Functionality', () => {
       expect(mockApiService.getOccupationIds).not.toHaveBeenCalled();
 
       // Should still populate dropdown correctly
-      expect(global.Option).toHaveBeenCalledWith('11-1011 - Chief Executives', '11-1011');
+      expect(document.createElement).toHaveBeenCalledWith('option');
+      const appendCalls = mockSelect2Instance.append.mock.calls;
+      const firstOption = appendCalls[0][0];
+      expect(firstOption.value).toBe('11-1011');
+      expect(firstOption.text).toBe('11-1011 - Chief Executives');
     });
   });
 
@@ -443,7 +471,7 @@ describe('OccupationMapController - Search Functionality', () => {
       if (!changeHandlerCall) {
         throw new Error('setupDropdownChangeHandler was not called');
       }
-      const changeCallback = changeHandlerCall[1] as (value: string | null) => void;
+      const changeCallback = changeHandlerCall[1] as (_value: string | null) => void;
 
       // Call the change handler with an occupation code
       await changeCallback(occupationCode);
@@ -465,7 +493,7 @@ describe('OccupationMapController - Search Functionality', () => {
       if (!changeHandlerCall) {
         throw new Error('setupDropdownChangeHandler was not called');
       }
-      const changeCallback = changeHandlerCall[1] as (value: string | null) => void;
+      const changeCallback = changeHandlerCall[1] as (_value: string | null) => void;
 
       // Call with null/empty value
       changeCallback(null);

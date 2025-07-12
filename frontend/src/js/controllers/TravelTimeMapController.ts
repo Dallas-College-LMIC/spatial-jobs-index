@@ -56,7 +56,7 @@ export class TravelTimeMapController extends BaseMapController {
     await this.loadData({
       onAfterLoad: () => {
         // Data is already loaded into the 'census-tracts' source by loadData
-        
+
         // Add census tract layers
         this.addCensusTractLayer();
 
@@ -128,18 +128,18 @@ export class TravelTimeMapController extends BaseMapController {
     this.mapManager.map.on('click', async (e: any) => {
       // Query features at click point
       const features = this.mapManager.map.queryRenderedFeatures(e.point, {
-        layers: ['census-tracts-fill']
+        layers: ['census-tracts-fill'],
       });
-      
+
       if (!features || features.length === 0) {
         return;
       }
 
       const feature = features[0];
-      
+
       // Handle both GEOID and geoid property names, and remove .0 suffix if present
       let geoid = feature?.properties?.GEOID || feature?.properties?.geoid;
-      
+
       if (geoid && typeof geoid === 'string' && geoid.endsWith('.0')) {
         geoid = geoid.slice(0, -2);
       }
@@ -169,18 +169,18 @@ export class TravelTimeMapController extends BaseMapController {
 
     // Change cursor and highlight on hover
     let hoveredTractId: string | null = null;
-    
+
     this.mapManager.map.on('mousemove', 'census-tracts-fill', (e: any) => {
       if (e.features && e.features.length > 0) {
         const feature = e.features[0];
         const geoid = feature?.properties?.geoid;
-        
+
         if (geoid && hoveredTractId !== geoid) {
           // Remove previous hover
           if (hoveredTractId) {
             this.mapManager.map.setFilter('census-tracts-hover', ['==', 'geoid', '']);
           }
-          
+
           // Add new hover
           hoveredTractId = geoid;
           this.mapManager.map.setFilter('census-tracts-hover', ['==', 'geoid', geoid]);
@@ -226,7 +226,6 @@ export class TravelTimeMapController extends BaseMapController {
       if (signal.aborted) {
         return;
       }
-
 
       // Update isochrone source
       this.mapManager.addSource(this.isochroneSourceId, response as any);
@@ -359,4 +358,3 @@ export class TravelTimeMapController extends BaseMapController {
     ];
   }
 }
-

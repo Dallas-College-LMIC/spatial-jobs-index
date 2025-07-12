@@ -6,11 +6,11 @@ from sqlalchemy.orm import Session
 def create_test_tables(engine):
     """
     Create test tables that mimic the production schema.
-    
+
     This handles the difference between PostgreSQL schemas and SQLite.
     """
     metadata = MetaData()
-    
+
     # Create occupation_lvl_data table without schema for SQLite
     Table(  # noqa: F841
         'occupation_lvl_data',
@@ -22,7 +22,7 @@ def create_test_tables(engine):
         Column('openings_2024_zscore_color', String),
         Column('geom', String),  # Store as text in SQLite
     )
-    
+
     # Create tti_clone table without schema for SQLite
     Table(  # noqa: F841
         'tti_clone',
@@ -36,17 +36,17 @@ def create_test_tables(engine):
         Column('not_living_wage_zscore_cat', String),
         Column('geom', String),  # Store as text in SQLite
     )
-    
+
     # Create all tables
     metadata.create_all(engine)
-    
+
     return metadata
 
 
 def insert_test_occupation_data(session: Session, data: list):
     """
     Insert test occupation data into the database.
-    
+
     Args:
         session: SQLAlchemy session
         data: List of dicts with occupation data

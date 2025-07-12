@@ -205,9 +205,9 @@ describe('WageMapController', () => {
         .spyOn(controller, 'testUpdateExportLink')
         .mockImplementation(() => {});
 
-      let changeHandler: ((chosenLayer: string) => void) | undefined;
+      let changeHandler: ((_chosenLayer: string) => void) | undefined;
       vi.spyOn(controller, 'testSetupDropdownChangeHandler').mockImplementation(
-        (_: string, handler: (value: string) => void) => {
+        (_elementId: string, handler: (_value: string) => void) => {
           changeHandler = handler;
         }
       );
@@ -229,9 +229,9 @@ describe('WageMapController', () => {
 
       vi.spyOn(controller, 'testUpdateExportLink').mockImplementation(() => {});
 
-      let changeHandler: ((chosenLayer: string) => void) | undefined;
+      let changeHandler: ((_chosenLayer: string) => void) | undefined;
       vi.spyOn(controller, 'testSetupDropdownChangeHandler').mockImplementation(
-        (_: string, handler: (value: string) => void) => {
+        (_elementId: string, handler: (_value: string) => void) => {
           changeHandler = handler;
         }
       );

@@ -40,5 +40,3 @@ disallow_untyped_defs = false
 warn_return_any = false
 warn_unused_configs = true
 strict_optional = true
-
-

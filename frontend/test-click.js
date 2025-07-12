@@ -6,23 +6,23 @@ setTimeout(() => {
         console.log('Map not found');
         return;
     }
-    
+
     const map = mapContainer._mapboxMap;
-    
+
     // Get the center of the map
     const center = map.getCenter();
-    
+
     // Simulate a click at the center
     const point = map.project(center);
-    
+
     // Query features at that point
     const features = map.queryRenderedFeatures(point, {
         layers: ['census-tracts-fill']
     });
-    
+
     if (features.length > 0) {
         console.log('Found census tract:', features[0].properties);
-        
+
         // Trigger the click event
         const clickEvent = {
             lngLat: center,
@@ -33,7 +33,7 @@ setTimeout(() => {
                 stopPropagation: () => {}
             }
         };
-        
+
         map.fire('click', clickEvent);
     } else {
         console.log('No census tract found at center');

@@ -164,21 +164,21 @@ export class ErrorHandler {
                         ${
                           errorContext.retryable
                             ? `
-                            <button onclick="${onRetry ? '(' + onRetry.toString() + ')()' : 'location.reload()'}" 
+                            <button onclick="${onRetry ? '(' + onRetry.toString() + ')()' : 'location.reload()'}"
                                     style="margin: 0.25rem; padding: 0.5rem 1.5rem; background: #0d6efd; color: white; border: none; border-radius: 0.25rem; cursor: pointer;">
                                 Try Again
                             </button>
                         `
                             : ''
                         }
-                        <button onclick="window.history.back()" 
+                        <button onclick="window.history.back()"
                                 style="margin: 0.25rem; padding: 0.5rem 1.5rem; background: #6c757d; color: white; border: none; border-radius: 0.25rem; cursor: pointer;">
                             Go Back
                         </button>
                         ${
                           this.hasErrorHistory()
                             ? `
-                            <button onclick="console.table(${JSON.stringify(this.getErrorSummary())})" 
+                            <button onclick="console.table(${JSON.stringify(this.getErrorSummary())})"
                                     style="margin: 0.25rem; padding: 0.5rem 1.5rem; background: #ffc107; color: #000; border: none; border-radius: 0.25rem; cursor: pointer;">
                                 Show Error History
                             </button>
@@ -336,7 +336,7 @@ export class ErrorHandler {
   /**
    * Create error boundary wrapper for functions
    */
-  static createErrorBoundary<T extends (...args: any[]) => any>(fn: T, context: string): T {
+  static createErrorBoundary<T extends (..._args: any[]) => any>(fn: T, context: string): T {
     return ((...args: any[]) => {
       try {
         const result = fn(...args);

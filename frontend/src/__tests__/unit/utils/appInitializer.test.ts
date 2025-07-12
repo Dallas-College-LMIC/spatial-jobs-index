@@ -139,7 +139,7 @@ describe('AppInitializer', () => {
       const unhandledRejectionCall = addEventListenerCalls.find(
         (call) => call[0] === 'unhandledrejection'
       );
-      const handler = unhandledRejectionCall?.[1] as (event: any) => void;
+      const handler = unhandledRejectionCall?.[1] as (_event: any) => void;
 
       // Call the handler directly
       handler(event);
@@ -165,7 +165,7 @@ describe('AppInitializer', () => {
       const unhandledRejectionCall = addEventListenerCalls.find(
         (call) => call[0] === 'unhandledrejection'
       );
-      const handler = unhandledRejectionCall?.[1] as (event: any) => void;
+      const handler = unhandledRejectionCall?.[1] as (_event: any) => void;
 
       // Call the handler directly
       handler(event);

@@ -35,6 +35,20 @@ describe('OccupationMapController', () => {
       disabled: false,
     }));
 
+    // Mock document.createElement for option elements
+    const originalCreateElement = document.createElement.bind(document);
+    vi.spyOn(document, 'createElement').mockImplementation((tagName: string) => {
+      if (tagName === 'option') {
+        return {
+          value: '',
+          text: '',
+          selected: false,
+          disabled: false,
+        } as any;
+      }
+      return originalCreateElement(tagName);
+    });
+
     // Setup mock DOM elements
     document.body.innerHTML = `
       <div id="test-container"></div>
@@ -50,6 +64,25 @@ describe('OccupationMapController', () => {
     vi.spyOn(document, 'getElementById').mockImplementation((id: string) => {
       return document.querySelector(`#${id}`) as HTMLElement | null;
     });
+
+    // Create mock select2 instance with methods
+    const mockSelect2Instance = {
+      select2: vi.fn().mockReturnThis(),
+      on: vi.fn(),
+      off: vi.fn(),
+      val: vi.fn(),
+      trigger: vi.fn(),
+      find: vi.fn().mockReturnThis(),
+      remove: vi.fn().mockReturnThis(),
+      append: vi.fn().mockReturnThis(),
+      length: 1,
+      [0]: {} as HTMLElement,
+    };
+
+    // Mock jQuery to return our custom mock
+    (global as any).$ = vi.fn().mockReturnValue(mockSelect2Instance);
+    // Add jQuery utility functions
+    (global as any).$.trim = vi.fn((str: string) => (str || '').trim());
 
     // Create controller
     controller = new OccupationMapController('test-container');
@@ -188,7 +221,10 @@ describe('OccupationMapController', () => {
 
       // Verify jQuery calls are made
       expect((global as any).$).toHaveBeenCalledWith('#occupation-select');
-      expect(global.Option).toHaveBeenCalledTimes(3);
+      expect(document.createElement).toHaveBeenCalledWith('option');
+      // Check mockSelect was provided in beforeEach and append was called for each occupation
+      const mockSelect = (global as any).$('#occupation-select');
+      expect(mockSelect.append).toHaveBeenCalledTimes(3);
     });
 
     it('should initialize select2 and setup change listener', () => {
@@ -280,7 +316,7 @@ describe('OccupationMapController', () => {
       (controller as any).isLoading = false;
 
       // Create a delayed promise to simulate slow API call
-      let resolvePromise: (value: any) => void;
+      let resolvePromise: (_value: any) => void;
       const delayedPromise = new Promise((resolve) => {
         resolvePromise = resolve;
       });
