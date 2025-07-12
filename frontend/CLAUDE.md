@@ -175,22 +175,39 @@ src/
 - **UI Testing**: Vitest UI interface available for interactive test debugging
 
 ### Development Commands
-If working without Nix or inside the dev shell:
+All commands should be run through Nix for consistency:
+
 ```bash
+# Enter Nix development shell
+nix develop .#frontend
+
+# Then run commands inside the shell:
 cd frontend
-npm install              # Install dependencies
+npm install              # Install dependencies (first time only)
 npm run dev             # Start dev server
-npm run build           # Build for production
-npm run lint            # Run linter
-npm run format          # Format code
+
+# Or run commands directly:
+nix develop .#frontend -c bash -c "cd frontend && npm run dev"
+nix develop .#frontend -c bash -c "cd frontend && npm run build"
+nix develop .#frontend -c bash -c "cd frontend && npm run lint"
+nix develop .#frontend -c bash -c "cd frontend && npm run format"
+```
+
+For production builds, use:
+```bash
+nix build .#frontend
 ```
 
 ### Test Commands
 ```bash
-npm test              # Run tests in watch mode
-npm run test:run      # Run tests once
-npm run test:ui       # Open Vitest UI interface
-npm run test:coverage # Generate coverage report
+# Run tests through Nix:
+nix develop .#frontend -c bash -c "cd frontend && npm test"              # Run tests in watch mode
+nix develop .#frontend -c bash -c "cd frontend && npm run test:run"      # Run tests once
+nix develop .#frontend -c bash -c "cd frontend && npm run test:ui"       # Open Vitest UI interface
+nix develop .#frontend -c bash -c "cd frontend && npm run test:coverage" # Generate coverage report
+
+# Type checking:
+nix develop .#frontend -c bash -c "cd frontend && npm run type-check"
 ```
 
 ### Testing Strategy

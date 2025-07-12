@@ -58,17 +58,20 @@ uv run python -m uvicorn app.main:app --reload
 
 ### Frontend Commands
 
+**Note:** For consistency with the backend, use Nix development shell for all frontend operations.
+
 **Development server:**
 ```bash
-cd frontend
+nix develop .#frontend -c bash -c "cd frontend && npm install && npm run dev"
+# Or if already in the frontend directory:
+nix develop .#frontend
 npm install
 npm run dev
 ```
 
 **Build for production:**
 ```bash
-cd frontend
-npm run build
+nix build .#frontend
 ```
 
 ### Manual Quality Checks
@@ -101,15 +104,23 @@ uv run pytest --cov=app --cov-report=html
 
 **Run tests:**
 ```bash
-cd frontend
-npm test
+nix develop .#frontend -c bash -c "cd frontend && npm test"
+```
+
+**Type checking:**
+```bash
+nix develop .#frontend -c bash -c "cd frontend && npm run type-check"
 ```
 
 **Lint and format:**
 ```bash
-cd frontend
-npm run lint
-npm run format
+nix develop .#frontend -c bash -c "cd frontend && npm run lint"
+nix develop .#frontend -c bash -c "cd frontend && npm run format"
+```
+
+**Coverage report:**
+```bash
+nix develop .#frontend -c bash -c "cd frontend && npm run test:coverage"
 ```
 
 ## Project Architecture
