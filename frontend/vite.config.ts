@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite';
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   // Development server configuration
   server: {
     port: 3000,
@@ -32,8 +32,9 @@ export default defineConfig({
   },
 
   // Base path for assets (useful for deployment)
-  base: '/sji-webapp/',
+  // Use BASE_PATH env var if set, otherwise use appropriate default
+  base: process.env.BASE_PATH || (mode === 'production' ? '/spatial-jobs-index/' : '/'),
 
   // Asset handling
   assetsInclude: ['**/*.png', '**/*.jpg', '**/*.jpeg', '**/*.gif', '**/*.svg']
-});
+}));

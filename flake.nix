@@ -108,6 +108,35 @@
           '';
         };
 
+        # Frontend build for local testing (with root base path)
+        frontendBuildLocal = pkgs.buildNpmPackage {
+          pname = "sji-webapp-local";
+          version = "0.1.0";
+          src = ./frontend;
+
+          # Use importNpmLock to avoid managing hashes
+          npmDeps = pkgs.importNpmLock {
+            npmRoot = ./frontend;
+          };
+
+          npmConfigHook = pkgs.importNpmLock.npmConfigHook;
+
+          # Override the build phase to build in development mode (which uses base: '/')
+          buildPhase = ''
+            runHook preBuild
+            npm run type-check
+            npx vite build --mode development
+            runHook postBuild
+          '';
+
+          installPhase = ''
+            runHook preInstall
+            mkdir -p $out
+            cp -r dist/* $out/
+            runHook postInstall
+          '';
+        };
+
         # Frontend development dependencies
         frontendNodeModules = pkgs.buildNpmPackage {
           pname = "sji-webapp-deps";
@@ -137,6 +166,7 @@
 
           # Frontend packages
           frontend = frontendBuild;
+          frontend-local = frontendBuildLocal;
 
           # Default package (you can change this to whatever makes sense)
           default = backendVenv;

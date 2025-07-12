@@ -198,6 +198,30 @@ For production builds, use:
 nix build .#frontend
 ```
 
+### Building for Different Environments
+
+The frontend uses different base paths depending on the deployment target:
+
+**Production (GitHub Pages):**
+```bash
+npm run build                    # Uses base path: /spatial-jobs-index/
+nix build .#frontend            # Also uses production base path
+```
+
+**Local Testing:**
+```bash
+npm run build:local             # Uses base path: /
+# Or set environment variable:
+VITE_BASE_PATH='/' npm run build
+```
+
+**Custom Base Path:**
+```bash
+VITE_BASE_PATH='/my-custom-path/' npm run build
+```
+
+This ensures assets load correctly whether served from GitHub Pages, a local server, or any custom path.
+
 ### Test Commands
 ```bash
 # Run tests through Nix:

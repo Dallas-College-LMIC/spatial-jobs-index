@@ -3,6 +3,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -p tsconfig.build.json --noEmit && vite build",
+    "build:local": "tsc -p tsconfig.build.json --noEmit && BASE_PATH='/' vite build",
     "preview": "vite preview",
     "deploy": "npm run build && gh-pages -d dist",
     "type-check": "tsc --noEmit",

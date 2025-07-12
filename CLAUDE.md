@@ -41,7 +41,8 @@ nix run
 
 # Build all packages
 nix build .#backend
-nix build .#frontend
+nix build .#frontend              # For GitHub Pages deployment (base: /spatial-jobs-index/)
+nix build .#frontend-local        # For local testing (base: /)
 nix build .#backend-docker
 ```
 
