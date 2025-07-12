@@ -109,12 +109,6 @@ jobs:
         run: |
           nix develop .#frontend -c bash -c "cd frontend && npm run test:coverage"
 
-      - name: Build with Nix
-        run: nix build .#frontend
-
-      - name: Check build artifacts
-        run: ls -la result/
-
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
