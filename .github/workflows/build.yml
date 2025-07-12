@@ -3,14 +3,13 @@ name: Build
 # This workflow handles building artifacts after CI passes.
 # Both frontend and backend must build successfully for the workflow to succeed.
 # Built artifacts are cached in Cachix for the Deploy workflow to use.
+# Runs on both pull requests and master branch pushes.
 
 on:
   workflow_run:
     workflows: ["CI"]
     types:
       - completed
-    branches:
-      - master
 
 jobs:
   changes:
