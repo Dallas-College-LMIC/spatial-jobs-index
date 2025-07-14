@@ -1,9 +1,15 @@
 import { SchoolOfStudyMapController } from './school-of-study';
 import { AppInitializer } from './utils/appInitializer';
+import { renderNavigation } from '../components/navigation';
 import '../styles/shared.css';
 
 // Setup global error handlers
 AppInitializer.setupGlobalErrorHandlers();
+
+// Render navigation
+document.addEventListener('DOMContentLoaded', () => {
+  renderNavigation('navigation-container', 'school');
+});
 
 // Initialize the school of study map controller
 AppInitializer.initialize('mainmap', SchoolOfStudyMapController, 'School of Study Map')
