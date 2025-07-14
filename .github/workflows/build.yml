@@ -24,10 +24,13 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.workflow_run.head_sha }}
+          fetch-depth: 2
 
       - uses: dorny/paths-filter@v2
         id: filter
         with:
+          # Compare against the parent commit for workflow_run events
+          base: HEAD~1
           filters: |
             backend:
               - 'backend/**'
