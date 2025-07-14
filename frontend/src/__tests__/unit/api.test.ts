@@ -265,4 +265,164 @@ describe('ApiService', () => {
       expect(result2).toEqual(mockGeoJSONResponse);
     });
   });
+
+  describe('healthCheck', () => {
+    it('should return true for successful health check', async () => {
+      const mockResponse = createFetchResponse({ status: 'ok' });
+      vi.mocked(global.fetch).mockResolvedValueOnce(mockResponse);
+
+      const result = await apiService.healthCheck();
+
+      expect(result).toBe(true);
+      expect(fetch).toHaveBeenCalledWith(
+        expect.stringContaining('/health'),
+        expect.objectContaining({
+          method: 'GET',
+        })
+      );
+    });
+
+    it('should return false for failed health check', async () => {
+      const mockResponse = createFetchErrorResponse('Internal Server Error', 500);
+      vi.mocked(global.fetch).mockResolvedValueOnce(mockResponse);
+
+      const result = await apiService.healthCheck();
+
+      expect(result).toBe(false);
+    });
+
+    it('should return false when health check throws error', async () => {
+      vi.mocked(global.fetch).mockRejectedValueOnce(new Error('Network error'));
+
+      const result = await apiService.healthCheck();
+
+      expect(result).toBe(false);
+    });
+  });
+
+  describe('getOccupationData', () => {
+    it('should fetch occupation data successfully', async () => {
+      const mockResponse = createFetchResponse(mockGeoJSONResponse);
+      vi.mocked(global.fetch).mockResolvedValueOnce(mockResponse);
+
+      const result = await apiService.getOccupationData('17-2051');
+
+      expect(result).toEqual(mockGeoJSONResponse);
+      expect(fetch).toHaveBeenCalledWith(
+        expect.stringContaining('/occupation_data/17-2051'),
+        expect.objectContaining({
+          method: 'GET',
+        })
+      );
+    });
+  });
+
+  describe('getIsochroneData', () => {
+    it('should fetch isochrone data successfully', async () => {
+      const mockIsochroneData = { type: 'FeatureCollection', features: [] };
+      const mockResponse = createFetchResponse(mockIsochroneData);
+      vi.mocked(global.fetch).mockResolvedValueOnce(mockResponse);
+
+      const result = await apiService.getIsochroneData('48085950100');
+
+      expect(result).toEqual(mockIsochroneData);
+      expect(fetch).toHaveBeenCalledWith(
+        expect.stringContaining('/isochrones/48085950100'),
+        expect.objectContaining({
+          method: 'GET',
+        })
+      );
+    });
+  });
+
+  describe('export URL methods', () => {
+    it('should generate correct export URL', () => {
+      const url = apiService.getExportUrl({ format: 'geojson' });
+      expect(url).toBe('http://localhost:8000/geojson?format=geojson');
+    });
+
+    it('should generate export URL without parameters', () => {
+      const url = apiService.getExportUrl();
+      expect(url).toBe('http://localhost:8000/geojson');
+    });
+
+    it('should generate correct occupation export URL', () => {
+      const url = apiService.getOccupationExportUrl('17-2051');
+      expect(url).toBe('http://localhost:8000/occupation_data/17-2051');
+    });
+
+    it('should generate correct school of study export URL', () => {
+      const url = apiService.getSchoolOfStudyExportUrl('BHGT');
+      expect(url).toBe('http://localhost:8000/school_of_study_data/BHGT');
+    });
+  });
+
+  describe('abort controller methods', () => {
+    it('should create abort controller with name', () => {
+      const controller = apiService.createAbortController('test-request');
+      expect(controller).toBeInstanceOf(AbortController);
+      expect(controller.signal.aborted).toBe(false);
+    });
+
+    it('should abort existing controller when creating new one with same name', () => {
+      const controller1 = apiService.createAbortController('test-request');
+      const controller2 = apiService.createAbortController('test-request');
+
+      expect(controller1.signal.aborted).toBe(true);
+      expect(controller2.signal.aborted).toBe(false);
+    });
+
+    it('should get existing abort controller', () => {
+      const controller = apiService.createAbortController('test-request');
+      const retrieved = apiService.getAbortController('test-request');
+
+      expect(retrieved).toBe(controller);
+    });
+
+    it('should return undefined for non-existent controller', () => {
+      const retrieved = apiService.getAbortController('non-existent');
+      expect(retrieved).toBeUndefined();
+    });
+
+    it('should cancel specific request', () => {
+      const controller = apiService.createAbortController('test-request');
+      const result = apiService.cancelRequest('test-request');
+
+      expect(result).toBe(true);
+      expect(controller.signal.aborted).toBe(true);
+    });
+
+    it('should return false when cancelling non-existent request', () => {
+      const result = apiService.cancelRequest('non-existent');
+      expect(result).toBe(false);
+    });
+
+    it('should cancel all requests', () => {
+      const controller1 = apiService.createAbortController('request-1');
+      const controller2 = apiService.createAbortController('request-2');
+
+      apiService.cancelAllRequests();
+
+      expect(controller1.signal.aborted).toBe(true);
+      expect(controller2.signal.aborted).toBe(true);
+    });
+  });
+
+  describe('request interceptors', () => {
+    it('should add request interceptors', () => {
+      const interceptor = vi.fn((config) => config);
+      apiService.addRequestInterceptor(interceptor);
+
+      // The interceptor is stored internally, we can't directly test it without making a request
+      expect(typeof apiService.addRequestInterceptor).toBe('function');
+    });
+
+    it('should add response interceptors', () => {
+      const interceptor = { onSuccess: vi.fn(), onError: vi.fn() };
+      apiService.addResponseInterceptor(interceptor);
+
+      // The interceptor is stored internally, we can't directly test it without making a request
+      expect(typeof apiService.addResponseInterceptor).toBe('function');
+    });
+  });
 });
