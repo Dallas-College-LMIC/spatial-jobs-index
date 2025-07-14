@@ -22,15 +22,6 @@
             "timeout": 2000
           }
         ]
-      },
-      {
-        "matcher": "Write|Edit|MultiEdit|TodoWrite",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "tdd-guard"
-          }
-        ]
       }
     ],
     "Stop": [
