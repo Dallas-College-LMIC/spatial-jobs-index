@@ -7,8 +7,8 @@ from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 from typing import cast, Any
 from .database import DatabaseConfig, init_database, get_db_session
-from .models import OccupationsResponse, OccupationItem, GeoJSONFeatureCollection, OccupationGeoJSONFeatureCollection, IsochroneFeatureCollection
-from .services import OccupationService, SpatialService, IsochroneService
+from .models import OccupationsResponse, OccupationItem, GeoJSONFeatureCollection, OccupationGeoJSONFeatureCollection, IsochroneFeatureCollection, SchoolOfStudyIdsResponse, SchoolOfStudyGeoJSONFeatureCollection
+from .services import OccupationService, SpatialService, IsochroneService, SchoolOfStudyService
 
 load_dotenv()
 
@@ -111,6 +111,40 @@ def get_isochrones(geoid: str, request: Request, session: Session = Depends(get_
             raise HTTPException(status_code=404, detail=f"No isochrone data found for geoid: {geoid}")
 
         geojson_collection = IsochroneFeatureCollection(features=features)
+
+        return Response(
+            content=geojson_collection.model_dump_json(),
+            media_type="application/geo+json",
+            headers={"Content-Disposition": "inline"},
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+
+@app.get("/school_of_study_ids", response_model=SchoolOfStudyIdsResponse)
+@limiter.limit("30/minute")
+def get_school_of_study_ids(request: Request, session: Session = Depends(get_db_session)):
+    """Get all available school of study categories"""
+    try:
+        school_ids = SchoolOfStudyService.get_school_ids(session)
+        return SchoolOfStudyIdsResponse(school_ids=school_ids)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+
+@app.get("/school_of_study_data/{category}")
+@limiter.limit("30/minute")
+def get_school_of_study_spatial_data(category: str, request: Request, session: Session = Depends(get_db_session)):
+    """Get spatial data for a specific school of study category"""
+    try:
+        features = SchoolOfStudyService.get_school_spatial_data(session, category)
+
+        if not features:
+            raise HTTPException(status_code=404, detail=f"No data found for school category: {category}")
+
+        geojson_collection = SchoolOfStudyGeoJSONFeatureCollection(features=features)
 
         return Response(
             content=geojson_collection.model_dump_json(),
