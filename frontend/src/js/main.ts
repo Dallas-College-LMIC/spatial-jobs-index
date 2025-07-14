@@ -1,5 +1,7 @@
 import '../styles/shared.css';
+import { renderNavigation } from '../components/navigation';
 
 // Main entry point for the home page
-// Currently, the home page doesn't have any interactive JavaScript functionality
-// This file serves as the entry point for Vite bundling
+document.addEventListener('DOMContentLoaded', () => {
+  renderNavigation('navigation-container', '');
+});

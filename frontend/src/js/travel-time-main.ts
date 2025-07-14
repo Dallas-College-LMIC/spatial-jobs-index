@@ -1,6 +1,7 @@
 import '../styles/shared.css';
 import { ErrorHandler } from './utils/errorHandler';
 import { TravelTimeMapController } from './controllers/TravelTimeMapController';
+import { renderNavigation } from '../components/navigation';
 
 // Set up global error handlers
 window.addEventListener('error', (event) => {
@@ -16,6 +17,11 @@ window.addEventListener('unhandledrejection', (event) => {
     event.reason instanceof Error ? event.reason : new Error(String(event.reason)),
     'Unhandled Promise Rejection'
   );
+});
+
+// Render navigation
+document.addEventListener('DOMContentLoaded', () => {
+  renderNavigation('navigation-container', 'travel');
 });
 
 // Initialize the map when DOM is ready

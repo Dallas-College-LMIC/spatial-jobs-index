@@ -23,8 +23,12 @@ export function createNavigation(activePageTitle: string = ''): string {
                     <a class="nav-link ${activePageTitle === 'occupation' ? 'active' : ''}" href="access_occupation.html">
                         Job Access by Occupation
                     </a>
-                    <a class="nav-link">Job Access by School of (in progress)</a>
-                    <a class="nav-link">Travelsheds by Tract (in progress)</a>
+                    <a class="nav-link ${activePageTitle === 'school' ? 'active' : ''}" href="access_school_of_study.html">
+                        Job Access by School of Study
+                    </a>
+                    <a class="nav-link ${activePageTitle === 'travel' ? 'active' : ''}" href="travel_time.html">
+                        Travel Time Analysis
+                    </a>
                 </ul>
             </div>
         </nav>

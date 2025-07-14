@@ -41,8 +41,29 @@ describe('navigation', () => {
       expect(html).toContain('href="index.html"');
       expect(html).toContain('href="access_wagelvl.html"');
       expect(html).toContain('href="access_occupation.html"');
-      expect(html).toContain('Job Access by School of (in progress)');
-      expect(html).toContain('Travelsheds by Tract (in progress)');
+      // These should be proper links, not placeholders
+      expect(html).toContain('href="access_school_of_study.html"');
+      expect(html).toContain('href="travel_time.html"');
+      expect(html).toContain('Job Access by School of Study');
+      expect(html).toContain('Travel Time Analysis');
+      // Should NOT contain the old placeholder text
+      expect(html).not.toContain('(in progress)');
+    });
+
+    it('should mark school page as active', () => {
+      const html = createNavigation('school');
+
+      expect(html).toContain('Job Access by School of Study');
+      expect(html).toMatch(/nav-link\s+active[^>]*>[\s\S]*?Job Access by School of Study/);
+      expect(html).not.toMatch(/nav-link\s+active[^>]*>[\s\S]*?Job Access by Wage Level/);
+    });
+
+    it('should mark travel page as active', () => {
+      const html = createNavigation('travel');
+
+      expect(html).toContain('Travel Time Analysis');
+      expect(html).toMatch(/nav-link\s+active[^>]*>[\s\S]*?Travel Time Analysis/);
+      expect(html).not.toMatch(/nav-link\s+active[^>]*>[\s\S]*?Job Access by Wage Level/);
     });
 
     it('should include bootstrap collapse functionality', () => {
