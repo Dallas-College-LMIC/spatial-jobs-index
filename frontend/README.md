@@ -91,20 +91,20 @@ npm run test:ui
 
 ```
 sji-webapp/
-├── index.html                 # Landing page
-├── access_occupation.html     # Occupation-based map
-├── access_wagelvl.html        # Wage level map
-├── src/
-│   ├── js/                   # TypeScript source files
-│   │   ├── controllers/      # Map controllers
-│   │   ├── services/         # Caching and UI services
-│   │   ├── utils/            # Utilities
-│   │   └── ...              # Entry points and core logic
-│   ├── styles/              # CSS files
-│   ├── types/               # TypeScript type definitions
-│   └── __tests__/           # Test suite
-├── public/                  # Static assets
-└── vite.config.ts          # Vite configuration
+|-- index.html                 # Landing page
+|-- access_occupation.html     # Occupation-based map
+|-- access_wagelvl.html        # Wage level map
+|-- src/
+|   |-- js/                   # TypeScript source files
+|   |   |-- controllers/      # Map controllers
+|   |   |-- services/         # Caching and UI services
+|   |   |-- utils/            # Utilities
+|   |   `-- ...              # Entry points and core logic
+|   |-- styles/              # CSS files
+|   |-- types/               # TypeScript type definitions
+|   `-- __tests__/           # Test suite
+|-- public/                  # Static assets
+`-- vite.config.ts          # Vite configuration
 ```
 
 ## API Integration

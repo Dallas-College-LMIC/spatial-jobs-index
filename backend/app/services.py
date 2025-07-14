@@ -4,7 +4,7 @@ from geoalchemy2.functions import ST_AsGeoJSON
 from typing import List, Dict
 import json
 
-from .models import OccupationLvlData, TTIClone, SpatialFeatureProperties, GeoJSONFeature, OccupationSpatialProperties, OccupationGeoJSONFeature, IsochroneProperties, IsochroneFeature
+from .models import OccupationLvlData, TTIClone, SchoolOfLvlData, SpatialFeatureProperties, GeoJSONFeature, OccupationSpatialProperties, OccupationGeoJSONFeature, SchoolOfStudySpatialProperties, SchoolOfStudyGeoJSONFeature, IsochroneProperties, IsochroneFeature
 
 import logging
 
@@ -137,6 +137,66 @@ class SpatialService:
             )
 
             feature = GeoJSONFeature(
+                geometry=json.loads(row.geometry),
+                properties=properties
+            )
+            features.append(feature)
+
+        return features
+
+class SchoolOfStudyService:
+    """Service for school of study data operations"""
+
+    # School category to full name mappings
+    SCHOOL_NAME_MAPPINGS = {
+        'BHGT': 'Business, Hospitality, Governance & Tourism',
+        'CAED': 'Creative Arts, Entertainment & Design',
+        'CE': 'Construction & Engineering',
+        'EDU': 'Education',
+        'ETMS': 'Energy, Technology, Manufacturing & Science',
+        'HS': 'Health Services',
+        'LPS': 'Legal & Public Services',
+        'MIT': 'Management & Information Technology'
+    }
+
+    @staticmethod
+    def get_school_ids(session: Session) -> List[str]:
+        """Get all distinct school categories"""
+        result = session.execute(
+            select(SchoolOfLvlData.category).distinct()
+        )
+        return [row[0] for row in result.fetchall()]
+
+    @classmethod
+    def get_school_name_mappings(cls) -> Dict[str, str]:
+        """Get the mapping of school category codes to full names"""
+        return cls.SCHOOL_NAME_MAPPINGS.copy()
+
+    @staticmethod
+    def get_school_spatial_data(session: Session, category: str) -> List[SchoolOfStudyGeoJSONFeature]:
+        """Get spatial data for a specific school category as GeoJSON features"""
+        query = select(
+            SchoolOfLvlData.geoid,
+            SchoolOfLvlData.category,
+            SchoolOfLvlData.openings_2024_zscore,
+            SchoolOfLvlData.jobs_2024_zscore,
+            SchoolOfLvlData.openings_2024_zscore_color,
+            ST_AsGeoJSON(SchoolOfLvlData.geom).label('geometry')
+        ).where(SchoolOfLvlData.category == category)
+
+        result = session.execute(query)
+        features = []
+
+        for row in result.fetchall():
+            properties = SchoolOfStudySpatialProperties(
+                geoid=str(row.geoid),
+                category=row.category,
+                openings_2024_zscore=row.openings_2024_zscore,
+                jobs_2024_zscore=row.jobs_2024_zscore,
+                openings_2024_zscore_color=row.openings_2024_zscore_color
+            )
+
+            feature = SchoolOfStudyGeoJSONFeature(
                 geometry=json.loads(row.geometry),
                 properties=properties
             )

@@ -42,6 +42,17 @@ class OccupationCode(Base):
     occupation_code = Column(String, primary_key=True)
     occupation_name = Column(String)
 
+class SchoolOfLvlData(Base):
+    __tablename__ = 'school_of_lvl_data'
+    __table_args__ = {} if TESTING else {'schema': 'jsi_data'}
+
+    geoid = Column(String, primary_key=True)
+    category = Column(String, primary_key=True)
+    openings_2024_zscore = Column(Float)
+    jobs_2024_zscore = Column(Float)
+    openings_2024_zscore_color = Column(String)
+    geom = Column(Geometry('GEOMETRY'))
+
 # Pydantic response models
 class OccupationIdsResponse(BaseModel):
     occupation_ids: List[str]
@@ -105,3 +116,23 @@ class IsochroneFeatureCollection(BaseModel):
     """GeoJSON FeatureCollection for isochrones"""
     type: str = "FeatureCollection"
     features: List[IsochroneFeature]
+
+# School of Study response models
+class SchoolOfStudyIdsResponse(BaseModel):
+    school_ids: List[str]
+
+class SchoolOfStudySpatialProperties(BaseModel):
+    geoid: str
+    category: str
+    openings_2024_zscore: Optional[float]
+    jobs_2024_zscore: Optional[float]
+    openings_2024_zscore_color: Optional[str]
+
+class SchoolOfStudyGeoJSONFeature(BaseModel):
+    type: str = "Feature"
+    geometry: dict
+    properties: SchoolOfStudySpatialProperties
+
+class SchoolOfStudyGeoJSONFeatureCollection(BaseModel):
+    type: str = "FeatureCollection"
+    features: List[SchoolOfStudyGeoJSONFeature]

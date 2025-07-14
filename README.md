@@ -53,19 +53,19 @@ nix build .#backend-docker
 
 ```
 spatial-jobs-index/
-├── flake.nix           # Nix flake configuration
-├── flake.lock          # Lock file for reproducible builds
-├── README.md           # This file
-├── backend/            # FastAPI backend application
-│   ├── app/            # Application code
-│   ├── tests/          # Test suite
-│   ├── pyproject.toml  # Python project configuration
-│   └── uv.lock         # Python dependency lock file
-└── frontend/           # Vite frontend application
-    ├── src/            # Source code
-    ├── public/         # Static assets
-    ├── package.json    # Node.js project configuration
-    └── vite.config.ts  # Vite configuration
+|-- flake.nix           # Nix flake configuration
+|-- flake.lock          # Lock file for reproducible builds
+|-- README.md           # This file
+|-- backend/            # FastAPI backend application
+|   |-- app/            # Application code
+|   |-- tests/          # Test suite
+|   |-- pyproject.toml  # Python project configuration
+|   `-- uv.lock         # Python dependency lock file
+`-- frontend/           # Vite frontend application
+    |-- src/            # Source code
+    |-- public/         # Static assets
+    |-- package.json    # Node.js project configuration
+    `-- vite.config.ts  # Vite configuration
 ```
 
 ## Backend API
