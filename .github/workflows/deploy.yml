@@ -19,6 +19,7 @@ jobs:
     outputs:
       backend: ${{ steps.filter.outputs.backend }}
       frontend: ${{ steps.filter.outputs.frontend }}
+      nix: ${{ steps.filter.outputs.nix }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -30,16 +31,15 @@ jobs:
           filters: |
             backend:
               - 'backend/**'
-              - 'flake.nix'
-              - 'flake.lock'
             frontend:
               - 'frontend/**'
+            nix:
               - 'flake.nix'
               - 'flake.lock'
 
   deploy-backend:
     needs: changes
-    if: ${{ needs.changes.outputs.backend == 'true' }}
+    if: ${{ needs.changes.outputs.backend == 'true' || needs.changes.outputs.nix == 'true' }}
     runs-on: ubuntu-latest
     outputs:
       deploy-status: ${{ steps.set-status.outputs.status }}
@@ -123,8 +123,8 @@ jobs:
     needs: [changes, deploy-backend]
     # Run if frontend changed AND (backend didn't change OR backend deployed successfully)
     if: |
-      needs.changes.outputs.frontend == 'true' &&
-      (needs.changes.outputs.backend != 'true' || needs.deploy-backend.result == 'success')
+      (needs.changes.outputs.frontend == 'true' || needs.changes.outputs.nix == 'true') &&
+      ((needs.changes.outputs.backend != 'true' && needs.changes.outputs.nix != 'true') || needs.deploy-backend.result == 'success')
     runs-on: ubuntu-latest
     environment:
       name: github-pages

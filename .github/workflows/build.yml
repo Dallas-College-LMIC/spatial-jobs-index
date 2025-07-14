@@ -18,6 +18,7 @@ jobs:
     outputs:
       backend: ${{ steps.filter.outputs.backend }}
       frontend: ${{ steps.filter.outputs.frontend }}
+      nix: ${{ steps.filter.outputs.nix }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -29,16 +30,15 @@ jobs:
           filters: |
             backend:
               - 'backend/**'
-              - 'flake.nix'
-              - 'flake.lock'
             frontend:
               - 'frontend/**'
+            nix:
               - 'flake.nix'
               - 'flake.lock'
 
   build-backend:
     needs: changes
-    if: ${{ needs.changes.outputs.backend == 'true' }}
+    if: ${{ needs.changes.outputs.backend == 'true' || needs.changes.outputs.nix == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -64,7 +64,7 @@ jobs:
 
   build-frontend:
     needs: changes
-    if: ${{ needs.changes.outputs.frontend == 'true' }}
+    if: ${{ needs.changes.outputs.frontend == 'true' || needs.changes.outputs.nix == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
