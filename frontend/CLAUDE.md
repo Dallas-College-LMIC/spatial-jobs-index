@@ -54,60 +54,60 @@ The project uses a modern Vite build system with modular ES6 architecture:
 ### File Structure
 ```
 src/
-├── js/
-│   ├── controllers/
-│   │   └── baseMapController.ts    # Base class for map controllers
-│   ├── services/
-│   │   ├── cacheService.ts         # Generic caching infrastructure
-│   │   ├── occupationCacheService.ts # Occupation-specific caching service
-│   │   ├── occupationIdsCacheService.ts # Occupation IDs caching service
-│   │   └── uiService.ts            # UI state management service
-│   ├── utils/
-│   │   ├── appInitializer.ts       # Application initialization utilities
-│   │   └── errorHandler.ts         # Centralized error handling
-│   ├── constants.ts                # Application constants
-│   ├── main.ts                     # Homepage entry point
-│   ├── occupation-main.ts          # Occupation map entry point
-│   ├── wage-main.ts                # Wage map entry point
-│   ├── occupation.ts               # OccupationMapController (extends BaseMapController)
-│   ├── wage.ts                     # WageMapController (extends BaseMapController)
-│   ├── api.ts                      # API service for data fetching
-│   └── mapUtils.ts                 # Map utilities and layer management
-├── types/
-│   ├── api.ts                      # API response type definitions
-│   └── global.d.ts                 # Global type declarations (Mapbox, Select2)
-├── components/
-│   └── navigation.ts               # Navigation component
-└── __tests__/
-    ├── unit/
-    │   ├── api.test.ts             # API service unit tests
-    │   ├── main.test.ts            # Main entry point tests
-    │   ├── components/             # Component unit tests
-    │   │   └── navigation.test.ts  # Navigation component tests
-    │   ├── controllers/            # Controller unit tests
-    │   │   ├── baseMapController.test.ts
-    │   │   ├── occupationMapController.test.ts
-    │   │   ├── occupationMapController.loading.test.ts
-    │   │   └── wageMapController.test.ts
-    │   ├── services/               # Service layer unit tests
-    │   │   ├── cacheService.test.ts
-    │   │   ├── occupationCacheService.test.ts
-    │   │   └── uiService.test.ts
-    │   └── utils/                  # Utility function unit tests
-    │       ├── appInitializer.test.ts
-    │       └── errorHandler.test.ts
-    ├── integration/                # Integration tests
-    ├── performance/                # Performance tests
-    │   └── occupationCache.test.ts
-    ├── fixtures/                   # Test data and mock responses
-    │   └── apiResponses.ts
-    ├── mocks/                      # External library mocks (Mapbox, jQuery)
-    │   ├── jquery.ts
-    │   └── mapbox-gl.ts
-    ├── utils/                      # Test utilities
-    │   ├── occupationTestHelpers.ts
-    │   └── testHelpers.ts
-    └── setup.ts                    # Test environment configuration
+|-- js/
+|   |-- controllers/
+|   |   `-- baseMapController.ts    # Base class for map controllers
+|   |-- services/
+|   |   |-- cacheService.ts         # Generic caching infrastructure
+|   |   |-- occupationCacheService.ts # Occupation-specific caching service
+|   |   |-- occupationIdsCacheService.ts # Occupation IDs caching service
+|   |   `-- uiService.ts            # UI state management service
+|   |-- utils/
+|   |   |-- appInitializer.ts       # Application initialization utilities
+|   |   `-- errorHandler.ts         # Centralized error handling
+|   |-- constants.ts                # Application constants
+|   |-- main.ts                     # Homepage entry point
+|   |-- occupation-main.ts          # Occupation map entry point
+|   |-- wage-main.ts                # Wage map entry point
+|   |-- occupation.ts               # OccupationMapController (extends BaseMapController)
+|   |-- wage.ts                     # WageMapController (extends BaseMapController)
+|   |-- api.ts                      # API service for data fetching
+|   `-- mapUtils.ts                 # Map utilities and layer management
+|-- types/
+|   |-- api.ts                      # API response type definitions
+|   `-- global.d.ts                 # Global type declarations (Mapbox, Select2)
+|-- components/
+|   `-- navigation.ts               # Navigation component
+`-- __tests__/
+    |-- unit/
+    |   |-- api.test.ts             # API service unit tests
+    |   |-- main.test.ts            # Main entry point tests
+    |   |-- components/             # Component unit tests
+    |   |   `-- navigation.test.ts  # Navigation component tests
+    |   |-- controllers/            # Controller unit tests
+    |   |   |-- baseMapController.test.ts
+    |   |   |-- occupationMapController.test.ts
+    |   |   |-- occupationMapController.loading.test.ts
+    |   |   `-- wageMapController.test.ts
+    |   |-- services/               # Service layer unit tests
+    |   |   |-- cacheService.test.ts
+    |   |   |-- occupationCacheService.test.ts
+    |   |   `-- uiService.test.ts
+    |   `-- utils/                  # Utility function unit tests
+    |       |-- appInitializer.test.ts
+    |       `-- errorHandler.test.ts
+    |-- integration/                # Integration tests
+    |-- performance/                # Performance tests
+    |   `-- occupationCache.test.ts
+    |-- fixtures/                   # Test data and mock responses
+    |   `-- apiResponses.ts
+    |-- mocks/                      # External library mocks (Mapbox, jQuery)
+    |   |-- jquery.ts
+    |   `-- mapbox-gl.ts
+    |-- utils/                      # Test utilities
+    |   |-- occupationTestHelpers.ts
+    |   `-- testHelpers.ts
+    `-- setup.ts                    # Test environment configuration
 ```
 
 ### TypeScript Configuration
