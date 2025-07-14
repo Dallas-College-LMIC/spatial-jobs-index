@@ -10,7 +10,12 @@ from app.models import (
     OccupationLvlData,
     TTIClone,
     OccupationCode,
+    SchoolOfLvlData,
     OccupationIdsResponse,
+    SchoolOfStudyIdsResponse,
+    SchoolOfStudySpatialProperties,
+    SchoolOfStudyGeoJSONFeature,
+    SchoolOfStudyGeoJSONFeatureCollection,
     SpatialFeatureProperties,
     GeoJSONFeature,
     GeoJSONFeatureCollection,
@@ -215,6 +220,70 @@ class TestOccupationCode:
         )
         assert occupation_code.occupation_code == "29-1141"
         assert occupation_code.occupation_name == "Registered Nurses (RN's)"
+
+
+class TestSchoolOfLvlData:
+    """Test cases for SchoolOfLvlData ORM model."""
+
+    def test_table_name_and_schema(self):
+        """Test table name and schema are correctly set."""
+        assert SchoolOfLvlData.__tablename__ == 'school_of_lvl_data'
+        # During testing, __table_args__ is empty dict (no schema)
+        assert SchoolOfLvlData.__table_args__ == {}
+
+    def test_column_definitions(self):
+        """Test all column definitions."""
+        # Check geoid primary key
+        assert hasattr(SchoolOfLvlData, 'geoid')
+        assert SchoolOfLvlData.geoid.property.columns[0].primary_key is True
+        assert SchoolOfLvlData.geoid.property.columns[0].type.python_type is str
+
+        # Check category primary key
+        assert hasattr(SchoolOfLvlData, 'category')
+        assert SchoolOfLvlData.category.property.columns[0].primary_key is True
+        assert SchoolOfLvlData.category.property.columns[0].type.python_type is str
+
+        # Check float columns
+        float_columns = ['openings_2024_zscore', 'jobs_2024_zscore']
+        for col_name in float_columns:
+            assert hasattr(SchoolOfLvlData, col_name)
+            assert SchoolOfLvlData.__table__.columns[col_name].type.python_type is float
+
+        # Check string column
+        assert hasattr(SchoolOfLvlData, 'openings_2024_zscore_color')
+        assert SchoolOfLvlData.__table__.columns['openings_2024_zscore_color'].type.python_type is str
+
+        # Check geometry column
+        assert hasattr(SchoolOfLvlData, 'geom')
+
+    def test_school_instance_creation(self):
+        """Test creating an instance of SchoolOfLvlData."""
+        school = SchoolOfLvlData(
+            geoid="48113020100",
+            category="ETMS"
+        )
+        assert school.geoid == "48113020100"
+        assert school.category == "ETMS"
+
+    def test_school_instance_with_all_fields(self):
+        """Test creating an instance with all fields."""
+        mock_geom = MagicMock(spec=WKTElement)
+
+        school = SchoolOfLvlData(
+            geoid="48113020100",
+            category="ETMS",
+            openings_2024_zscore=1.5,
+            jobs_2024_zscore=-0.3,
+            openings_2024_zscore_color="#FF0000",
+            geom=mock_geom
+        )
+
+        assert school.geoid == "48113020100"
+        assert school.category == "ETMS"
+        assert school.openings_2024_zscore == 1.5
+        assert school.jobs_2024_zscore == -0.3
+        assert school.openings_2024_zscore_color == "#FF0000"
+        assert school.geom == mock_geom
 
 
 class TestOccupationIdsResponse:
@@ -640,6 +709,273 @@ class TestGeoJSONFeatureCollection:
         compact_data = collection.model_dump(exclude_none=True)
         assert "all_jobs_zscore" not in compact_data["features"][0]["properties"]
         assert compact_data["features"][1]["properties"]["all_jobs_zscore"] == 1.0
+
+
+class TestSchoolOfStudyIdsResponse:
+    """Test cases for SchoolOfStudyIdsResponse Pydantic model."""
+
+    def test_valid_school_ids_response(self):
+        """Test creating valid SchoolOfStudyIdsResponse."""
+        response = SchoolOfStudyIdsResponse(
+            school_ids=["ETMS", "BHGT", "CE"]
+        )
+        assert response.school_ids == ["ETMS", "BHGT", "CE"]
+        assert len(response.school_ids) == 3
+
+    def test_empty_school_list(self):
+        """Test SchoolOfStudyIdsResponse with empty list."""
+        response = SchoolOfStudyIdsResponse(school_ids=[])
+        assert response.school_ids == []
+        assert len(response.school_ids) == 0
+
+    def test_school_ids_validation_error(self):
+        """Test validation errors for invalid input."""
+        # school_ids must be a list
+        with pytest.raises(ValueError):
+            SchoolOfStudyIdsResponse(school_ids="not a list")
+
+        # school_ids must contain strings
+        with pytest.raises(ValueError):
+            SchoolOfStudyIdsResponse(school_ids=[1, 2, 3])
+
+    def test_school_ids_serialization(self):
+        """Test JSON serialization of SchoolOfStudyIdsResponse."""
+        response = SchoolOfStudyIdsResponse(school_ids=["ETMS", "BHGT"])
+        json_data = response.model_dump()
+        assert json_data == {"school_ids": ["ETMS", "BHGT"]}
+
+        # Test JSON string serialization
+        json_str = response.model_dump_json()
+        assert json_str == '{"school_ids":["ETMS","BHGT"]}'
+
+
+class TestSchoolOfStudySpatialProperties:
+    """Test cases for SchoolOfStudySpatialProperties Pydantic model."""
+
+    def test_all_fields_provided(self):
+        """Test creating SchoolOfStudySpatialProperties with all fields."""
+        props = SchoolOfStudySpatialProperties(
+            geoid="48113020100",
+            category="ETMS",
+            openings_2024_zscore=1.5,
+            jobs_2024_zscore=-0.3,
+            openings_2024_zscore_color="#FF0000"
+        )
+
+        assert props.geoid == "48113020100"
+        assert props.category == "ETMS"
+        assert props.openings_2024_zscore == 1.5
+        assert props.jobs_2024_zscore == -0.3
+        assert props.openings_2024_zscore_color == "#FF0000"
+
+    def test_required_fields_only(self):
+        """Test creating SchoolOfStudySpatialProperties with only required fields."""
+        props = SchoolOfStudySpatialProperties(
+            geoid="48113020100",
+            category="ETMS",
+            openings_2024_zscore=None,
+            jobs_2024_zscore=None,
+            openings_2024_zscore_color=None
+        )
+
+        assert props.geoid == "48113020100"
+        assert props.category == "ETMS"
+        assert props.openings_2024_zscore is None
+        assert props.jobs_2024_zscore is None
+        assert props.openings_2024_zscore_color is None
+
+    def test_geoid_category_validation(self):
+        """Test geoid and category must be strings."""
+        # String geoid and category should work
+        props = SchoolOfStudySpatialProperties(
+            geoid="48113020100",
+            category="ETMS",
+            openings_2024_zscore=None,
+            jobs_2024_zscore=None,
+            openings_2024_zscore_color=None
+        )
+        assert props.geoid == "48113020100"
+        assert props.category == "ETMS"
+
+    def test_zscore_type_validation(self):
+        """Test z-score fields must be floats when provided."""
+        with pytest.raises(ValueError):
+            SchoolOfStudySpatialProperties(
+                geoid="48113020100",
+                category="ETMS",
+                openings_2024_zscore="not-a-float",
+                jobs_2024_zscore=None,
+                openings_2024_zscore_color=None
+            )
+
+    def test_serialization_with_none_values(self):
+        """Test serialization handles None values correctly."""
+        props = SchoolOfStudySpatialProperties(
+            geoid="48113020100",
+            category="ETMS",
+            openings_2024_zscore=None,
+            jobs_2024_zscore=None,
+            openings_2024_zscore_color=None
+        )
+        data = props.model_dump()
+
+        assert data["geoid"] == "48113020100"
+        assert data["category"] == "ETMS"
+        assert data["openings_2024_zscore"] is None
+
+        # Test exclude_none option
+        data_no_none = props.model_dump(exclude_none=True)
+        assert data_no_none == {"geoid": "48113020100", "category": "ETMS"}
+
+
+class TestSchoolOfStudyGeoJSONFeature:
+    """Test cases for SchoolOfStudyGeoJSONFeature Pydantic model."""
+
+    def test_valid_geojson_feature(self):
+        """Test creating a valid GeoJSON feature."""
+        geometry = {
+            "type": "Polygon",
+            "coordinates": [[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]]
+        }
+        properties = SchoolOfStudySpatialProperties(
+            geoid="48113020100",
+            category="ETMS",
+            openings_2024_zscore=1.0,
+            jobs_2024_zscore=None,
+            openings_2024_zscore_color=None
+        )
+
+        feature = SchoolOfStudyGeoJSONFeature(
+            geometry=geometry,
+            properties=properties
+        )
+
+        assert feature.type == "Feature"
+        assert feature.geometry == geometry
+        assert feature.properties.geoid == "48113020100"
+        assert feature.properties.category == "ETMS"
+        assert feature.properties.openings_2024_zscore == 1.0
+
+    def test_type_default_value(self):
+        """Test that type field has correct default value."""
+        geometry = {"type": "Point", "coordinates": [0, 0]}
+        properties = SchoolOfStudySpatialProperties(
+            geoid="48113020100",
+            category="ETMS",
+            openings_2024_zscore=None,
+            jobs_2024_zscore=None,
+            openings_2024_zscore_color=None
+        )
+
+        feature = SchoolOfStudyGeoJSONFeature(geometry=geometry, properties=properties)
+        assert feature.type == "Feature"
+
+    def test_geojson_serialization(self):
+        """Test serialization to GeoJSON format."""
+        geometry = {"type": "Point", "coordinates": [100.0, 0.0]}
+        properties = SchoolOfStudySpatialProperties(
+            geoid="48113020100",
+            category="ETMS",
+            openings_2024_zscore=None,
+            jobs_2024_zscore=None,
+            openings_2024_zscore_color=None
+        )
+
+        feature = SchoolOfStudyGeoJSONFeature(geometry=geometry, properties=properties)
+        json_data = feature.model_dump()
+
+        assert json_data["type"] == "Feature"
+        assert json_data["geometry"] == geometry
+        assert json_data["properties"]["geoid"] == "48113020100"
+        assert json_data["properties"]["category"] == "ETMS"
+
+    def test_missing_required_fields(self):
+        """Test validation errors for missing required fields."""
+        properties = SchoolOfStudySpatialProperties(
+            geoid="48113020100",
+            category="ETMS",
+            openings_2024_zscore=None,
+            jobs_2024_zscore=None,
+            openings_2024_zscore_color=None
+        )
+
+        # Missing geometry
+        with pytest.raises(ValueError):
+            SchoolOfStudyGeoJSONFeature(properties=properties)
+
+        # Missing properties
+        geometry = {"type": "Point", "coordinates": [0, 0]}
+        with pytest.raises(ValueError):
+            SchoolOfStudyGeoJSONFeature(geometry=geometry)
+
+
+class TestSchoolOfStudyGeoJSONFeatureCollection:
+    """Test cases for SchoolOfStudyGeoJSONFeatureCollection Pydantic model."""
+
+    def test_valid_feature_collection(self):
+        """Test creating a valid GeoJSON FeatureCollection."""
+        features = []
+        for i, category in enumerate(["ETMS", "BHGT", "CE"]):
+            geometry = {"type": "Point", "coordinates": [i, i]}
+            properties = SchoolOfStudySpatialProperties(
+                geoid=str(i),
+                category=category,
+                openings_2024_zscore=None,
+                jobs_2024_zscore=None,
+                openings_2024_zscore_color=None
+            )
+            feature = SchoolOfStudyGeoJSONFeature(geometry=geometry, properties=properties)
+            features.append(feature)
+
+        collection = SchoolOfStudyGeoJSONFeatureCollection(features=features)
+
+        assert collection.type == "FeatureCollection"
+        assert len(collection.features) == 3
+        assert collection.features[0].properties.category == "ETMS"
+        assert collection.features[2].properties.category == "CE"
+
+    def test_empty_feature_collection(self):
+        """Test creating empty FeatureCollection."""
+        collection = SchoolOfStudyGeoJSONFeatureCollection(features=[])
+
+        assert collection.type == "FeatureCollection"
+        assert collection.features == []
+        assert len(collection.features) == 0
+
+    def test_type_default_value(self):
+        """Test that type field has correct default value."""
+        collection = SchoolOfStudyGeoJSONFeatureCollection(features=[])
+        assert collection.type == "FeatureCollection"
+
+    def test_feature_collection_serialization(self):
+        """Test serialization of FeatureCollection."""
+        geometry = {"type": "Point", "coordinates": [0, 0]}
+        properties = SchoolOfStudySpatialProperties(
+            geoid="48113020100",
+            category="ETMS",
+            openings_2024_zscore=None,
+            jobs_2024_zscore=None,
+            openings_2024_zscore_color=None
+        )
+        feature = SchoolOfStudyGeoJSONFeature(geometry=geometry, properties=properties)
+
+        collection = SchoolOfStudyGeoJSONFeatureCollection(features=[feature])
+        json_data = collection.model_dump()
+
+        assert json_data["type"] == "FeatureCollection"
+        assert len(json_data["features"]) == 1
+        assert json_data["features"][0]["type"] == "Feature"
+        assert json_data["features"][0]["properties"]["category"] == "ETMS"
+
+    def test_features_validation_error(self):
+        """Test validation error for invalid features."""
+        # features must be a list
+        with pytest.raises(ValueError):
+            SchoolOfStudyGeoJSONFeatureCollection(features="not a list")
+
+        # features must contain SchoolOfStudyGeoJSONFeature objects
+        with pytest.raises(ValueError):
+            SchoolOfStudyGeoJSONFeatureCollection(features=[{"invalid": "object"}])
 
 
 class TestModelIntegration:
