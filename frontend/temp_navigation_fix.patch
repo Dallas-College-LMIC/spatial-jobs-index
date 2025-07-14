@@ -1,0 +1,14 @@
+--- a/src/components/navigation.ts
++++ b/src/components/navigation.ts
+@@ -23,7 +23,9 @@
+                     <a class="nav-link ${activePageTitle === 'occupation' ? 'active' : ''}" href="access_occupation.html">
+                         Job Access by Occupation
+                     </a>
+-                    <a class="nav-link">Job Access by School of (in progress)</a>
++                    <a class="nav-link ${activePageTitle === 'schoolOfStudy' ? 'active' : ''}" href="access_school_of_study.html">
++                        Job Access by School of Study
++                    </a>
+                     <a class="nav-link">Travelsheds by Tract (in progress)</a>
+                 </ul>
+             </div>
+EOF < /dev/null

@@ -24,6 +24,7 @@
     "select2": "^4.1.0-rc.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.54.1",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@types/bootstrap": "^5.2.10",
