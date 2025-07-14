@@ -7,6 +7,10 @@ export interface OccupationIdsResponse {
   }>;
 }
 
+export interface SchoolOfStudyIdsResponse {
+  school_ids: string[];
+}
+
 export interface GeoJSONProperties {
   GEOID: string;
   [key: string]: string | number | null; // Dynamic properties for z-scores

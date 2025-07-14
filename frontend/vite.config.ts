@@ -15,6 +15,7 @@ export default defineConfig(({ mode }) => ({
         main: 'index.html',
         occupation: 'access_occupation.html',
         wage: 'access_wagelvl.html',
+        schoolOfStudy: 'access_school_of_study.html',
         travelTime: 'travel_time.html'
       }
     },
