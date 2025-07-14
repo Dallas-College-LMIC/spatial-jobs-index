@@ -19,6 +19,7 @@ jobs:
       backend: ${{ steps.filter.outputs.backend }}
       frontend: ${{ steps.filter.outputs.frontend }}
       nix: ${{ steps.filter.outputs.nix }}
+      has-changes: ${{ steps.check-changes.outputs.has-changes }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -35,6 +36,15 @@ jobs:
             nix:
               - 'flake.nix'
               - 'flake.lock'
+
+      - name: Check if builds are needed
+        id: check-changes
+        run: |
+          if [[ "${{ steps.filter.outputs.backend }}" == "true" || "${{ steps.filter.outputs.frontend }}" == "true" || "${{ steps.filter.outputs.nix }}" == "true" ]]; then
+            echo "has-changes=true" >> $GITHUB_OUTPUT
+          else
+            echo "has-changes=false" >> $GITHUB_OUTPUT
+          fi
 
   build-backend:
     needs: changes
