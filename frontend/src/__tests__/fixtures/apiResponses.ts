@@ -1,4 +1,8 @@
-import type { OccupationIdsResponse, GeoJSONResponse } from '../../types/api';
+import type {
+  OccupationIdsResponse,
+  GeoJSONResponse,
+  SchoolOfStudyIdsResponse,
+} from '../../types/api';
 
 export const mockOccupationIdsResponse: OccupationIdsResponse = {
   occupations: [
@@ -167,6 +171,60 @@ export const mockIsochroneResponse = {
       properties: {
         time_band: '15-20 min',
         travel_time_minutes: 18,
+      },
+    },
+  ],
+};
+
+export const mockSchoolOfStudyIdsResponse: SchoolOfStudyIdsResponse = {
+  school_ids: ['BHGT', 'CAED', 'CE', 'EDU', 'ETMS', 'HS', 'LPS', 'MIT'],
+};
+
+export const mockSchoolOfStudyGeoJSONResponse: GeoJSONResponse = {
+  type: 'FeatureCollection',
+  features: [
+    {
+      type: 'Feature',
+      properties: {
+        GEOID: '48113020100',
+        category: 'ETMS',
+        openings_2024_zscore: 1.5,
+        jobs_2024_zscore: 0.8,
+        openings_2024_zscore_color: '+1.0 - +1.5SD',
+      },
+      geometry: {
+        type: 'Polygon',
+        coordinates: [
+          [
+            [-96.797, 32.7767],
+            [-96.797, 32.7867],
+            [-96.787, 32.7867],
+            [-96.787, 32.7767],
+            [-96.797, 32.7767],
+          ],
+        ],
+      },
+    },
+    {
+      type: 'Feature',
+      properties: {
+        GEOID: '48113020200',
+        category: 'ETMS',
+        openings_2024_zscore: -0.3,
+        jobs_2024_zscore: 1.2,
+        openings_2024_zscore_color: '-0.5 - +0.5SD',
+      },
+      geometry: {
+        type: 'Polygon',
+        coordinates: [
+          [
+            [-96.787, 32.7767],
+            [-96.787, 32.7867],
+            [-96.777, 32.7867],
+            [-96.777, 32.7767],
+            [-96.787, 32.7767],
+          ],
+        ],
       },
     },
   ],

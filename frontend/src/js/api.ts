@@ -1,4 +1,8 @@
-import type { OccupationIdsResponse, GeoJSONResponse } from '../types/api';
+import type {
+  OccupationIdsResponse,
+  GeoJSONResponse,
+  SchoolOfStudyIdsResponse,
+} from '../types/api';
 
 interface RequestConfig {
   retries?: number;
@@ -351,6 +355,33 @@ export class ApiService {
       },
       signal
     );
+  }
+
+  async getSchoolOfStudyIds(signal?: AbortSignal): Promise<SchoolOfStudyIdsResponse> {
+    // School of study IDs are cached, so we can be more aggressive with retries
+    return this.fetchData<SchoolOfStudyIdsResponse>(
+      '/school_of_study_ids',
+      {
+        retries: 5,
+        timeout: undefined, // No timeout - let the request complete
+      },
+      signal
+    );
+  }
+
+  async getSchoolOfStudyData(categoryCode: string, signal?: AbortSignal): Promise<GeoJSONResponse> {
+    console.log(`[ApiService] Fetching school of study data for: ${categoryCode}`);
+    return this.fetchData<GeoJSONResponse>(
+      `/school_of_study_data/${categoryCode}`,
+      {
+        timeout: undefined, // No timeout - let the request complete
+      },
+      signal
+    );
+  }
+
+  getSchoolOfStudyExportUrl(categoryCode: string): string {
+    return `${this.baseUrl}/school_of_study_data/${categoryCode}`;
   }
 
   /**

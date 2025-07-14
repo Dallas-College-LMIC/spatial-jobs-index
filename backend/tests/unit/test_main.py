@@ -52,7 +52,7 @@ class TestApplicationLifecycle:
     def test_app_instance_created(self, mock_app):
         """Test that FastAPI app instance is created properly."""
         assert mock_app is not None
-        assert mock_app.title == "FastAPI"
+        assert mock_app.title == "Spatial Jobs Index API"
 
     def test_cors_middleware_configured(self, mock_app):
         """Test that CORS middleware is properly configured."""

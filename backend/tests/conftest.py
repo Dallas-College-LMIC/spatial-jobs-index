@@ -104,6 +104,19 @@ def test_engine():
                 occupation_name VARCHAR
             )
         """))
+
+        # Create school_of_lvl_data table
+        conn.execute(text("""
+            CREATE TABLE IF NOT EXISTS school_of_lvl_data (
+                geoid VARCHAR NOT NULL,
+                category VARCHAR NOT NULL,
+                openings_2024_zscore FLOAT,
+                jobs_2024_zscore FLOAT,
+                openings_2024_zscore_color VARCHAR,
+                geom TEXT,
+                PRIMARY KEY (geoid, category)
+            )
+        """))
         conn.commit()
 
     yield engine

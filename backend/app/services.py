@@ -76,16 +76,30 @@ class OccupationService:
     @staticmethod
     def get_occupation_spatial_data(session: Session, category: str) -> List[OccupationGeoJSONFeature]:
         """Get spatial data for a specific occupation category as GeoJSON features"""
-        query = select(
-            OccupationLvlData.geoid,
-            OccupationLvlData.category,
-            OccupationLvlData.openings_2024_zscore,
-            OccupationLvlData.jobs_2024_zscore,
-            OccupationLvlData.openings_2024_zscore_color,
-            ST_AsGeoJSON(OccupationLvlData.geom).label('geometry')
-        ).where(OccupationLvlData.category == category)
+        import os
 
-        result = session.execute(query)
+        # Check if we're in testing mode
+        is_testing = os.getenv('TESTING') == '1'
+
+        if is_testing:
+            # For SQLite testing, use raw SQL to avoid GeoAlchemy2 functions
+            from sqlalchemy import text
+            result = session.execute(text("""
+                SELECT geoid, category, openings_2024_zscore, jobs_2024_zscore,
+                       openings_2024_zscore_color, geom as geometry
+                FROM occupation_lvl_data
+                WHERE category = :category
+            """), {"category": category})
+        else:
+            # For PostGIS production, use ST_AsGeoJSON
+            result = session.execute(select(
+                OccupationLvlData.geoid,
+                OccupationLvlData.category,
+                OccupationLvlData.openings_2024_zscore,
+                OccupationLvlData.jobs_2024_zscore,
+                OccupationLvlData.openings_2024_zscore_color,
+                ST_AsGeoJSON(OccupationLvlData.geom).label('geometry')
+            ).where(OccupationLvlData.category == category))
         features = []
 
         for row in result.fetchall():
@@ -97,8 +111,16 @@ class OccupationService:
                 openings_2024_zscore_color=row.openings_2024_zscore_color
             )
 
+            # Parse geometry based on whether it's already JSON or needs parsing
+            if is_testing:
+                # In testing, geometry is stored as JSON string
+                geometry = json.loads(row.geometry) if isinstance(row.geometry, str) else row.geometry
+            else:
+                # In production, ST_AsGeoJSON returns JSON string
+                geometry = json.loads(row.geometry)
+
             feature = OccupationGeoJSONFeature(
-                geometry=json.loads(row.geometry),
+                geometry=geometry,
                 properties=properties
             )
             features.append(feature)
@@ -175,16 +197,30 @@ class SchoolOfStudyService:
     @staticmethod
     def get_school_spatial_data(session: Session, category: str) -> List[SchoolOfStudyGeoJSONFeature]:
         """Get spatial data for a specific school category as GeoJSON features"""
-        query = select(
-            SchoolOfLvlData.geoid,
-            SchoolOfLvlData.category,
-            SchoolOfLvlData.openings_2024_zscore,
-            SchoolOfLvlData.jobs_2024_zscore,
-            SchoolOfLvlData.openings_2024_zscore_color,
-            ST_AsGeoJSON(SchoolOfLvlData.geom).label('geometry')
-        ).where(SchoolOfLvlData.category == category)
+        import os
 
-        result = session.execute(query)
+        # Check if we're in testing mode
+        is_testing = os.getenv('TESTING') == '1'
+
+        if is_testing:
+            # For SQLite testing, use raw SQL to avoid GeoAlchemy2 functions
+            from sqlalchemy import text
+            result = session.execute(text("""
+                SELECT geoid, category, openings_2024_zscore, jobs_2024_zscore,
+                       openings_2024_zscore_color, geom as geometry
+                FROM school_of_lvl_data
+                WHERE category = :category
+            """), {"category": category})
+        else:
+            # For PostGIS production, use ST_AsGeoJSON
+            result = session.execute(select(
+                SchoolOfLvlData.geoid,
+                SchoolOfLvlData.category,
+                SchoolOfLvlData.openings_2024_zscore,
+                SchoolOfLvlData.jobs_2024_zscore,
+                SchoolOfLvlData.openings_2024_zscore_color,
+                ST_AsGeoJSON(SchoolOfLvlData.geom).label('geometry')
+            ).where(SchoolOfLvlData.category == category))
         features = []
 
         for row in result.fetchall():
@@ -196,8 +232,16 @@ class SchoolOfStudyService:
                 openings_2024_zscore_color=row.openings_2024_zscore_color
             )
 
+            # Parse geometry based on whether it's already JSON or needs parsing
+            if is_testing:
+                # In testing, geometry is stored as JSON string
+                geometry = json.loads(row.geometry) if isinstance(row.geometry, str) else row.geometry
+            else:
+                # In production, ST_AsGeoJSON returns JSON string
+                geometry = json.loads(row.geometry)
+
             feature = SchoolOfStudyGeoJSONFeature(
-                geometry=json.loads(row.geometry),
+                geometry=geometry,
                 properties=properties
             )
             features.append(feature)

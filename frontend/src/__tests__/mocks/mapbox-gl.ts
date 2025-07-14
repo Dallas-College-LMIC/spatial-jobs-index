@@ -2,10 +2,14 @@ import { vi } from 'vitest';
 
 // Mock Mapbox GL JS
 export const mockMap = {
-  on: vi.fn((event, callback) => {
+  on: vi.fn((...args) => {
+    const event = args[0];
     if (event === 'load') {
-      setTimeout(callback, 0);
+      // For 'load' event, callback is at index 1
+      setTimeout(args[1], 0);
     }
+    // For layer-specific events, callback is at index 2
+    // This mock stores all arguments for test verification
   }),
   off: vi.fn(),
   once: vi.fn(),
