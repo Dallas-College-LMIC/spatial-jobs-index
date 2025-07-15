@@ -141,10 +141,12 @@ jobs:
 
   deploy-frontend:
     needs: [changes, deploy-backend]
-    # Run if frontend changed AND (backend didn't change OR backend deployed successfully)
+    # Run if frontend changed AND (backend didn't change OR backend deployed successfully OR backend was skipped)
     if: |
+      always() &&
       (needs.changes.outputs.frontend == 'true' || needs.changes.outputs.nix == 'true') &&
-      ((needs.changes.outputs.backend != 'true' && needs.changes.outputs.nix != 'true') || needs.deploy-backend.result == 'success')
+      (needs.deploy-backend.result == 'success' || needs.deploy-backend.result == 'skipped' ||
+       (needs.changes.outputs.backend != 'true' && needs.changes.outputs.nix != 'true'))
     runs-on: ubuntu-latest
     environment:
       name: github-pages
