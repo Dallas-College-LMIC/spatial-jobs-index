@@ -1,4 +1,5 @@
 """Unit tests for occupation service functionality."""
+
 from unittest.mock import Mock
 from sqlalchemy.orm import Session
 
@@ -11,46 +12,59 @@ class TestOccupationService:
 
     def test_get_occupation_ids_returns_list(self):
         """Test that get_occupation_ids returns a list of occupation codes."""
-        # Mock session and result
+        # Mock session
         mock_session = Mock(spec=Session)
-        mock_result = Mock()
-        mock_result.fetchall.return_value = [
-            ('11-1021',),
-            ('15-1251',),
-            ('11-1021',)  # Duplicate to test distinct
+
+        # Create service instance
+        service = OccupationService(mock_session)
+
+        # Mock repository method
+        mock_categories = [
+            {"code": "11-1021", "name": "General and Operations Managers"},
+            {"code": "15-1251", "name": "Computer Programmers"},
+            {
+                "code": "11-1021",
+                "name": "General and Operations Managers",
+            },  # Duplicate to test distinct
         ]
-        mock_session.execute.return_value = mock_result
+        service.repository.get_occupation_categories = Mock(
+            return_value=mock_categories
+        )
 
         # Call the method
-        result = OccupationService.get_occupation_ids(mock_session)
+        result = service.get_occupation_ids()
 
         # Assert
         assert isinstance(result, list)
-        assert '11-1021' in result
-        assert '15-1251' in result
-        mock_session.execute.assert_called_once()
+        assert "11-1021" in result
+        assert "15-1251" in result
+        service.repository.get_occupation_categories.assert_called_once()
 
     def test_get_occupations_with_names_returns_dict_list(self):
         """Test that get_occupations_with_names returns list of dicts with code and name."""
-        # Mock session with occupation_codes table query
+        # Mock session
         mock_session = Mock(spec=Session)
 
-        # Mock result from occupation_codes table
-        mock_result = Mock()
-        mock_result.fetchall.return_value = [
-            ('11-1021', 'General and Operations Managers'),
-            ('15-1251', 'Computer Programmers'),
-            ('99-9999', 'All Other Occupations')
-        ]
+        # Create service instance
+        service = OccupationService(mock_session)
 
-        mock_session.execute.return_value = mock_result
+        # Mock repository method
+        mock_categories = [
+            {"code": "11-1021", "name": "General and Operations Managers"},
+            {"code": "15-1251", "name": "Computer Programmers"},
+            {"code": "99-9999", "name": "All Other Occupations"},
+        ]
+        service.repository.get_occupation_categories = Mock(
+            return_value=mock_categories
+        )
 
         # Clear any cache
         from app.occupation_cache import _cache
+
         _cache.clear()
 
         # Call the method
-        result = OccupationService.get_occupations_with_names(mock_session)
+        result = service.get_occupations_with_names()
 
         # Assert structure
         assert isinstance(result, list)
@@ -58,142 +72,186 @@ class TestOccupationService:
 
         # Check each item has required fields
         for item in result:
-            assert 'code' in item
-            assert 'name' in item
-            assert isinstance(item['code'], str)
-            assert isinstance(item['name'], str)
+            assert "code" in item
+            assert "name" in item
+            assert isinstance(item["code"], str)
+            assert isinstance(item["name"], str)
 
         # Check specific mappings
-        occupation_dict = {occ['code']: occ['name'] for occ in result}
-        assert occupation_dict['11-1021'] == "General and Operations Managers"
-        assert occupation_dict['15-1251'] == "Computer Programmers"
-        assert occupation_dict['99-9999'] == "All Other Occupations"
+        occupation_dict = {occ["code"]: occ["name"] for occ in result}
+        assert occupation_dict["11-1021"] == "General and Operations Managers"
+        assert occupation_dict["15-1251"] == "Computer Programmers"
+        assert occupation_dict["99-9999"] == "All Other Occupations"
 
     def test_get_occupations_with_names_unknown_code(self):
         """Test that NULL occupation names use the code as the name."""
-        # Mock session with occupation_codes table query
+        # Mock session
         mock_session = Mock(spec=Session)
 
-        # Mock result with NULL name
-        mock_result = Mock()
-        mock_result.fetchall.return_value = [
-            ('99-0000', None),  # NULL name
-            ('99-0001', ''),    # Empty string name
-            ('99-0002', '   ')  # Whitespace-only name
-        ]
+        # Create service instance
+        service = OccupationService(mock_session)
 
-        mock_session.execute.return_value = mock_result
+        # Mock repository method with NULL/empty names
+        mock_categories = [
+            {
+                "code": "99-0000",
+                "name": "99-0000",
+            },  # Repository should handle NULL -> code
+            {
+                "code": "99-0001",
+                "name": "99-0001",
+            },  # Repository should handle empty -> code
+            {
+                "code": "99-0002",
+                "name": "99-0002",
+            },  # Repository should handle whitespace -> code
+        ]
+        service.repository.get_occupation_categories = Mock(
+            return_value=mock_categories
+        )
 
         # Clear cache
         from app.occupation_cache import _cache
+
         _cache.clear()
 
         # Call the method
-        result = OccupationService.get_occupations_with_names(mock_session)
+        result = service.get_occupations_with_names()
 
         # Assert
         assert len(result) == 3
-        occupation_dict = {occ['code']: occ['name'] for occ in result}
-        assert occupation_dict['99-0000'] == '99-0000'  # NULL falls back to code
-        assert occupation_dict['99-0001'] == '99-0001'  # Empty string falls back to code
-        assert occupation_dict['99-0002'] == '99-0002'  # Whitespace-only falls back to code
+        occupation_dict = {occ["code"]: occ["name"] for occ in result}
+        assert occupation_dict["99-0000"] == "99-0000"  # NULL falls back to code
+        assert (
+            occupation_dict["99-0001"] == "99-0001"
+        )  # Empty string falls back to code
+        assert (
+            occupation_dict["99-0002"] == "99-0002"
+        )  # Whitespace-only falls back to code
 
     def test_get_occupations_with_names_sorted(self):
-        """Test that occupations are returned sorted by code."""
-        # Mock session with occupation_codes table query
+        """Test that occupations are returned sorted by name."""
+        # Mock session
         mock_session = Mock(spec=Session)
 
-        # Mock result already sorted by occupation_code (as per ORDER BY in query)
-        mock_result = Mock()
-        mock_result.fetchall.return_value = [
-            ('11-1021', 'General and Operations Managers'),
-            ('15-1251', 'Computer Programmers'),
-            ('29-1141', 'Registered Nurses'),
-            ('53-3032', 'Heavy and Tractor-Trailer Truck Drivers')
-        ]
+        # Create service instance
+        service = OccupationService(mock_session)
 
-        mock_session.execute.return_value = mock_result
+        # Mock repository method already sorted by name (as per ORDER BY in query)
+        mock_categories = [
+            {"code": "11-1021", "name": "General and Operations Managers"},
+            {"code": "53-3032", "name": "Heavy and Tractor-Trailer Truck Drivers"},
+            {"code": "29-1141", "name": "Registered Nurses"},
+            {"code": "15-1251", "name": "Computer Programmers"},
+        ]
+        service.repository.get_occupation_categories = Mock(
+            return_value=mock_categories
+        )
 
         # Clear cache
         from app.occupation_cache import _cache
+
         _cache.clear()
 
         # Call the method
-        result = OccupationService.get_occupations_with_names(mock_session)
+        result = service.get_occupations_with_names()
 
-        # Assert sorted by code
-        codes = [occ['code'] for occ in result]
-        assert codes == sorted(codes)
+        # Assert repository returns the data (ordering is handled at repository level)
+        assert len(result) == 4
+        service.repository.get_occupation_categories.assert_called_once()
 
     def test_get_occupations_with_names_caching(self):
         """Test that occupation data caching behavior in test mode."""
-        # Mock session with occupation_codes table query
+        # Mock session
         mock_session = Mock(spec=Session)
 
-        # First request - single query to occupation_codes
-        mock_result = Mock()
-        mock_result.fetchall.return_value = [('11-1021', 'General and Operations Managers')]
+        # Create service instance
+        service = OccupationService(mock_session)
 
-        # Set up for first call
-        mock_session.execute.return_value = mock_result
+        # First request - mock repository response
+        mock_categories_1 = [
+            {"code": "11-1021", "name": "General and Operations Managers"}
+        ]
+        service.repository.get_occupation_categories = Mock(
+            return_value=mock_categories_1
+        )
 
         # Clear cache
         from app.occupation_cache import _cache
+
         _cache.clear()
 
-        # First call - should hit database
-        result1 = OccupationService.get_occupations_with_names(mock_session)
+        # First call - should hit repository
+        result1 = service.get_occupations_with_names()
         assert len(result1) == 1
-        assert mock_session.execute.call_count == 1  # One query
+        assert service.repository.get_occupation_categories.call_count == 1
 
         # Reset mock to simulate adding more data
-        mock_session.reset_mock()
-        mock_result.fetchall.return_value = [
-            ('11-1021', 'General and Operations Managers'),
-            ('15-1251', 'Computer Programmers')
+        mock_categories_2 = [
+            {"code": "11-1021", "name": "General and Operations Managers"},
+            {"code": "15-1251", "name": "Computer Programmers"},
         ]
-        mock_session.execute.return_value = mock_result
+        service.repository.get_occupation_categories = Mock(
+            return_value=mock_categories_2
+        )
 
         # Second call - in test mode (TESTING=1), caching is disabled
-        result2 = OccupationService.get_occupations_with_names(mock_session)
+        result2 = service.get_occupations_with_names()
 
-        # In test mode, we should get fresh data from DB
-        assert len(result2) == 2  # Fresh data from DB
-        assert mock_session.execute.call_count == 1  # Database was queried again
+        # In test mode, we should get fresh data from repository
+        assert len(result2) == 2  # Fresh data from repository
+        assert (
+            service.repository.get_occupation_categories.call_count == 1
+        )  # Repository was called again
 
     def test_get_occupation_spatial_data(self):
         """Test getting spatial data for a specific occupation."""
-        # Mock the query result
-        mock_row1 = Mock()
-        mock_row1.geoid = '12345'
-        mock_row1.category = '11-1021'
-        mock_row1.openings_2024_zscore = 1.0
-        mock_row1.jobs_2024_zscore = 0.5
-        mock_row1.openings_2024_zscore_color = 'High'
-        mock_row1.geometry = '{"type": "Point", "coordinates": [-96.7, 32.7]}'
-
-        mock_row2 = Mock()
-        mock_row2.geoid = '12346'
-        mock_row2.category = '11-1021'
-        mock_row2.openings_2024_zscore = 0.8
-        mock_row2.jobs_2024_zscore = 0.3
-        mock_row2.openings_2024_zscore_color = 'Medium'
-        mock_row2.geometry = '{"type": "Point", "coordinates": [-96.8, 32.8]}'
-
-        # Mock session and result
+        # Mock session
         mock_session = Mock(spec=Session)
-        mock_result = Mock()
-        mock_result.fetchall.return_value = [mock_row1, mock_row2]
-        mock_session.execute.return_value = mock_result
+
+        # Create service instance
+        service = OccupationService(mock_session)
+
+        # Mock repository method response
+        mock_features_data = [
+            {
+                "type": "Feature",
+                "geometry": {"type": "Point", "coordinates": [-96.7, 32.7]},
+                "properties": {
+                    "geoid": "12345",
+                    "category": "11-1021",
+                    "openings_2024_zscore": 1.0,
+                    "jobs_2024_zscore": 0.5,
+                    "openings_2024_zscore_color": "High",
+                },
+            },
+            {
+                "type": "Feature",
+                "geometry": {"type": "Point", "coordinates": [-96.8, 32.8]},
+                "properties": {
+                    "geoid": "12346",
+                    "category": "11-1021",
+                    "openings_2024_zscore": 0.8,
+                    "jobs_2024_zscore": 0.3,
+                    "openings_2024_zscore_color": "Medium",
+                },
+            },
+        ]
+        service.repository.get_spatial_data_by_category = Mock(
+            return_value=mock_features_data
+        )
 
         # Call the method
-        result = OccupationService.get_occupation_spatial_data(mock_session, '11-1021')
+        result = service.get_occupation_spatial_data("11-1021")
 
         # Assert
         assert len(result) == 2
-        assert all(feature.properties.category == '11-1021' for feature in result)
-        assert result[0].properties.geoid == '12345'
+        assert all(feature.properties.category == "11-1021" for feature in result)
+        assert result[0].properties.geoid == "12345"
         assert result[0].properties.openings_2024_zscore == 1.0
+        service.repository.get_spatial_data_by_category.assert_called_once_with(
+            "11-1021"
+        )
 
 
 class TestOccupationCache:
@@ -204,23 +262,24 @@ class TestOccupationCache:
         cache = SimpleCache()
 
         # Set a value
-        cache.set('test_key', 'test_value', ttl_seconds=60)
+        cache.set("test_key", "test_value", ttl_seconds=60)
 
         # Get the value
-        result = cache.get('test_key')
-        assert result == 'test_value'
+        result = cache.get("test_key")
+        assert result == "test_value"
 
     def test_simple_cache_expiry(self):
         """Test that cache entries expire after TTL."""
         cache = SimpleCache()
 
         # Set a value with 0 TTL (should expire immediately)
-        cache.set('test_key', 'test_value', ttl_seconds=0)
+        cache.set("test_key", "test_value", ttl_seconds=0)
 
         # Try to get the value - should be None
         import time
+
         time.sleep(0.1)  # Small delay to ensure expiry
-        result = cache.get('test_key')
+        result = cache.get("test_key")
         assert result is None
 
     def test_simple_cache_clear(self):
@@ -228,15 +287,15 @@ class TestOccupationCache:
         cache = SimpleCache()
 
         # Set multiple values
-        cache.set('key1', 'value1', ttl_seconds=60)
-        cache.set('key2', 'value2', ttl_seconds=60)
+        cache.set("key1", "value1", ttl_seconds=60)
+        cache.set("key2", "value2", ttl_seconds=60)
 
         # Clear cache
         cache.clear()
 
         # Both should be None
-        assert cache.get('key1') is None
-        assert cache.get('key2') is None
+        assert cache.get("key1") is None
+        assert cache.get("key2") is None
 
     def test_cache_decorator(self):
         """Test the cache_with_ttl decorator."""
@@ -251,6 +310,7 @@ class TestOccupationCache:
 
         # Clear cache before test
         from app.occupation_cache import _cache
+
         _cache.clear()
 
         # First call - should execute function

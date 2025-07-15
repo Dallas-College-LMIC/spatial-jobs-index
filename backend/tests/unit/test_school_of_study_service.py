@@ -15,20 +15,33 @@ class TestSchoolOfStudyService:
         # Mock session
         mock_session = MagicMock(spec=Session)
 
-        # Mock query result
-        mock_result = MagicMock()
-        mock_result.fetchall.return_value = [('ETMS',), ('BHGT',), ('CE',), ('EDU',), ('CAED',), ('HS',), ('LPS',), ('MIT',)]
-        mock_session.execute.return_value = mock_result
+        # Create service instance
+        service = SchoolOfStudyService(mock_session)
+
+        # Mock repository method
+        mock_categories = [
+            {"code": "ETMS", "name": "Energy, Technology, Manufacturing & Science"},
+            {"code": "BHGT", "name": "Business, Hospitality, Governance & Tourism"},
+            {"code": "CE", "name": "Construction & Engineering"},
+            {"code": "EDU", "name": "Education"},
+            {"code": "CAED", "name": "Creative Arts, Entertainment & Design"},
+            {"code": "HS", "name": "Health Services"},
+            {"code": "LPS", "name": "Legal & Public Services"},
+            {"code": "MIT", "name": "Management & Information Technology"},
+        ]
+        service.repository.get_school_of_study_categories = MagicMock(
+            return_value=mock_categories
+        )
 
         # Call the service method
-        result = SchoolOfStudyService.get_school_ids(mock_session)
+        result = service.get_school_ids()
 
         # Verify results
-        assert result == ['ETMS', 'BHGT', 'CE', 'EDU', 'CAED', 'HS', 'LPS', 'MIT']
+        assert result == ["ETMS", "BHGT", "CE", "EDU", "CAED", "HS", "LPS", "MIT"]
         assert len(result) == 8
 
-        # Verify session.execute was called
-        mock_session.execute.assert_called_once()
+        # Verify repository method was called
+        service.repository.get_school_of_study_categories.assert_called_once()
 
     def test_get_school_name_mappings(self):
         """Test that school name mappings are correctly defined."""
@@ -38,14 +51,14 @@ class TestSchoolOfStudyService:
         assert len(mappings) == 8
 
         # Verify specific mappings
-        assert mappings['BHGT'] == 'Business, Hospitality, Governance & Tourism'
-        assert mappings['CAED'] == 'Creative Arts, Entertainment & Design'
-        assert mappings['CE'] == 'Construction & Engineering'
-        assert mappings['EDU'] == 'Education'
-        assert mappings['ETMS'] == 'Energy, Technology, Manufacturing & Science'
-        assert mappings['HS'] == 'Health Services'
-        assert mappings['LPS'] == 'Legal & Public Services'
-        assert mappings['MIT'] == 'Management & Information Technology'
+        assert mappings["BHGT"] == "Business, Hospitality, Governance & Tourism"
+        assert mappings["CAED"] == "Creative Arts, Entertainment & Design"
+        assert mappings["CE"] == "Construction & Engineering"
+        assert mappings["EDU"] == "Education"
+        assert mappings["ETMS"] == "Energy, Technology, Manufacturing & Science"
+        assert mappings["HS"] == "Health Services"
+        assert mappings["LPS"] == "Legal & Public Services"
+        assert mappings["MIT"] == "Management & Information Technology"
 
         # Verify all values are strings
         for key, value in mappings.items():
@@ -58,22 +71,29 @@ class TestSchoolOfStudyService:
         # Mock session
         mock_session = MagicMock(spec=Session)
 
-        # Mock query result
-        mock_result = MagicMock()
-        mock_result.fetchall.return_value = [
-            MagicMock(
-                geoid='48113020100',
-                category='ETMS',
-                openings_2024_zscore=1.5,
-                jobs_2024_zscore=-0.3,
-                openings_2024_zscore_color='#FF0000',
-                geometry='{"type": "Point", "coordinates": [-96.7969, 32.7763]}'
-            )
+        # Create service instance
+        service = SchoolOfStudyService(mock_session)
+
+        # Mock repository method response
+        mock_features_data = [
+            {
+                "type": "Feature",
+                "geometry": {"type": "Point", "coordinates": [-96.7969, 32.7763]},
+                "properties": {
+                    "geoid": "48113020100",
+                    "category": "ETMS",
+                    "openings_2024_zscore": 1.5,
+                    "jobs_2024_zscore": -0.3,
+                    "openings_2024_zscore_color": "#FF0000",
+                },
+            }
         ]
-        mock_session.execute.return_value = mock_result
+        service.repository.get_spatial_data_by_category = MagicMock(
+            return_value=mock_features_data
+        )
 
         # Call the service method
-        result = SchoolOfStudyService.get_school_spatial_data(mock_session, 'ETMS')
+        result = service.get_school_spatial_data("ETMS")
 
         # Verify results
         assert len(result) == 1
@@ -91,58 +111,71 @@ class TestSchoolOfStudyService:
         # Verify geometry
         assert feature.geometry == {"type": "Point", "coordinates": [-96.7969, 32.7763]}
 
-        # Verify session.execute was called with correct parameters
-        mock_session.execute.assert_called_once()
+        # Verify repository method was called with correct parameters
+        service.repository.get_spatial_data_by_category.assert_called_once_with("ETMS")
 
     def test_get_school_spatial_data_empty_result(self):
         """Test getting spatial data when no data exists for category."""
         # Mock session
         mock_session = MagicMock(spec=Session)
 
-        # Mock empty query result
-        mock_result = MagicMock()
-        mock_result.fetchall.return_value = []
-        mock_session.execute.return_value = mock_result
+        # Create service instance
+        service = SchoolOfStudyService(mock_session)
+
+        # Mock empty repository response
+        service.repository.get_spatial_data_by_category = MagicMock(return_value=[])
 
         # Call the service method
-        result = SchoolOfStudyService.get_school_spatial_data(mock_session, 'NONEXISTENT')
+        result = service.get_school_spatial_data("NONEXISTENT")
 
         # Verify empty results
         assert result == []
         assert len(result) == 0
 
-        # Verify session.execute was called
-        mock_session.execute.assert_called_once()
+        # Verify repository method was called
+        service.repository.get_spatial_data_by_category.assert_called_once_with(
+            "NONEXISTENT"
+        )
 
     def test_get_school_spatial_data_multiple_features(self):
         """Test getting spatial data with multiple features for a category."""
         # Mock session
         mock_session = MagicMock(spec=Session)
 
-        # Mock query result with multiple rows
-        mock_result = MagicMock()
-        mock_result.fetchall.return_value = [
-            MagicMock(
-                geoid='48113020100',
-                category='ETMS',
-                openings_2024_zscore=1.5,
-                jobs_2024_zscore=-0.3,
-                openings_2024_zscore_color='#FF0000',
-                geometry='{"type": "Point", "coordinates": [-96.7969, 32.7763]}'
-            ),
-            MagicMock(
-                geoid='48113020200',
-                category='ETMS',
-                openings_2024_zscore=0.8,
-                jobs_2024_zscore=1.2,
-                openings_2024_zscore_color='#00FF00',
-                geometry='{"type": "Point", "coordinates": [-96.8000, 32.8000]}'
-            )
+        # Create service instance
+        service = SchoolOfStudyService(mock_session)
+
+        # Mock repository method response with multiple features
+        mock_features_data = [
+            {
+                "type": "Feature",
+                "geometry": {"type": "Point", "coordinates": [-96.7969, 32.7763]},
+                "properties": {
+                    "geoid": "48113020100",
+                    "category": "ETMS",
+                    "openings_2024_zscore": 1.5,
+                    "jobs_2024_zscore": -0.3,
+                    "openings_2024_zscore_color": "#FF0000",
+                },
+            },
+            {
+                "type": "Feature",
+                "geometry": {"type": "Point", "coordinates": [-96.8000, 32.8000]},
+                "properties": {
+                    "geoid": "48113020200",
+                    "category": "ETMS",
+                    "openings_2024_zscore": 0.8,
+                    "jobs_2024_zscore": 1.2,
+                    "openings_2024_zscore_color": "#00FF00",
+                },
+            },
         ]
-        mock_session.execute.return_value = mock_result
+        service.repository.get_spatial_data_by_category = MagicMock(
+            return_value=mock_features_data
+        )
 
         # Call the service method
-        result = SchoolOfStudyService.get_school_spatial_data(mock_session, 'ETMS')
+        result = service.get_school_spatial_data("ETMS")
 
         # Verify results
         assert len(result) == 2
@@ -162,22 +195,29 @@ class TestSchoolOfStudyService:
         # Mock session
         mock_session = MagicMock(spec=Session)
 
-        # Mock query result with None values
-        mock_result = MagicMock()
-        mock_result.fetchall.return_value = [
-            MagicMock(
-                geoid='48113020100',
-                category='ETMS',
-                openings_2024_zscore=None,
-                jobs_2024_zscore=None,
-                openings_2024_zscore_color=None,
-                geometry='{"type": "Point", "coordinates": [-96.7969, 32.7763]}'
-            )
+        # Create service instance
+        service = SchoolOfStudyService(mock_session)
+
+        # Mock repository method response with None values
+        mock_features_data = [
+            {
+                "type": "Feature",
+                "geometry": {"type": "Point", "coordinates": [-96.7969, 32.7763]},
+                "properties": {
+                    "geoid": "48113020100",
+                    "category": "ETMS",
+                    "openings_2024_zscore": None,
+                    "jobs_2024_zscore": None,
+                    "openings_2024_zscore_color": None,
+                },
+            }
         ]
-        mock_session.execute.return_value = mock_result
+        service.repository.get_spatial_data_by_category = MagicMock(
+            return_value=mock_features_data
+        )
 
         # Call the service method
-        result = SchoolOfStudyService.get_school_spatial_data(mock_session, 'ETMS')
+        result = service.get_school_spatial_data("ETMS")
 
         # Verify results
         assert len(result) == 1
