@@ -3,6 +3,7 @@ from typing import List, Dict
 import os
 import logging
 
+from .constants import TIME_CATEGORY_COLORS
 from .models import (
     SpatialFeatureProperties,
     GeoJSONFeature,
@@ -155,18 +156,6 @@ class SchoolOfStudyService:
 class IsochroneService:
     """Service for isochrone travel time operations"""
 
-    # Color mapping for travel time categories
-    TIME_CATEGORY_COLORS = {
-        "< 5": "#1a9850",
-        "5~10": "#66bd63",
-        "10~15": "#a6d96a",
-        "15~20": "#fdae61",
-        "20~25": "#fee08b",
-        "25~30": "#f46d43",
-        "30~45": "#d73027",
-        "> 45": "#a50026",
-    }
-
     def __init__(self, session: Session):
         self.repository = TravelTimeRepository(session)
         self.session = session
@@ -174,7 +163,7 @@ class IsochroneService:
     @classmethod
     def get_time_category_colors(cls) -> Dict[str, str]:
         """Get the mapping of time categories to colors"""
-        return cls.TIME_CATEGORY_COLORS.copy()
+        return TIME_CATEGORY_COLORS.copy()
 
     def get_isochrones_by_geoid(self, geoid: str) -> List[IsochroneFeature]:
         """Get all isochrone bands for a specific census tract"""

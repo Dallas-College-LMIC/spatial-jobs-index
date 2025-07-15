@@ -4,6 +4,7 @@ import json
 
 from .base import BaseRepository
 from ..models import TTIClone
+from ..constants import TIME_CATEGORY_COLORS, DEFAULT_COLOR
 
 
 class TravelTimeRepository(BaseRepository[TTIClone]):
@@ -114,17 +115,6 @@ class TravelTimeRepository(BaseRepository[TTIClone]):
         Returns:
             List of isochrone features with travel time categories and colors
         """
-        # Color mapping for travel time categories
-        TIME_CATEGORY_COLORS = {
-            "< 5": "#1a9850",
-            "5~10": "#66bd63",
-            "10~15": "#a6d96a",
-            "15~20": "#fdae61",
-            "20~25": "#fee08b",
-            "25~30": "#f46d43",
-            "30~45": "#d73027",
-            "> 45": "#a50026",
-        }
 
         # Query the isochrone table
         query = text("""
@@ -152,9 +142,7 @@ class TravelTimeRepository(BaseRepository[TTIClone]):
 
         for row in result.fetchall():
             time_category = row.traveltime_category
-            color = TIME_CATEGORY_COLORS.get(
-                time_category, "#808080"
-            )  # Default gray if not found
+            color = TIME_CATEGORY_COLORS.get(time_category, DEFAULT_COLOR)
 
             features.append(
                 {

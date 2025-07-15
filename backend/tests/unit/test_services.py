@@ -21,6 +21,7 @@ import json
 
 from app.services import OccupationService, SpatialService, IsochroneService
 from app.models import GeoJSONFeature, OccupationGeoJSONFeature, IsochroneFeature
+from app.constants import TIME_CATEGORY_COLORS
 
 
 class TestOccupationService:
@@ -928,7 +929,7 @@ class TestIsochroneService:
                     "properties": {
                         "geoid": "48113999999",
                         "time_category": category,
-                        "color": IsochroneService.TIME_CATEGORY_COLORS[category],
+                        "color": TIME_CATEGORY_COLORS[category],
                     },
                 }
             )
@@ -947,10 +948,7 @@ class TestIsochroneService:
             assert isinstance(feature, IsochroneFeature)
             assert feature.properties.geoid == "48113999999"
             assert feature.properties.time_category == time_categories[i]
-            assert (
-                feature.properties.color
-                == IsochroneService.TIME_CATEGORY_COLORS[time_categories[i]]
-            )
+            assert feature.properties.color == TIME_CATEGORY_COLORS[time_categories[i]]
 
         # Verify specific colors
         assert result[0].properties.color == "#1a9850"  # < 5
@@ -1074,9 +1072,7 @@ class TestIsochroneService:
                     "properties": {
                         "geoid": "48113000000",
                         "time_category": time_category,
-                        "color": IsochroneService.TIME_CATEGORY_COLORS.get(
-                            time_category, "#808080"
-                        ),
+                        "color": TIME_CATEGORY_COLORS.get(time_category, "#808080"),
                     },
                 }
             )
@@ -1094,7 +1090,7 @@ class TestIsochroneService:
 
         # Verify color mapping is correct for all features
         for feature in result:
-            expected_color = IsochroneService.TIME_CATEGORY_COLORS.get(
+            expected_color = TIME_CATEGORY_COLORS.get(
                 feature.properties.time_category, "#808080"
             )
             assert feature.properties.color == expected_color
@@ -1178,5 +1174,5 @@ class TestIsochroneService:
             "> 45": "#a50026",
         }
 
-        assert IsochroneService.TIME_CATEGORY_COLORS == expected_colors
-        assert len(IsochroneService.TIME_CATEGORY_COLORS) == 8
+        assert TIME_CATEGORY_COLORS == expected_colors
+        assert len(TIME_CATEGORY_COLORS) == 8
