@@ -145,7 +145,7 @@ class TestFullRequestResponseCycle:
         # Verify service was called with correct category
         mock_service.assert_called_once()
         args = mock_service.call_args[0]
-        assert args[1] == "51-3091"  # Second argument is the category
+        assert args[0] == "51-3091"  # First argument is the category
 
     @patch('app.services.OccupationService.get_occupation_spatial_data')
     def test_occupation_spatial_data_not_found(self, mock_service, integration_client):
@@ -236,7 +236,7 @@ class TestFullRequestResponseCycle:
         # Verify service was called with correct geoid
         mock_service.assert_called_once()
         args = mock_service.call_args[0]
-        assert args[1] == "12345"  # Second argument is the geoid
+        assert args[0] == "12345"  # First argument is the geoid
 
     @patch('app.services.IsochroneService.get_isochrones_by_geoid')
     def test_isochrone_not_found(self, mock_service, integration_client):
