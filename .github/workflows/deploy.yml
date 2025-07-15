@@ -11,11 +11,28 @@ on:
       - completed
     branches:
       - master
+  workflow_dispatch:
+    inputs:
+      deploy_backend:
+        description: 'Deploy backend service'
+        required: false
+        type: boolean
+        default: false
+      deploy_frontend:
+        description: 'Deploy frontend service'
+        required: false
+        type: boolean
+        default: true
+      skip_build:
+        description: 'Skip building and use existing artifacts from Cachix'
+        required: false
+        type: boolean
+        default: true
 
 jobs:
   changes:
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'master' }}
+    if: ${{ (github.event_name == 'workflow_dispatch') || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'master') }}
     outputs:
       backend: ${{ steps.filter.outputs.backend }}
       frontend: ${{ steps.filter.outputs.frontend }}
@@ -24,7 +41,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.workflow_run.head_sha }}
+          ref: ${{ github.event_name == 'workflow_dispatch' && github.ref || github.event.workflow_run.head_sha }}
           fetch-depth: 2
 
       - name: Get parent commit SHA
@@ -49,7 +66,11 @@ jobs:
       - name: Check if deployments are needed
         id: check-changes
         run: |
-          if [[ "${{ steps.filter.outputs.backend }}" == "true" || "${{ steps.filter.outputs.frontend }}" == "true" || "${{ steps.filter.outputs.nix }}" == "true" ]]; then
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            # For manual dispatch, use the input parameters
+            echo "has-changes=true" >> $GITHUB_OUTPUT
+            echo "Manual deployment requested"
+          elif [[ "${{ steps.filter.outputs.backend }}" == "true" || "${{ steps.filter.outputs.frontend }}" == "true" || "${{ steps.filter.outputs.nix }}" == "true" ]]; then
             echo "has-changes=true" >> $GITHUB_OUTPUT
             echo "Deployments needed: backend=${{ steps.filter.outputs.backend }}, frontend=${{ steps.filter.outputs.frontend }}, nix=${{ steps.filter.outputs.nix }}"
           else
@@ -59,7 +80,7 @@ jobs:
 
   deploy-backend:
     needs: changes
-    if: ${{ needs.changes.outputs.backend == 'true' || needs.changes.outputs.nix == 'true' }}
+    if: ${{ (github.event_name == 'workflow_dispatch' && github.event.inputs.deploy_backend == 'true') || (github.event_name != 'workflow_dispatch' && (needs.changes.outputs.backend == 'true' || needs.changes.outputs.nix == 'true')) }}
     runs-on: ubuntu-latest
     outputs:
       deploy-status: ${{ steps.set-status.outputs.status }}
@@ -142,11 +163,14 @@ jobs:
   deploy-frontend:
     needs: [changes, deploy-backend]
     # Run if frontend changed AND (backend didn't change OR backend deployed successfully OR backend was skipped)
+    # OR if manually triggered with deploy_frontend = true
     if: |
       always() &&
-      (needs.changes.outputs.frontend == 'true' || needs.changes.outputs.nix == 'true') &&
-      (needs.deploy-backend.result == 'success' || needs.deploy-backend.result == 'skipped' ||
-       (needs.changes.outputs.backend != 'true' && needs.changes.outputs.nix != 'true'))
+      ((github.event_name == 'workflow_dispatch' && github.event.inputs.deploy_frontend == 'true') ||
+       (github.event_name != 'workflow_dispatch' &&
+        (needs.changes.outputs.frontend == 'true' || needs.changes.outputs.nix == 'true') &&
+        (needs.deploy-backend.result == 'success' || needs.deploy-backend.result == 'skipped' ||
+         (needs.changes.outputs.backend != 'true' && needs.changes.outputs.nix != 'true'))))
     runs-on: ubuntu-latest
     environment:
       name: github-pages
