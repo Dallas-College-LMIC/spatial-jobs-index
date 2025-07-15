@@ -23,7 +23,8 @@ class OccupationLvlData(Base):
     openings_2024_zscore = Column(Float)
     jobs_2024_zscore = Column(Float)
     openings_2024_zscore_color = Column(String)
-    geom = Column(Geometry("GEOMETRY"))
+    # Use String for geometry in testing (SQLite), Geometry for production (PostgreSQL)
+    geom = Column(String if TESTING else Geometry("GEOMETRY"))
 
 
 class TTIClone(Base):
@@ -37,7 +38,8 @@ class TTIClone(Base):
     living_wage_zscore_cat = Column(String)
     not_living_wage_zscore = Column(Float)
     not_living_wage_zscore_cat = Column(String)
-    geom = Column(Geometry("GEOMETRY"))
+    # Use String for geometry in testing (SQLite), Geometry for production (PostgreSQL)
+    geom = Column(String if TESTING else Geometry("GEOMETRY"))
 
 
 class OccupationCode(Base):
@@ -57,15 +59,12 @@ class SchoolOfLvlData(Base):
     openings_2024_zscore = Column(Float)
     jobs_2024_zscore = Column(Float)
     openings_2024_zscore_color = Column(String)
-    geom = Column(Geometry("GEOMETRY"))
+    # Use String for geometry in testing (SQLite), Geometry for production (PostgreSQL)
+    geom = Column(String if TESTING else Geometry("GEOMETRY"))
 
 
-class SchoolOfStudyCodes(Base):
-    __tablename__ = "school_of_study_codes"
-    __table_args__ = {} if TESTING else {"schema": "jsi_data"}
-
-    school_code = Column(String, primary_key=True)
-    school_name = Column(String)
+# SchoolOfStudyCodes table doesn't exist in the database
+# Names are handled via SCHOOL_NAME_MAPPINGS in SchoolOfStudyService
 
 
 # Pydantic response models

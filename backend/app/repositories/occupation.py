@@ -1,5 +1,5 @@
 from typing import List, Dict
-from sqlalchemy import func, distinct
+from sqlalchemy import func, case, or_
 from sqlalchemy.orm import Session
 import json
 
@@ -22,14 +22,20 @@ class OccupationRepository(BaseRepository[OccupationLvlData]):
         """Get all unique occupation categories with their codes and names"""
         results = (
             self.session.query(
-                distinct(OccupationLvlData.category).label("code"),
-                OccupationCode.occupation_name.label("name"),
+                OccupationCode.occupation_code.label("code"),
+                case(
+                    (
+                        or_(
+                            OccupationCode.occupation_name.is_(None),
+                            OccupationCode.occupation_name == "",
+                            func.trim(OccupationCode.occupation_name) == "",
+                        ),
+                        OccupationCode.occupation_code,
+                    ),
+                    else_=OccupationCode.occupation_name,
+                ).label("name"),
             )
-            .join(
-                OccupationCode,
-                OccupationLvlData.category == OccupationCode.occupation_code,
-            )
-            .order_by("name")
+            .order_by(OccupationCode.occupation_code)
             .all()
         )
 

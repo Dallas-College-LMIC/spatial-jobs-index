@@ -11,14 +11,62 @@ from app.models import SchoolOfStudyGeoJSONFeature, SchoolOfStudySpatialProperti
 def school_test_data():
     """Sample school of study data for testing."""
     return [
-        {"category": "BHGT", "geoid": "48113020100", "openings_zscore": 1.5, "jobs_zscore": 0.8, "color": "#FF0000"},
-        {"category": "CAED", "geoid": "48113020200", "openings_zscore": -0.3, "jobs_zscore": 1.2, "color": "#00FF00"},
-        {"category": "CE", "geoid": "48113020300", "openings_zscore": 0.7, "jobs_zscore": -0.5, "color": "#0000FF"},
-        {"category": "EDU", "geoid": "48113020400", "openings_zscore": -1.2, "jobs_zscore": 0.9, "color": "#FFFF00"},
-        {"category": "ETMS", "geoid": "48113020500", "openings_zscore": 2.1, "jobs_zscore": -0.8, "color": "#FF00FF"},
-        {"category": "HS", "geoid": "48113020600", "openings_zscore": 0.4, "jobs_zscore": 1.7, "color": "#00FFFF"},
-        {"category": "LPS", "geoid": "48113020700", "openings_zscore": -0.9, "jobs_zscore": 0.3, "color": "#FFA500"},
-        {"category": "MIT", "geoid": "48113020800", "openings_zscore": 1.8, "jobs_zscore": -1.1, "color": "#800080"},
+        {
+            "category": "BHGT",
+            "geoid": "48113020100",
+            "openings_zscore": 1.5,
+            "jobs_zscore": 0.8,
+            "color": "#FF0000",
+        },
+        {
+            "category": "CAED",
+            "geoid": "48113020200",
+            "openings_zscore": -0.3,
+            "jobs_zscore": 1.2,
+            "color": "#00FF00",
+        },
+        {
+            "category": "CE",
+            "geoid": "48113020300",
+            "openings_zscore": 0.7,
+            "jobs_zscore": -0.5,
+            "color": "#0000FF",
+        },
+        {
+            "category": "EDU",
+            "geoid": "48113020400",
+            "openings_zscore": -1.2,
+            "jobs_zscore": 0.9,
+            "color": "#FFFF00",
+        },
+        {
+            "category": "ETMS",
+            "geoid": "48113020500",
+            "openings_zscore": 2.1,
+            "jobs_zscore": -0.8,
+            "color": "#FF00FF",
+        },
+        {
+            "category": "HS",
+            "geoid": "48113020600",
+            "openings_zscore": 0.4,
+            "jobs_zscore": 1.7,
+            "color": "#00FFFF",
+        },
+        {
+            "category": "LPS",
+            "geoid": "48113020700",
+            "openings_zscore": -0.9,
+            "jobs_zscore": 0.3,
+            "color": "#FFA500",
+        },
+        {
+            "category": "MIT",
+            "geoid": "48113020800",
+            "openings_zscore": 1.8,
+            "jobs_zscore": -1.1,
+            "color": "#800080",
+        },
     ]
 
 
@@ -42,8 +90,8 @@ def setup_school_data(test_session, school_test_data):
                 "category": school["category"],
                 "openings_zscore": school["openings_zscore"],
                 "jobs_zscore": school["jobs_zscore"],
-                "color": school["color"]
-            }
+                "color": school["color"],
+            },
         )
     test_session.commit()
 
@@ -90,15 +138,21 @@ class TestSchoolOfStudyIdsEndpoint:
 
     def test_school_of_study_ids_duplicate_categories(self, test_client, test_session):
         """Test endpoint handles duplicate categories correctly."""
+        # Clear existing data first
+        test_session.execute(text("DELETE FROM school_of_lvl_data"))
+        test_session.commit()
+
         # Insert duplicate data
-        test_session.execute(text("""
+        test_session.execute(
+            text("""
             INSERT INTO school_of_lvl_data
             (geoid, category, openings_2024_zscore, jobs_2024_zscore, openings_2024_zscore_color, geom)
             VALUES
             ('48113020100', 'ETMS', 1.5, 0.8, '#FF0000', '{"type": "Point", "coordinates": [-96.7970, 32.7767]}'),
             ('48113020200', 'ETMS', -0.3, 1.2, '#00FF00', '{"type": "Point", "coordinates": [-96.8000, 32.8000]}'),
             ('48113020300', 'BHGT', 0.7, -0.5, '#0000FF', '{"type": "Point", "coordinates": [-96.8100, 32.8100]}')
-        """))
+        """)
+        )
         test_session.commit()
 
         # Make request
@@ -147,8 +201,10 @@ class TestSchoolOfStudyIdsEndpoint:
 class TestSchoolOfStudyDataEndpoint:
     """Integration tests for /school_of_study_data/{category} endpoint."""
 
-    @patch('app.main.SchoolOfStudyService.get_school_spatial_data')
-    def test_school_of_study_data_valid_category(self, mock_service, test_client, setup_school_data):
+    @patch("app.main.SchoolOfStudyService.get_school_spatial_data")
+    def test_school_of_study_data_valid_category(
+        self, mock_service, test_client, setup_school_data
+    ):
         """Test endpoint with valid school category."""
         # Mock the spatial service to avoid PostGIS issues in SQLite
         mock_features = [
@@ -159,8 +215,8 @@ class TestSchoolOfStudyDataEndpoint:
                     category="ETMS",
                     openings_2024_zscore=1.5,
                     jobs_2024_zscore=0.8,
-                    openings_2024_zscore_color="#FF0000"
-                )
+                    openings_2024_zscore_color="#FF0000",
+                ),
             )
         ]
         mock_service.return_value = mock_features
@@ -190,8 +246,10 @@ class TestSchoolOfStudyDataEndpoint:
         assert "jobs_2024_zscore" in props
         assert "openings_2024_zscore_color" in props
 
-    @patch('app.main.SchoolOfStudyService.get_school_spatial_data')
-    def test_school_of_study_data_nonexistent_category(self, mock_service, test_client, setup_school_data):
+    @patch("app.main.SchoolOfStudyService.get_school_spatial_data")
+    def test_school_of_study_data_nonexistent_category(
+        self, mock_service, test_client, setup_school_data
+    ):
         """Test endpoint with category that doesn't exist."""
         mock_service.return_value = []  # Empty result
 
@@ -210,6 +268,10 @@ class TestSchoolOfStudyDataEndpoint:
 
         response = test_client.get("/school_of_study_data/ETMS")
 
+        # Debug: print the response if it's not 404
+        if response.status_code != 404:
+            print(f"DEBUG: Status {response.status_code}, Response: {response.text}")
+
         assert response.status_code == 404
         data = response.json()
         assert "detail" in data
@@ -218,14 +280,16 @@ class TestSchoolOfStudyDataEndpoint:
     def test_school_of_study_data_multiple_features(self, test_client, test_session):
         """Test endpoint returns multiple features for same category."""
         # Insert multiple features for same category
-        test_session.execute(text("""
+        test_session.execute(
+            text("""
             INSERT INTO school_of_lvl_data
             (geoid, category, openings_2024_zscore, jobs_2024_zscore, openings_2024_zscore_color, geom)
             VALUES
             ('48113020100', 'ETMS', 1.5, 0.8, '#FF0000', '{"type": "Point", "coordinates": [-96.7970, 32.7767]}'),
             ('48113020200', 'ETMS', -0.3, 1.2, '#00FF00', '{"type": "Point", "coordinates": [-96.8000, 32.8000]}'),
             ('48113020300', 'ETMS', 0.7, -0.5, '#0000FF', '{"type": "Point", "coordinates": [-96.8100, 32.8100]}')
-        """))
+        """)
+        )
         test_session.commit()
 
         response = test_client.get("/school_of_study_data/ETMS")
@@ -275,12 +339,14 @@ class TestSchoolOfStudyDataEndpoint:
     def test_school_of_study_data_null_values(self, test_client, test_session):
         """Test endpoint handles NULL values in optional fields."""
         # Insert data with NULL values
-        test_session.execute(text("""
+        test_session.execute(
+            text("""
             INSERT INTO school_of_lvl_data
             (geoid, category, openings_2024_zscore, jobs_2024_zscore, openings_2024_zscore_color, geom)
             VALUES
             ('48113020100', 'ETMS', NULL, NULL, NULL, '{"type": "Point", "coordinates": [-96.7970, 32.7767]}')
-        """))
+        """)
+        )
         test_session.commit()
 
         response = test_client.get("/school_of_study_data/ETMS")
@@ -298,10 +364,12 @@ class TestSchoolOfStudyDataEndpoint:
         assert props["geoid"] == "48113020100"  # Non-null values still present
         assert props["category"] == "ETMS"
 
-    @pytest.mark.parametrize("category", [
-        "BHGT", "CAED", "CE", "EDU", "ETMS", "HS", "LPS", "MIT"
-    ])
-    def test_school_of_study_data_all_valid_categories(self, test_client, setup_school_data, category):
+    @pytest.mark.parametrize(
+        "category", ["BHGT", "CAED", "CE", "EDU", "ETMS", "HS", "LPS", "MIT"]
+    )
+    def test_school_of_study_data_all_valid_categories(
+        self, test_client, setup_school_data, category
+    ):
         """Test each valid school category individually."""
         response = test_client.get(f"/school_of_study_data/{category}")
 
@@ -313,7 +381,9 @@ class TestSchoolOfStudyDataEndpoint:
         assert len(data["features"]) == 1
         assert data["features"][0]["properties"]["category"] == category
 
-    def test_school_of_study_data_case_sensitivity(self, test_client, setup_school_data):
+    def test_school_of_study_data_case_sensitivity(
+        self, test_client, setup_school_data
+    ):
         """Test that category parameter is case sensitive."""
         # Test lowercase
         response = test_client.get("/school_of_study_data/etms")
@@ -323,7 +393,9 @@ class TestSchoolOfStudyDataEndpoint:
         response = test_client.get("/school_of_study_data/ETMS")
         assert response.status_code == 200
 
-    def test_school_of_study_data_special_characters(self, test_client, setup_school_data):
+    def test_school_of_study_data_special_characters(
+        self, test_client, setup_school_data
+    ):
         """Test endpoint with special characters in category."""
         # Test with URL-encoded characters
         response = test_client.get("/school_of_study_data/ET%20MS")
@@ -333,7 +405,9 @@ class TestSchoolOfStudyDataEndpoint:
         response = test_client.get("/school_of_study_data/ET@MS")
         assert response.status_code == 404
 
-    def test_school_of_study_data_response_headers(self, test_client, setup_school_data):
+    def test_school_of_study_data_response_headers(
+        self, test_client, setup_school_data
+    ):
         """Test that response headers are set correctly."""
         response = test_client.get("/school_of_study_data/ETMS")
 
@@ -345,18 +419,21 @@ class TestSchoolOfStudyDataEndpoint:
         """Test endpoint with large number of features for one category."""
         # Insert 50 features for ETMS category
         for i in range(50):
-            test_session.execute(text("""
+            test_session.execute(
+                text("""
                 INSERT INTO school_of_lvl_data
                 (geoid, category, openings_2024_zscore, jobs_2024_zscore, openings_2024_zscore_color, geom)
                 VALUES
                 (:geoid, 'ETMS', :zscore, :jobs_zscore, '#FF0000', '{"type": "Point", "coordinates": [' || :lng || ', ' || :lat || ']}')
-            """), {
-                "geoid": f"48113{i:06d}",
-                "zscore": 1.5 + i * 0.1,
-                "jobs_zscore": 0.8 - i * 0.05,
-                "lng": -96.7970 + i * 0.001,
-                "lat": 32.7767 + i * 0.001
-            })
+            """),
+                {
+                    "geoid": f"48113{i:06d}",
+                    "zscore": 1.5 + i * 0.1,
+                    "jobs_zscore": 0.8 - i * 0.05,
+                    "lng": -96.7970 + i * 0.001,
+                    "lat": 32.7767 + i * 0.001,
+                },
+            )
         test_session.commit()
 
         response = test_client.get("/school_of_study_data/ETMS")
