@@ -1,6 +1,5 @@
 import { defineConfig } from 'vitest/config';
 import { resolve } from 'path';
-import { VitestReporter } from 'tdd-guard'
 
 export default defineConfig({
   // Reuse vite config
@@ -33,11 +32,7 @@ export default defineConfig({
         '!src/main.ts',
         '!src/types/**',
       ],
-      exclude: [
-        'node_modules/',
-        'dist/',
-        'src/__tests__/**',
-      ],
+      exclude: ['node_modules/', 'dist/', 'src/__tests__/**'],
       thresholds: {
         branches: 70,
         functions: 70,
@@ -53,7 +48,7 @@ export default defineConfig({
     exclude: ['node_modules', 'dist', '.idea', '.git', '.cache'],
 
     // Reporter
-    reporters: ['default', new VitestReporter()],
+    reporters: ['default'],
 
     // Test timeout
     testTimeout: 10000,

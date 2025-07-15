@@ -77,7 +77,3 @@ Thumbs.db
 
 # Pre-commit
 .pre-commit
-
-.claude/tdd-guard/data
-backend/.claude/tdd-guard/data
-frontend/.claude/tdd-guard/data
