@@ -5,9 +5,12 @@
 
 set -e
 
-# Get the tool name and file path from Claude Code environment
-TOOL_NAME="${CLAUDE_TOOL_NAME}"
-FILE_PATH="${CLAUDE_TOOL_RESULT_file_path}"
+# Read JSON from stdin
+JSON_INPUT=$(cat)
+
+# Parse tool name and file path from JSON using jq
+TOOL_NAME=$(echo "$JSON_INPUT" | jq -r '.tool_name // empty')
+FILE_PATH=$(echo "$JSON_INPUT" | jq -r '.tool_input.file_path // .tool_response.filePath // empty')
 
 # Exit if no file path (some tools might not have it)
 if [ -z "$FILE_PATH" ]; then
@@ -28,9 +31,13 @@ if [[ "$FILE_PATH" == *.py ]]; then
         nix develop -c ruff format "$FILE_PATH" --quiet 2>/dev/null || true
     fi
 elif [[ "$FILE_PATH" == *.js || "$FILE_PATH" == *.jsx || "$FILE_PATH" == *.ts || "$FILE_PATH" == *.tsx ]]; then
-    # JavaScript/TypeScript file - format with prettier
-    if [[ "$FILE_PATH" == frontend/* ]]; then
-        cd frontend && npx prettier --write "${FILE_PATH#frontend/}" --loglevel silent 2>/dev/null || true
+    # JavaScript/TypeScript file - format with eslint
+    if [[ "$FILE_PATH" == *frontend/* ]]; then
+        # Find the frontend directory
+        FRONTEND_DIR=$(echo "$FILE_PATH" | sed 's|/frontend/.*|/frontend|')
+        if [ -d "$FRONTEND_DIR" ]; then
+            cd "$FRONTEND_DIR" && npx eslint "$FILE_PATH" --fix 2>/dev/null || true
+        fi
     fi
 elif [[ "$FILE_PATH" == *.json ]]; then
     # JSON file - format with jq if available

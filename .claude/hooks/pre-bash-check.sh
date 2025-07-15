@@ -5,8 +5,11 @@
 
 set -e
 
-# Get the command from Claude Code environment
-COMMAND="${CLAUDE_TOOL_PARAMS_command}"
+# Read JSON from stdin
+JSON_INPUT=$(cat)
+
+# Parse the command from JSON using jq
+COMMAND=$(echo "$JSON_INPUT" | jq -r '.tool_input.command // empty')
 
 # Output JSON to control execution
 output_json() {
@@ -15,23 +18,13 @@ output_json() {
     echo "{\"continue\": $continue, \"decision_feedback\": \"$message\"}"
 }
 
-# Check for potentially dangerous commands
-DANGEROUS_PATTERNS=(
-    "rm -rf /"
-    "rm -rf /*"
-    "chmod -R 777"
-    ":(){ :|:& };:"  # Fork bomb
-    "> /dev/sda"
-    "dd if=/dev/zero"
-    "mkfs."
-)
+# Exit if no command
+if [ -z "$COMMAND" ]; then
+    exit 0
+fi
 
-for pattern in "${DANGEROUS_PATTERNS[@]}"; do
-    if [[ "$COMMAND" == *"$pattern"* ]]; then
-        output_json "false" "⚠️ Blocked dangerous command pattern: $pattern"
-        exit 0
-    fi
-done
+# Project-specific command checks are handled below
+# (Universal dangerous commands are blocked by global hooks)
 
 # Check for commands that modify git config (per CLAUDE.md instructions)
 if [[ "$COMMAND" == *"git config"* ]] && [[ "$COMMAND" != *"--get"* ]] && [[ "$COMMAND" != *"--list"* ]]; then
@@ -44,6 +37,9 @@ if [[ "$COMMAND" == *"npm install -g"* ]] || [[ "$COMMAND" == *"yarn global add"
     output_json "true" "⚠️ Warning: Global npm/yarn installs may conflict with Nix environment"
     exit 0
 fi
+
+# Get current working directory from session if available
+PWD=$(echo "$JSON_INPUT" | jq -r '.cwd // empty')
 
 # Check if running tests without being in correct directory
 if [[ "$COMMAND" == *"pytest"* ]] && [[ ! "$COMMAND" == *"cd backend"* ]] && [[ "$PWD" != */backend ]]; then

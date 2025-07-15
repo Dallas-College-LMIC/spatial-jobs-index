@@ -23,18 +23,6 @@
           }
         ]
       }
-    ],
-    "Stop": [
-      {
-        "matcher": ".*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "/home/ammar/Documents/projects/work/spatial-jobs-index/.claude/hooks/post-session-summary.sh",
-            "timeout": 3000
-          }
-        ]
-      }
     ]
   },
   "environment": {
