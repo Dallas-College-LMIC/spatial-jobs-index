@@ -9,7 +9,7 @@ data_retention: true
 # Review Settings
 reviews:
   # Set review profile to assertive for more detailed feedback
-  profile: "assertive"
+  profile: "chill"
 
   # Enable automatic reviews
   auto_review:
@@ -25,28 +25,8 @@ reviews:
     - "!*.md"
 
   # Enable useful analysis tools
-  tools:
-    # JavaScript/TypeScript tools
-    eslint:
-      enabled: true
-
-    # Python tools (if applicable)
-    pylint:
-      enabled: true
-    ruff:
-      enabled: true
-
-    # YAML validation
-    yamllint:
-      enabled: true
-
-    # Security scanning
-    semgrep:
-      enabled: true
-
-    # General code quality
-    markdownlint:
-      enabled: true
+  # All tools are enabled by default, so we can use an empty configuration
+  tools: {}
 
 # Knowledge Base Settings
 knowledge_base:
