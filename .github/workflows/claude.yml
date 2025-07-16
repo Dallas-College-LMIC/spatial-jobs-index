@@ -1,5 +1,78 @@
 name: Claude Code
 
+# Define reusable allowed tools list
+x-allowed-tools: &allowed-tools |
+  # Git operations
+  Bash(git add *)
+  Bash(git commit -m *)
+  Bash(git push)
+  Bash(git pull)
+  Bash(git status)
+  Bash(git diff)
+  Bash(git log *)
+  Bash(git branch *)
+  Bash(git checkout *)
+
+  # GitHub CLI
+  Bash(gh pr create *)
+  Bash(gh pr review *)
+  Bash(gh pr view *)
+  Bash(gh api *)
+
+  # Frontend tools (npm/Node.js)
+  Bash(npm install)
+  Bash(npm run build)
+  Bash(npm run dev)
+  Bash(npm run test)
+  Bash(npm run test:*)
+  Bash(npm run lint)
+  Bash(npm run lint:fix)
+  Bash(npm run format)
+  Bash(npm run format:check)
+  Bash(npm run type-check)
+  Bash(npm run preview)
+  Bash(npm run deploy)
+
+  # Backend tools (Python/uv)
+  Bash(cd backend && uv run pytest *)
+  Bash(cd backend && uv run ruff *)
+  Bash(cd backend && uv run mypy *)
+  Bash(cd backend && uv run python *)
+  Bash(cd backend && uv sync)
+  Bash(cd backend && uv pip install *)
+
+  # Nix tools (for development environment)
+  Bash(nix develop)
+  Bash(nix build)
+  Bash(nix flake check)
+  Bash(nix flake update)
+
+  # Essential file operations (restricted)
+  Bash(ls -la)
+  Bash(pwd)
+  Bash(cd frontend)
+  Bash(cd backend)
+  Bash(cd ..)
+  Bash(mkdir -p *)
+  Bash(rm -f *.tmp)
+  Bash(rm -f *.log)
+  Bash(rm -rf node_modules)
+  Bash(rm -rf dist)
+  Bash(rm -rf coverage)
+
+  # Search tools (as per CLAUDE.md)
+  Bash(rg *)
+  Bash(fd *)
+  Bash(jq *)
+
+  # Read-only operations
+  Bash(cat *)
+  Bash(head -n *)
+  Bash(tail -n *)
+  Bash(wc -l *)
+  Bash(which *)
+  Bash(env | grep *)
+
 on:
   issue_comment:
     types: [created]
@@ -50,7 +123,7 @@ jobs:
           # assignee_trigger: "claude-bot"
 
           # Optional: Allow Claude to run specific commands
-          allowed_tools: "Bash(npm install),Bash(npm run build),Bash(npm run test:*),Bash(npm run lint:*),Bash(git *),Bash(npm *),Bash(yarn *),Bash(pnpm *),Bash(gh *),Bash(nix *),Bash(nix-shell *),Bash(nix-build *),Bash(nix-env *),Bash(nixos-rebuild *),Bash(rg *),Bash(fd *),Bash(jq *),Bash(docker *),Bash(docker-compose *),Bash(make *),Bash(cmake *),Bash(cargo *),Bash(rustc *),Bash(python *),Bash(pip *),Bash(poetry *),Bash(node *),Bash(npx *),Bash(pnpx *),Bash(curl *),Bash(wget *),Bash(cat *),Bash(ls *),Bash(grep *),Bash(sed *),Bash(awk *),Bash(find *),Bash(which *),Bash(pwd),Bash(cd *),Bash(mkdir *),Bash(rm *),Bash(cp *),Bash(mv *),Bash(touch *),Bash(echo *),Bash(head *),Bash(tail *),Bash(less *),Bash(more *),Bash(wc *),Bash(sort *),Bash(uniq *),Bash(diff *),Bash(patch *),Bash(tar *),Bash(gzip *),Bash(gunzip *),Bash(zip *),Bash(unzip *),Bash(chmod *),Bash(chown *),Bash(ps *),Bash(top),Bash(htop),Bash(kill *),Bash(pkill *),Bash(env),Bash(export *),Bash(source *),Bash(bash *),Bash(sh *),Bash(zsh *),Bash(fish *)"
+          allowed_tools: *allowed-tools
 
           # Optional: Add custom instructions for Claude to customize its behavior for your project
           # custom_instructions: |

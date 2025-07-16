@@ -68,8 +68,38 @@ jobs:
           #   'Welcome! Please review this PR from a first-time contributor. Be encouraging and provide detailed explanations for any suggestions.' ||
           #   'Please provide a thorough code review focusing on our coding standards and best practices.' }}
 
-          # Optional: Add specific tools for running tests or linting
-          allowed_tools: "Bash(npm run test),Bash(npm run lint),Bash(npm run typecheck),Bash(npm install),Bash(npm run build),Bash(git *),Bash(npm *),Bash(yarn *),Bash(pnpm *),Bash(gh *),Bash(nix *),Bash(nix-shell *),Bash(nix-build *),Bash(nix-env *),Bash(nixos-rebuild *),Bash(rg *),Bash(fd *),Bash(jq *),Bash(docker *),Bash(docker-compose *),Bash(make *),Bash(cmake *),Bash(cargo *),Bash(rustc *),Bash(python *),Bash(pip *),Bash(poetry *),Bash(node *),Bash(npx *),Bash(pnpx *),Bash(curl *),Bash(wget *),Bash(cat *),Bash(ls *),Bash(grep *),Bash(sed *),Bash(awk *),Bash(find *),Bash(which *),Bash(pwd),Bash(cd *),Bash(mkdir *),Bash(rm *),Bash(cp *),Bash(mv *),Bash(touch *),Bash(echo *),Bash(head *),Bash(tail *),Bash(less *),Bash(more *),Bash(wc *),Bash(sort *),Bash(uniq *),Bash(diff *),Bash(patch *),Bash(tar *),Bash(gzip *),Bash(gunzip *),Bash(zip *),Bash(unzip *),Bash(chmod *),Bash(chown *),Bash(ps *),Bash(top),Bash(htop),Bash(kill *),Bash(pkill *),Bash(env),Bash(export *),Bash(source *),Bash(bash *),Bash(sh *),Bash(zsh *),Bash(fish *)"
+          # Restricted tools for code review - focused on testing and analysis
+          allowed_tools: |
+            # Frontend testing and linting
+            Bash(npm install)
+            Bash(npm run test)
+            Bash(npm run test:run)
+            Bash(npm run lint)
+            Bash(npm run lint:fix)
+            Bash(npm run type-check)
+            Bash(npm run format:check)
+            Bash(npm run build)
+
+            # Backend testing and linting
+            Bash(cd backend && uv run pytest *)
+            Bash(cd backend && uv run ruff check *)
+            Bash(cd backend && uv run mypy *)
+
+            # Git operations (read-only for review)
+            Bash(git diff)
+            Bash(git log -n 10)
+            Bash(git status)
+
+            # Search tools for code analysis
+            Bash(rg *)
+            Bash(fd *)
+
+            # Read-only file operations
+            Bash(cat *)
+            Bash(head -n *)
+            Bash(ls -la)
+            Bash(pwd)
+            Bash(which *)
 
           # Optional: Skip review for certain conditions
           # if: |
