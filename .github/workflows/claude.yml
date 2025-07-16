@@ -124,7 +124,7 @@ jobs:
           # assignee_trigger: "claude-bot"
 
           # Optional: Allow Claude to run specific commands
-          allowed_tools: "*allowed-tools"
+          allowed_tools: *allowed-tools
 
           # Optional: Add custom instructions for Claude to customize its behavior for your project
           # custom_instructions: |
