@@ -1,8 +1,10 @@
 name: Claude Code
 
-# Define reusable allowed tools list
-x-allowed-tools: &allowed-tools |
-  # Git operations
+# Define reusable allowed tools list under a legal node (e.g. env)
+env:
+  ALLOWED_TOOLS: &allowed-tools |
+    # Git operations
+    …
   Bash(git add *)
   Bash(git commit -m *)
   Bash(git push)
