@@ -117,6 +117,66 @@ def test_engine():
                 PRIMARY KEY (geoid, category)
             )
         """))
+
+        # Create school_of_study_codes table
+        conn.execute(text("""
+            CREATE TABLE IF NOT EXISTS school_of_study_codes (
+                school_code VARCHAR NOT NULL PRIMARY KEY,
+                school_name VARCHAR
+            )
+        """))
+
+        # Insert sample data for testing
+        
+        # Sample occupation codes data
+        conn.execute(text("""
+            INSERT OR IGNORE INTO occupation_codes (occupation_code, occupation_name) VALUES
+            ('11-1021', 'General and Operations Managers'),
+            ('15-1252', 'Software Developers'),
+            ('29-1141', 'Registered Nurses'),
+            ('33-3051', 'Police and Sheriff''s Patrol Officers'),
+            ('41-2031', 'Retail Salespersons'),
+            ('49-3023', 'Automotive Service Technicians and Mechanics'),
+            ('51-3091', 'Food Servers, Nonrestaurant'),
+            ('53-3032', 'Heavy and Tractor-Trailer Truck Drivers'),
+            ('99-9999', 'All Other Occupations')
+        """))
+
+        # Sample school of study codes data
+        conn.execute(text("""
+            INSERT OR IGNORE INTO school_of_study_codes (school_code, school_name) VALUES
+            ('BHGT', 'Biological and Biomedical Sciences'),
+            ('CAED', 'Computer and Information Sciences'),
+            ('CE', 'Engineering'),
+            ('EDU', 'Education'),
+            ('ETMS', 'Engineering Technologies'),
+            ('HS', 'Health Sciences'),
+            ('LPS', 'Legal Professions and Studies'),
+            ('MIT', 'Multi/Interdisciplinary Studies')
+        """))
+
+        # Sample occupation level data
+        conn.execute(text("""
+            INSERT OR IGNORE INTO occupation_lvl_data (geoid, category, openings_2024_zscore, jobs_2024_zscore, openings_2024_zscore_color, geom) VALUES
+            ('48257050209', '51-3091', -0.0956, 0.0187, '-0.5SD ~ +0.5SD', '{"type":"Point","coordinates":[-96.7970,32.7767]}'),
+            ('48257050213', '51-3091', -0.2926, -0.2762, '-0.5SD ~ +0.5SD', '{"type":"Point","coordinates":[-96.3838,32.7399]}'),
+            ('12345', '11-1021', 1.5, 1.2, 'High', '{"type":"Point","coordinates":[-96.7970,32.7767]}')
+        """))
+
+        # Sample school level data
+        conn.execute(text("""
+            INSERT OR IGNORE INTO school_of_lvl_data (geoid, category, openings_2024_zscore, jobs_2024_zscore, openings_2024_zscore_color, geom) VALUES
+            ('12345', 'BHGT', 1.5, 1.2, 'High', '{"type":"Point","coordinates":[-96.7970,32.7767]}'),
+            ('67890', 'CAED', 0.8, 0.9, 'Medium', '{"type":"Point","coordinates":[-96.3838,32.7399]}')
+        """))
+
+        # Sample TTI data
+        conn.execute(text("""
+            INSERT OR IGNORE INTO tti_clone (geoid, all_jobs_zscore, all_jobs_zscore_cat, living_wage_zscore, living_wage_zscore_cat, not_living_wage_zscore, not_living_wage_zscore_cat, geom) VALUES
+            ('12345', 1.5, 'High', 0.8, 'Medium', -0.5, 'Low', '{"type":"Point","coordinates":[-96.7970,32.7767]}'),
+            ('67890', 0.2, 'Medium', 0.1, 'Medium', 0.3, 'Medium', '{"type":"Point","coordinates":[-96.3838,32.7399]}')
+        """))
+
         conn.commit()
 
     yield engine

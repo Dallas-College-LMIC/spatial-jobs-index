@@ -7,8 +7,21 @@ from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 from typing import cast, Any
 from .database import DatabaseConfig, init_database, get_db_session
-from .models import OccupationsResponse, OccupationItem, GeoJSONFeatureCollection, OccupationGeoJSONFeatureCollection, IsochroneFeatureCollection, SchoolOfStudyIdsResponse, SchoolOfStudyGeoJSONFeatureCollection
-from .services import OccupationService, SpatialService, IsochroneService, SchoolOfStudyService
+from .models import (
+    OccupationsResponse,
+    OccupationItem,
+    GeoJSONFeatureCollection,
+    OccupationGeoJSONFeatureCollection,
+    IsochroneFeatureCollection,
+    SchoolOfStudyIdsResponse,
+    SchoolOfStudyGeoJSONFeatureCollection,
+)
+from .services import (
+    OccupationService,
+    SpatialService,
+    IsochroneService,
+    SchoolOfStudyService,
+)
 
 load_dotenv()
 
@@ -82,7 +95,8 @@ def get_occupation_ids(request: Request, session: Session = Depends(get_db_sessi
     for job market analysis and spatial data visualization.
     """
     try:
-        occupations = OccupationService.get_occupations_with_names(session)
+        service = OccupationService(session)
+        occupations = service.get_occupations_with_names()
         occupation_items = [OccupationItem(**occ) for occ in occupations]
         return OccupationsResponse(occupations=occupation_items)
     except Exception as e:
@@ -93,7 +107,8 @@ def get_occupation_ids(request: Request, session: Session = Depends(get_db_sessi
 @limiter.limit("10/minute")
 def get_geojson(request: Request, session: Session = Depends(get_db_session)):
     try:
-        features = SpatialService.get_geojson_features(session)
+        service = SpatialService(session)
+        features = service.get_geojson_features()
 
         geojson_collection = GeoJSONFeatureCollection(features=features)
 
@@ -108,13 +123,19 @@ def get_geojson(request: Request, session: Session = Depends(get_db_session)):
 
 @app.get("/occupation_data/{category}")
 @limiter.limit("30/minute")
-def get_occupation_spatial_data(category: str, request: Request, session: Session = Depends(get_db_session)):
+def get_occupation_spatial_data(
+    category: str, request: Request, session: Session = Depends(get_db_session)
+):
     """Get spatial data for a specific occupation category"""
     try:
-        features = OccupationService.get_occupation_spatial_data(session, category)
+        service = OccupationService(session)
+        features = service.get_occupation_spatial_data(category)
 
         if not features:
-            raise HTTPException(status_code=404, detail=f"No data found for occupation category: {category}")
+            raise HTTPException(
+                status_code=404,
+                detail=f"No data found for occupation category: {category}",
+            )
 
         geojson_collection = OccupationGeoJSONFeatureCollection(features=features)
 
@@ -128,19 +149,27 @@ def get_occupation_spatial_data(category: str, request: Request, session: Sessio
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
+
 @app.get("/isochrones/{geoid}")
 @limiter.limit("30/minute")
-def get_isochrones(geoid: str, request: Request, session: Session = Depends(get_db_session)):
+def get_isochrones(
+    geoid: str, request: Request, session: Session = Depends(get_db_session)
+):
     """Get isochrone travel time bands for a specific census tract"""
     try:
         # Validate geoid format (should be numeric)
         if not geoid.isdigit():
-            raise HTTPException(status_code=400, detail="Invalid geoid format. Must be numeric.")
+            raise HTTPException(
+                status_code=400, detail="Invalid geoid format. Must be numeric."
+            )
 
-        features = IsochroneService.get_isochrones_by_geoid(session, geoid)
+        service = IsochroneService(session)
+        features = service.get_isochrones_by_geoid(geoid)
 
         if not features:
-            raise HTTPException(status_code=404, detail=f"No isochrone data found for geoid: {geoid}")
+            raise HTTPException(
+                status_code=404, detail=f"No isochrone data found for geoid: {geoid}"
+            )
 
         geojson_collection = IsochroneFeatureCollection(features=features)
 
@@ -155,9 +184,15 @@ def get_isochrones(geoid: str, request: Request, session: Session = Depends(get_
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 
-@app.get("/school_of_study_ids", response_model=SchoolOfStudyIdsResponse, tags=["School of Study"])
+@app.get(
+    "/school_of_study_ids",
+    response_model=SchoolOfStudyIdsResponse,
+    tags=["School of Study"],
+)
 @limiter.limit("30/minute")
-def get_school_of_study_ids(request: Request, session: Session = Depends(get_db_session)):
+def get_school_of_study_ids(
+    request: Request, session: Session = Depends(get_db_session)
+):
     """
     Get all available school of study categories.
 
@@ -178,7 +213,8 @@ def get_school_of_study_ids(request: Request, session: Session = Depends(get_db_
     Returns a dictionary mapping category codes to human-readable names.
     """
     try:
-        school_ids = SchoolOfStudyService.get_school_ids(session)
+        service = SchoolOfStudyService(session)
+        school_ids = service.get_school_ids()
         return SchoolOfStudyIdsResponse(school_ids=school_ids)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
@@ -187,9 +223,7 @@ def get_school_of_study_ids(request: Request, session: Session = Depends(get_db_
 @app.get("/school_of_study_data/{category}", tags=["School of Study"])
 @limiter.limit("30/minute")
 def get_school_of_study_spatial_data(
-    category: str,
-    request: Request,
-    session: Session = Depends(get_db_session)
+    category: str, request: Request, session: Session = Depends(get_db_session)
 ):
     """
     Get spatial GeoJSON data for a specific school of study category.
@@ -214,10 +248,13 @@ def get_school_of_study_spatial_data(
     Returns 404 if category is not found or has no associated spatial data.
     """
     try:
-        features = SchoolOfStudyService.get_school_spatial_data(session, category)
+        service = SchoolOfStudyService(session)
+        features = service.get_school_spatial_data(category)
 
         if not features:
-            raise HTTPException(status_code=404, detail=f"No data found for school category: {category}")
+            raise HTTPException(
+                status_code=404, detail=f"No data found for school category: {category}"
+            )
 
         geojson_collection = SchoolOfStudyGeoJSONFeatureCollection(features=features)
 
