@@ -39,26 +39,25 @@ jobs:
           # This is an optional setting that allows Claude to read CI results on PRs
           additional_permissions: |
             actions: read
-          
+
           # Optional: Specify model (defaults to Claude Sonnet 4, uncomment for Claude Opus 4)
           # model: "claude-opus-4-20250514"
-          
+
           # Optional: Customize the trigger phrase (default: @claude)
           # trigger_phrase: "/claude"
-          
+
           # Optional: Trigger when specific user is assigned to an issue
           # assignee_trigger: "claude-bot"
-          
+
           # Optional: Allow Claude to run specific commands
-          # allowed_tools: "Bash(npm install),Bash(npm run build),Bash(npm run test:*),Bash(npm run lint:*)"
-          
+          allowed_tools: "Bash(npm install),Bash(npm run build),Bash(npm run test:*),Bash(npm run lint:*),Bash(git *),Bash(npm *),Bash(yarn *),Bash(pnpm *),Bash(gh *),Bash(nix *),Bash(nix-shell *),Bash(nix-build *),Bash(nix-env *),Bash(nixos-rebuild *),Bash(rg *),Bash(fd *),Bash(jq *),Bash(docker *),Bash(docker-compose *),Bash(make *),Bash(cmake *),Bash(cargo *),Bash(rustc *),Bash(python *),Bash(pip *),Bash(poetry *),Bash(node *),Bash(npx *),Bash(pnpx *),Bash(curl *),Bash(wget *),Bash(cat *),Bash(ls *),Bash(grep *),Bash(sed *),Bash(awk *),Bash(find *),Bash(which *),Bash(pwd),Bash(cd *),Bash(mkdir *),Bash(rm *),Bash(cp *),Bash(mv *),Bash(touch *),Bash(echo *),Bash(head *),Bash(tail *),Bash(less *),Bash(more *),Bash(wc *),Bash(sort *),Bash(uniq *),Bash(diff *),Bash(patch *),Bash(tar *),Bash(gzip *),Bash(gunzip *),Bash(zip *),Bash(unzip *),Bash(chmod *),Bash(chown *),Bash(ps *),Bash(top),Bash(htop),Bash(kill *),Bash(pkill *),Bash(env),Bash(export *),Bash(source *),Bash(bash *),Bash(sh *),Bash(zsh *),Bash(fish *)"
+
           # Optional: Add custom instructions for Claude to customize its behavior for your project
           # custom_instructions: |
           #   Follow our coding standards
           #   Ensure all new code has tests
           #   Use TypeScript for new files
-          
+
           # Optional: Custom environment variables for Claude
           # claude_env: |
           #   NODE_ENV: test
-
