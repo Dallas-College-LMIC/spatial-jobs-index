@@ -1,0 +1,60 @@
+# CodeRabbit Configuration
+# Documentation: https://docs.coderabbit.ai/guides/configure-coderabbit
+
+# Global Settings
+language: "en-US"
+early_access: false
+data_retention: true
+
+# Review Settings
+reviews:
+  # Set review profile to assertive for more detailed feedback
+  profile: "assertive"
+
+  # Enable automatic reviews
+  auto_review:
+    enabled: true
+
+  # Review all source code but exclude test files and documentation
+  path_filters:
+    - "!**/*.test.js"
+    - "!**/*.test.ts"
+    - "!**/*.spec.js"
+    - "!**/*.spec.ts"
+    - "!docs/**"
+    - "!*.md"
+
+  # Enable useful analysis tools
+  tools:
+    # JavaScript/TypeScript tools
+    eslint:
+      enabled: true
+
+    # Python tools (if applicable)
+    pylint:
+      enabled: true
+    ruff:
+      enabled: true
+
+    # YAML validation
+    yamllint:
+      enabled: true
+
+    # Security scanning
+    semgrep:
+      enabled: true
+
+    # General code quality
+    markdownlint:
+      enabled: true
+
+# Knowledge Base Settings
+knowledge_base:
+  # Keep review history for learning
+  opt_out: false
+
+# Code Generation Settings
+code_generation:
+  # Generate docstrings in English
+  docstrings:
+    language: "en-US"
