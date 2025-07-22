@@ -24,8 +24,5 @@
         ]
       }
     ]
-  },
-  "environment": {
-    "preferNixShell": true
   }
 }
