@@ -243,92 +243,21 @@
         };
 
         devShells = {
-          # Backend development shell with pre-installed dependencies (uv2nix)
-          backend = pkgs.mkShell {
+          # Combined development shell (impure approach for faster iteration)
+          default = pkgs.mkShell {
             buildInputs = [
-              backendDevVenv  # Virtual environment with all dependencies
-              pkgs.ruff
-              pkgs.uv
-              pkgs.gcc
-              pkgs.stdenv.cc.cc.lib
-              pkgs.pre-commit
-            ];
-
-            env = {
-              # Don't create venv using uv
-              UV_NO_SYNC = "1";
-              # Force uv to use Python interpreter from venv
-              UV_PYTHON = "${backendDevVenv}/bin/python";
-              # Prevent uv from downloading managed Python's
-              UV_PYTHON_DOWNLOADS = "never";
-            };
-
-            shellHook = ''
-              unset PYTHONPATH
-              echo "Backend development shell activated (pure uv2nix)"
-              echo "All Python dependencies are pre-installed via Nix"
-              echo "Run 'cd backend' to enter the backend directory"
-              echo "Run 'python -m uvicorn app.main:app --reload' to start the API"
-              echo "Run 'pytest' to run tests (all dependencies available)"
-            '';
-          };
-
-          # Backend development shell - impure (manual dependency management)
-          backend-impure = pkgs.mkShell {
-            buildInputs = [
+              # Python and backend tools
               python
               pkgs.ruff
               pkgs.uv
               pkgs.gcc
               pkgs.stdenv.cc.cc.lib
               pkgs.pre-commit
-            ] ++ (with pkgs.python313Packages; [
-              mypy
-              python-lsp-server
-              python-lsp-ruff
-              pylsp-mypy
-            ]);
-
-            env = {
-              UV_PYTHON_DOWNLOADS = "never";
-              UV_PYTHON = python.interpreter;
-            };
-
-            shellHook = ''
-              unset PYTHONPATH
-              echo "Backend development shell activated (impure)"
-              echo "Run 'cd backend' to enter the backend directory"
-              echo "Run 'uv sync' to install dependencies"
-              echo "Run 'uv run python -m uvicorn app.main:app --reload' to start the API"
-            '';
-          };
-
-          # Frontend development shell
-          frontend = pkgs.mkShell {
-            buildInputs = with pkgs; [
-              nodejs
-              nodePackages.npm
-            ];
-
-            shellHook = ''
-              echo "Frontend development shell activated"
-              echo "Run 'cd frontend' to enter the frontend directory"
-              echo "Run 'npm install' to install dependencies"
-              echo "Run 'npm run dev' to start the development server"
-            '';
-          };
-
-          # Combined development shell
-          default = pkgs.mkShell {
-            buildInputs = [
-              # Backend with pre-installed dependencies
-              backendDevVenv
-              # Backend tools
-              pkgs.ruff
-              pkgs.uv
-              pkgs.gcc
-              pkgs.stdenv.cc.cc.lib
-              pkgs.pre-commit
+              # Python LSP tools for IDE support
+              pkgs.python313Packages.mypy
+              pkgs.python313Packages.python-lsp-server
+              pkgs.python313Packages.python-lsp-ruff
+              pkgs.python313Packages.pylsp-mypy
               # Frontend tools
               pkgs.nodejs
               pkgs.nodePackages.npm
@@ -340,19 +269,29 @@
             ];
 
             env = {
-              # Don't create venv using uv
-              UV_NO_SYNC = "1";
-              # Force uv to use Python interpreter from venv
-              UV_PYTHON = "${backendDevVenv}/bin/python";
               # Prevent uv from downloading managed Python's
               UV_PYTHON_DOWNLOADS = "never";
+              UV_PYTHON = python.interpreter;
             };
 
             shellHook = ''
               unset PYTHONPATH
+              # Set project directories to actual working paths
+              export PROJECT_ROOT="$PWD"
+              export BACKEND_DIR="$PWD/backend"
+              export FRONTEND_DIR="$PWD/frontend"
               echo "Spatial Jobs Index Monorepo Development Shell"
               echo ""
-              echo "Available commands:"
+              echo "Backend setup:"
+              echo "  cd backend && uv sync    - Install Python dependencies"
+              echo "  uv run pytest            - Run backend tests"
+              echo "  uv run python -m uvicorn app.main:app --reload - Start API server"
+              echo ""
+              echo "Frontend setup:"
+              echo "  cd frontend && npm install - Install frontend dependencies"
+              echo "  npm run dev               - Start frontend dev server"
+              echo ""
+              echo "Available nix commands:"
               echo "  nix run .#backend    - Run the backend API server"
               echo "  nix run .#frontend   - Run the frontend dev server"
               echo "  nix run              - Run both services"
@@ -360,12 +299,6 @@
               echo "  nix build .#backend        - Build backend package"
               echo "  nix build .#frontend       - Build frontend for production"
               echo "  nix build .#backend-docker - Build backend Docker image"
-              echo ""
-              echo "  nix develop .#backend  - Enter backend-only dev shell (with deps)"
-              echo "  nix develop .#backend-impure - Enter backend shell (manual deps)"
-              echo "  nix develop .#frontend - Enter frontend-only dev shell"
-              echo ""
-              echo "Backend Python dependencies are pre-installed via Nix"
             '';
           };
         };
