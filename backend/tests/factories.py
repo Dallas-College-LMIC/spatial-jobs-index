@@ -3,6 +3,7 @@ Test data factories using factory-boy.
 
 These factories provide consistent test data generation for models.
 """
+
 import factory
 from factory.alchemy import SQLAlchemyModelFactory
 from faker import Faker
@@ -63,8 +64,8 @@ class OccupationLvlDataFactory(BaseFactory):
             "Building and Grounds Cleaning and Maintenance",
             "Community and Social Service",
             "Legal",
-            "Farming, Fishing, and Forestry"
-        ]
+            "Farming, Fishing, and Forestry",
+        ],
     )
 
 
@@ -84,7 +85,7 @@ class TTICloneFactory(BaseFactory):
         right_digits=2,
         positive=False,
         min_value=-3.0,
-        max_value=3.0
+        max_value=3.0,
     )
 
     # Category based on z-score
@@ -98,7 +99,7 @@ class TTICloneFactory(BaseFactory):
         right_digits=2,
         positive=False,
         min_value=-3.0,
-        max_value=3.0
+        max_value=3.0,
     )
 
     living_wage_zscore_cat = factory.LazyAttribute(
@@ -111,7 +112,7 @@ class TTICloneFactory(BaseFactory):
         right_digits=2,
         positive=False,
         min_value=-3.0,
-        max_value=3.0
+        max_value=3.0,
     )
 
     not_living_wage_zscore_cat = factory.LazyAttribute(
@@ -122,7 +123,7 @@ class TTICloneFactory(BaseFactory):
     geom = factory.LazyFunction(
         lambda: WKTElement(
             f"POINT({random.uniform(-97.5, -96.5)} {random.uniform(32.5, 33.0)})",
-            srid=4326
+            srid=4326,
         )
     )
 
@@ -161,11 +162,13 @@ class TTICloneFactory(BaseFactory):
 
             # Override geometry in kwargs
             kwargs_copy = kwargs.copy()
-            kwargs_copy['geom'] = geom
+            kwargs_copy["geom"] = geom
 
             # Create instance
             if session:
-                instance = cls._create(model_class=cls._meta.model, session=session, **kwargs_copy)
+                instance = cls._create(
+                    model_class=cls._meta.model, session=session, **kwargs_copy
+                )
             else:
                 instance = cls.build(**kwargs_copy)
 
@@ -187,8 +190,8 @@ class GeoJSONFeatureFactory(factory.Factory):
             "type": "Point",
             "coordinates": [
                 random.uniform(-97.5, -96.5),  # longitude
-                random.uniform(32.5, 33.0)      # latitude
-            ]
+                random.uniform(32.5, 33.0),  # latitude
+            ],
         }
     )
 
@@ -200,7 +203,7 @@ class GeoJSONFeatureFactory(factory.Factory):
             "living_wage_zscore": round(random.uniform(-3.0, 3.0), 2),
             "living_wage_zscore_cat": random.choice(["High", "Medium", "Low"]),
             "not_living_wage_zscore": round(random.uniform(-3.0, 3.0), 2),
-            "not_living_wage_zscore_cat": random.choice(["High", "Medium", "Low"])
+            "not_living_wage_zscore_cat": random.choice(["High", "Medium", "Low"]),
         }
     )
 
@@ -231,7 +234,7 @@ def create_sample_occupation_data(session, count=10):
         "Office and Administrative Support",
         "Production",
         "Transportation and Material Moving",
-        "Sales and Related"
+        "Sales and Related",
     ]
 
     # Configure factory to use the session
@@ -277,7 +280,7 @@ def create_test_database_data(session):
             TTICloneFactory(
                 all_jobs_zscore=random.uniform(1.5, 3.0),
                 living_wage_zscore=random.uniform(1.5, 3.0),
-                not_living_wage_zscore=random.uniform(-3.0, -1.5)
+                not_living_wage_zscore=random.uniform(-3.0, -1.5),
             )
         )
 
@@ -287,7 +290,7 @@ def create_test_database_data(session):
             TTICloneFactory(
                 all_jobs_zscore=random.uniform(-0.5, 0.5),
                 living_wage_zscore=random.uniform(-0.5, 0.5),
-                not_living_wage_zscore=random.uniform(-0.5, 0.5)
+                not_living_wage_zscore=random.uniform(-0.5, 0.5),
             )
         )
 
@@ -297,13 +300,10 @@ def create_test_database_data(session):
             TTICloneFactory(
                 all_jobs_zscore=random.uniform(-3.0, -1.5),
                 living_wage_zscore=random.uniform(-3.0, -1.5),
-                not_living_wage_zscore=random.uniform(1.5, 3.0)
+                not_living_wage_zscore=random.uniform(1.5, 3.0),
             )
         )
 
     session.commit()
 
-    return {
-        "occupations": occupations,
-        "spatial_data": spatial_data
-    }
+    return {"occupations": occupations, "spatial_data": spatial_data}

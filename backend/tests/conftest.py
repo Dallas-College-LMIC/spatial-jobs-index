@@ -3,6 +3,7 @@ Global pytest fixtures for spatial-index-api tests.
 
 This module contains fixtures that are available to all test modules.
 """
+
 import os
 import pytest
 from typing import Generator, Dict, Any
@@ -26,7 +27,7 @@ TEST_DB_CONFIG = {
     "USERNAME": "test_user",
     "PASS": "test_pass",
     "URL": "test_host:5432",
-    "DB": "test_db"
+    "DB": "test_db",
 }
 
 
@@ -44,7 +45,7 @@ def test_db_config(mock_env_vars) -> DatabaseConfig:
         username=TEST_DB_CONFIG["USERNAME"],
         password=TEST_DB_CONFIG["PASS"],
         url=TEST_DB_CONFIG["URL"],
-        database=TEST_DB_CONFIG["DB"]
+        database=TEST_DB_CONFIG["DB"],
     )
 
 
@@ -60,7 +61,7 @@ def test_engine():
         "sqlite:///:memory:",
         connect_args={"check_same_thread": False},
         poolclass=StaticPool,
-        echo=False
+        echo=False,
     )
 
     # Enable foreign key support in SQLite
@@ -71,7 +72,8 @@ def test_engine():
     # Create tables manually without schema since SQLite doesn't support schemas
     with engine.connect() as conn:
         # Create occupation_lvl_data table
-        conn.execute(text("""
+        conn.execute(
+            text("""
             CREATE TABLE IF NOT EXISTS occupation_lvl_data (
                 geoid VARCHAR NOT NULL,
                 category VARCHAR NOT NULL,
@@ -81,10 +83,12 @@ def test_engine():
                 geom TEXT,
                 PRIMARY KEY (geoid, category)
             )
-        """))
+        """)
+        )
 
         # Create tti_clone table (without geometry for SQLite)
-        conn.execute(text("""
+        conn.execute(
+            text("""
             CREATE TABLE IF NOT EXISTS tti_clone (
                 geoid VARCHAR NOT NULL PRIMARY KEY,
                 all_jobs_zscore FLOAT,
@@ -95,18 +99,22 @@ def test_engine():
                 not_living_wage_zscore_cat VARCHAR,
                 geom TEXT
             )
-        """))
+        """)
+        )
 
         # Create occupation_codes table
-        conn.execute(text("""
+        conn.execute(
+            text("""
             CREATE TABLE IF NOT EXISTS occupation_codes (
                 occupation_code VARCHAR NOT NULL PRIMARY KEY,
                 occupation_name VARCHAR
             )
-        """))
+        """)
+        )
 
         # Create school_of_lvl_data table
-        conn.execute(text("""
+        conn.execute(
+            text("""
             CREATE TABLE IF NOT EXISTS school_of_lvl_data (
                 geoid VARCHAR NOT NULL,
                 category VARCHAR NOT NULL,
@@ -116,20 +124,24 @@ def test_engine():
                 geom TEXT,
                 PRIMARY KEY (geoid, category)
             )
-        """))
+        """)
+        )
 
         # Create school_of_study_codes table
-        conn.execute(text("""
+        conn.execute(
+            text("""
             CREATE TABLE IF NOT EXISTS school_of_study_codes (
                 school_code VARCHAR NOT NULL PRIMARY KEY,
                 school_name VARCHAR
             )
-        """))
+        """)
+        )
 
         # Insert sample data for testing
-        
+
         # Sample occupation codes data
-        conn.execute(text("""
+        conn.execute(
+            text("""
             INSERT OR IGNORE INTO occupation_codes (occupation_code, occupation_name) VALUES
             ('11-1021', 'General and Operations Managers'),
             ('15-1252', 'Software Developers'),
@@ -140,10 +152,12 @@ def test_engine():
             ('51-3091', 'Food Servers, Nonrestaurant'),
             ('53-3032', 'Heavy and Tractor-Trailer Truck Drivers'),
             ('99-9999', 'All Other Occupations')
-        """))
+        """)
+        )
 
         # Sample school of study codes data
-        conn.execute(text("""
+        conn.execute(
+            text("""
             INSERT OR IGNORE INTO school_of_study_codes (school_code, school_name) VALUES
             ('BHGT', 'Biological and Biomedical Sciences'),
             ('CAED', 'Computer and Information Sciences'),
@@ -153,29 +167,36 @@ def test_engine():
             ('HS', 'Health Sciences'),
             ('LPS', 'Legal Professions and Studies'),
             ('MIT', 'Multi/Interdisciplinary Studies')
-        """))
+        """)
+        )
 
         # Sample occupation level data
-        conn.execute(text("""
+        conn.execute(
+            text("""
             INSERT OR IGNORE INTO occupation_lvl_data (geoid, category, openings_2024_zscore, jobs_2024_zscore, openings_2024_zscore_color, geom) VALUES
             ('48257050209', '51-3091', -0.0956, 0.0187, '-0.5SD ~ +0.5SD', '{"type":"Point","coordinates":[-96.7970,32.7767]}'),
             ('48257050213', '51-3091', -0.2926, -0.2762, '-0.5SD ~ +0.5SD', '{"type":"Point","coordinates":[-96.3838,32.7399]}'),
             ('12345', '11-1021', 1.5, 1.2, 'High', '{"type":"Point","coordinates":[-96.7970,32.7767]}')
-        """))
+        """)
+        )
 
         # Sample school level data
-        conn.execute(text("""
+        conn.execute(
+            text("""
             INSERT OR IGNORE INTO school_of_lvl_data (geoid, category, openings_2024_zscore, jobs_2024_zscore, openings_2024_zscore_color, geom) VALUES
             ('12345', 'BHGT', 1.5, 1.2, 'High', '{"type":"Point","coordinates":[-96.7970,32.7767]}'),
             ('67890', 'CAED', 0.8, 0.9, 'Medium', '{"type":"Point","coordinates":[-96.3838,32.7399]}')
-        """))
+        """)
+        )
 
         # Sample TTI data
-        conn.execute(text("""
+        conn.execute(
+            text("""
             INSERT OR IGNORE INTO tti_clone (geoid, all_jobs_zscore, all_jobs_zscore_cat, living_wage_zscore, living_wage_zscore_cat, not_living_wage_zscore, not_living_wage_zscore_cat, geom) VALUES
             ('12345', 1.5, 'High', 0.8, 'Medium', -0.5, 'Low', '{"type":"Point","coordinates":[-96.7970,32.7767]}'),
             ('67890', 0.2, 'Medium', 0.1, 'Medium', 0.3, 'Medium', '{"type":"Point","coordinates":[-96.3838,32.7399]}')
-        """))
+        """)
+        )
 
         conn.commit()
 
@@ -214,6 +235,7 @@ def mock_db_session(test_session):
 
     This fixture patches the FastAPI dependency to use our test database.
     """
+
     def override_get_db():
         try:
             yield test_session
@@ -244,8 +266,7 @@ async def async_test_client(mock_db_session, mock_env_vars) -> AsyncClient:
     This client should be used for testing async endpoints.
     """
     async with AsyncClient(
-        transport=ASGITransport(app=app),
-        base_url="http://test"
+        transport=ASGITransport(app=app), base_url="http://test"
     ) as client:
         yield client
 
@@ -258,10 +279,7 @@ def mock_geojson_data() -> Dict[str, Any]:
         "features": [
             {
                 "type": "Feature",
-                "geometry": {
-                    "type": "Point",
-                    "coordinates": [-96.7970, 32.7767]
-                },
+                "geometry": {"type": "Point", "coordinates": [-96.7970, 32.7767]},
                 "properties": {
                     "geoid": "12345",
                     "all_jobs_zscore": 1.5,
@@ -269,10 +287,10 @@ def mock_geojson_data() -> Dict[str, Any]:
                     "living_wage_zscore": 0.8,
                     "living_wage_zscore_cat": "Medium",
                     "not_living_wage_zscore": -0.5,
-                    "not_living_wage_zscore_cat": "Low"
-                }
+                    "not_living_wage_zscore_cat": "Low",
+                },
             }
-        ]
+        ],
     }
 
 
@@ -284,7 +302,7 @@ def mock_occupation_data() -> list:
         "Computer and Mathematical",
         "Education and Training",
         "Business and Financial Operations",
-        "Construction and Extraction"
+        "Construction and Extraction",
     ]
 
 
@@ -296,33 +314,27 @@ def mock_occupation_spatial_data() -> Dict[str, Any]:
         "features": [
             {
                 "type": "Feature",
-                "geometry": {
-                    "type": "Point",
-                    "coordinates": [-96.7970, 32.7767]
-                },
+                "geometry": {"type": "Point", "coordinates": [-96.7970, 32.7767]},
                 "properties": {
                     "geoid": "48257050209",
                     "category": "51-3091",
                     "openings_2024_zscore": -0.0956,
                     "jobs_2024_zscore": 0.0187,
-                    "openings_2024_zscore_color": "-0.5SD ~ +0.5SD"
-                }
+                    "openings_2024_zscore_color": "-0.5SD ~ +0.5SD",
+                },
             },
             {
                 "type": "Feature",
-                "geometry": {
-                    "type": "Point",
-                    "coordinates": [-96.3838, 32.7399]
-                },
+                "geometry": {"type": "Point", "coordinates": [-96.3838, 32.7399]},
                 "properties": {
                     "geoid": "48257050213",
                     "category": "51-3091",
                     "openings_2024_zscore": -0.2926,
                     "jobs_2024_zscore": -0.2762,
-                    "openings_2024_zscore_color": "-0.5SD ~ +0.5SD"
-                }
-            }
-        ]
+                    "openings_2024_zscore_color": "-0.5SD ~ +0.5SD",
+                },
+            },
+        ],
     }
 
 
@@ -334,7 +346,7 @@ def reset_rate_limiter():
     This fixture automatically runs for every test.
     """
     # Clear any rate limit state
-    if hasattr(app.state, 'limiter'):
+    if hasattr(app.state, "limiter"):
         # Reset the limiter's storage
         app.state.limiter.reset()
     yield

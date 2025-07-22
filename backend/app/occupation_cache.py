@@ -1,4 +1,5 @@
 """Simple in-memory cache for occupation data with TTL support."""
+
 import time
 from typing import Dict, Optional, Any
 from functools import wraps
@@ -40,6 +41,7 @@ _cache = SimpleCache()
 
 def cache_with_ttl(ttl_seconds: int = 86400):  # Default 24 hours
     """Decorator to cache function results with TTL."""
+
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
@@ -58,5 +60,7 @@ def cache_with_ttl(ttl_seconds: int = 86400):  # Default 24 hours
             _cache.set(cache_key, result, ttl_seconds)
 
             return result
+
         return wrapper
+
     return decorator

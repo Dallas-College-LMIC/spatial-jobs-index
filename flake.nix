@@ -246,46 +246,38 @@
           # Combined development shell (impure approach for faster iteration)
           default = pkgs.mkShell {
             buildInputs = [
-              # Python and backend tools
-              python
-              pkgs.ruff
-              pkgs.uv
-              pkgs.gcc
-              pkgs.stdenv.cc.cc.lib
-              pkgs.pre-commit
-              # Python LSP tools for IDE support
-              pkgs.python313Packages.mypy
-              pkgs.python313Packages.python-lsp-server
-              pkgs.python313Packages.python-lsp-ruff
-              pkgs.python313Packages.pylsp-mypy
+              # Use the Nix-managed Python virtual environment
+              backendDevVenv
               # Frontend tools
               pkgs.nodejs
               pkgs.nodePackages.npm
               # General tools
-              pkgs.git
-              pkgs.direnv
+              pkgs.just
+              pkgs.ruff
+              pkgs.gcc
+              pkgs.stdenv.cc.cc.lib
+              pkgs.pre-commit
               # Database tools
               pkgs.postgresql
             ];
 
             env = {
-              # Prevent uv from downloading managed Python's
-              UV_PYTHON_DOWNLOADS = "never";
-              UV_PYTHON = python.interpreter;
+              # Set project directories to actual working paths
+              PROJECT_ROOT = toString ./.;
+              BACKEND_DIR = toString ./backend;
+              FRONTEND_DIR = toString ./frontend;
             };
 
             shellHook = ''
-              unset PYTHONPATH
-              # Set project directories to actual working paths
-              export PROJECT_ROOT="$PWD"
-              export BACKEND_DIR="$PWD/backend"
-              export FRONTEND_DIR="$PWD/frontend"
+              # The Nix-managed Python environment is automatically available
               echo "Spatial Jobs Index Monorepo Development Shell"
               echo ""
-              echo "Backend setup:"
-              echo "  cd backend && uv sync    - Install Python dependencies"
-              echo "  uv run pytest            - Run backend tests"
-              echo "  uv run python -m uvicorn app.main:app --reload - Start API server"
+              echo "Python environment: Nix-managed (no uv sync needed)"
+              echo "Python: $(which python)"
+              echo ""
+              echo "Backend commands:"
+              echo "  pytest                    - Run backend tests"
+              echo "  python -m uvicorn app.main:app --reload - Start API server"
               echo ""
               echo "Frontend setup:"
               echo "  cd frontend && npm install - Install frontend dependencies"

@@ -1,6 +1,7 @@
 """
 Example tests for API endpoints demonstrating test infrastructure usage.
 """
+
 import pytest
 from unittest.mock import patch
 
@@ -15,11 +16,13 @@ class TestOccupationEndpoints:
     def test_get_occupation_ids_with_mock(self, test_client):
         """Test /occupation_ids endpoint with mocked service."""
         # Mock the service method to avoid database issues with SQLite
-        with patch.object(OccupationService, 'get_occupations_with_names') as mock_get_names:
+        with patch.object(
+            OccupationService, "get_occupations_with_names"
+        ) as mock_get_names:
             mock_get_names.return_value = [
                 {"code": "31-0000", "name": "Healthcare Support"},
                 {"code": "15-0000", "name": "Computer and Mathematical"},
-                {"code": "25-0000", "name": "Education and Training"}
+                {"code": "25-0000", "name": "Education and Training"},
             ]
 
             response = test_client.get("/occupation_ids")
@@ -28,7 +31,9 @@ class TestOccupationEndpoints:
             data = response.json()
             assert "occupations" in data
             assert len(data["occupations"]) == 3
-            assert any(occ["name"] == "Healthcare Support" for occ in data["occupations"])
+            assert any(
+                occ["name"] == "Healthcare Support" for occ in data["occupations"]
+            )
 
     @pytest.mark.integration
     @pytest.mark.skip(reason="Requires PostgreSQL with jsi_data schema")
@@ -54,7 +59,8 @@ class TestSpatialEndpoints:
         """Test /geojson endpoint with mocked service."""
         # Mock the service method
         from app.models import GeoJSONFeature, SpatialFeatureProperties
-        with patch.object(SpatialService, 'get_geojson_features') as mock_get_features:
+
+        with patch.object(SpatialService, "get_geojson_features") as mock_get_features:
             # Create GeoJSONFeature objects from mock data
             features = []
             for feature in mock_geojson_data["features"]:
@@ -63,12 +69,20 @@ class TestSpatialEndpoints:
                     properties=SpatialFeatureProperties(
                         geoid=feature["properties"]["geoid"],
                         all_jobs_zscore=feature["properties"]["all_jobs_zscore"],
-                        all_jobs_zscore_cat=feature["properties"]["all_jobs_zscore_cat"],
+                        all_jobs_zscore_cat=feature["properties"][
+                            "all_jobs_zscore_cat"
+                        ],
                         living_wage_zscore=feature["properties"]["living_wage_zscore"],
-                        living_wage_zscore_cat=feature["properties"]["living_wage_zscore_cat"],
-                        not_living_wage_zscore=feature["properties"]["not_living_wage_zscore"],
-                        not_living_wage_zscore_cat=feature["properties"]["not_living_wage_zscore_cat"]
-                    )
+                        living_wage_zscore_cat=feature["properties"][
+                            "living_wage_zscore_cat"
+                        ],
+                        not_living_wage_zscore=feature["properties"][
+                            "not_living_wage_zscore"
+                        ],
+                        not_living_wage_zscore_cat=feature["properties"][
+                            "not_living_wage_zscore_cat"
+                        ],
+                    ),
                 )
                 features.append(geojson_feature)
 
@@ -110,7 +124,7 @@ class TestRateLimiting:
     def test_rate_limiting(self, test_client):
         """Test that rate limiting works."""
         # Mock the service to avoid database calls
-        with patch.object(OccupationService, 'get_occupation_ids') as mock_get_ids:
+        with patch.object(OccupationService, "get_occupation_ids") as mock_get_ids:
             mock_get_ids.return_value = ["Test Occupation"]
 
             # The rate limit is 30/minute, so 31 requests should trigger it
@@ -130,7 +144,9 @@ class TestErrorHandling:
     @pytest.mark.api
     def test_database_error_handling(self, test_client):
         """Test handling of database errors."""
-        with patch.object(OccupationService, 'get_occupations_with_names') as mock_get_names:
+        with patch.object(
+            OccupationService, "get_occupations_with_names"
+        ) as mock_get_names:
             mock_get_names.side_effect = Exception("Database connection error")
 
             response = test_client.get("/occupation_ids")

@@ -22,14 +22,13 @@ dev = [
     "ruff>=0.8.0",
     "mypy>=1.13.0",
     "python-lsp-server>=1.12.0",
-]
-test = [
     "pytest>=8.0.0",
     "pytest-cov>=5.0.0",
     "pytest-asyncio>=0.24.0",
     "httpx>=0.27.0",
     "faker>=30.0.0",
     "factory-boy>=3.3.0",
+    "tdd-guard>=0.5.3",
 ]
 
 [tool.mypy]

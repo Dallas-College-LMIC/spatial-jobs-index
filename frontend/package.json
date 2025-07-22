@@ -44,6 +44,7 @@
     "happy-dom": "^18.0.1",
     "msw": "^2.10.2",
     "prettier": "^3.6.2",
+    "tdd-guard": "^0.5.3",
     "typescript": "^5.8.3",
     "vite": "^6.3.5",
     "vitest": "^3.2.3"

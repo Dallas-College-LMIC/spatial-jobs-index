@@ -8,6 +8,7 @@ These tests verify end-to-end functionality including:
 - Concurrent requests
 - Real-world usage scenarios
 """
+
 import pytest
 import asyncio
 import time
@@ -17,15 +18,20 @@ from unittest.mock import patch, Mock
 from fastapi.testclient import TestClient
 from httpx import AsyncClient, ASGITransport
 
-from app.models import GeoJSONFeature, SpatialFeatureProperties, OccupationGeoJSONFeature, OccupationSpatialProperties
+from app.models import (
+    GeoJSONFeature,
+    SpatialFeatureProperties,
+    OccupationGeoJSONFeature,
+    OccupationSpatialProperties,
+)
 from app.database import get_db_session
 
 
 @pytest.fixture
 def integration_client():
     """Create test client with mocked services for integration testing."""
-    with patch('app.main.DatabaseConfig.from_env'):
-        with patch('app.main.init_database'):
+    with patch("app.main.DatabaseConfig.from_env"):
+        with patch("app.main.init_database"):
             # Import app after mocking to avoid database initialization
             from app.main import app
 
@@ -47,8 +53,8 @@ def integration_client():
 @pytest.fixture
 async def async_integration_client():
     """Create async test client for integration testing."""
-    with patch('app.main.DatabaseConfig.from_env'):
-        with patch('app.main.init_database'):
+    with patch("app.main.DatabaseConfig.from_env"):
+        with patch("app.main.init_database"):
             from app.main import app
 
             mock_session = Mock()
@@ -59,8 +65,7 @@ async def async_integration_client():
             app.dependency_overrides[get_db_session] = override_get_db
 
             async with AsyncClient(
-                transport=ASGITransport(app=app),
-                base_url="http://test"
+                transport=ASGITransport(app=app), base_url="http://test"
             ) as client:
                 yield client
 
@@ -70,14 +75,14 @@ async def async_integration_client():
 class TestFullRequestResponseCycle:
     """Test complete request/response cycles with real data flow."""
 
-    @patch('app.services.OccupationService.get_occupations_with_names')
+    @patch("app.services.OccupationService.get_occupations_with_names")
     def test_occupation_ids_full_cycle(self, mock_service, integration_client):
         """Test full cycle: service -> endpoint -> response."""
         # Mock service to return test data
         test_data = [
             {"code": "11-1021", "name": "General and Operations Managers"},
             {"code": "15-1251", "name": "Computer Programmers"},
-            {"code": "29-1141", "name": "Registered Nurses"}
+            {"code": "29-1141", "name": "Registered Nurses"},
         ]
         mock_service.return_value = test_data
 
@@ -98,7 +103,7 @@ class TestFullRequestResponseCycle:
         # Verify service was called
         mock_service.assert_called_once()
 
-    @patch('app.services.OccupationService.get_occupation_spatial_data')
+    @patch("app.services.OccupationService.get_occupation_spatial_data")
     def test_occupation_spatial_data_full_cycle(self, mock_service, integration_client):
         """Test full cycle for occupation spatial data endpoint."""
         # Create test occupation spatial data
@@ -110,8 +115,8 @@ class TestFullRequestResponseCycle:
                     category="51-3091",
                     openings_2024_zscore=-0.0956,
                     jobs_2024_zscore=0.0187,
-                    openings_2024_zscore_color="-0.5SD ~ +0.5SD"
-                )
+                    openings_2024_zscore_color="-0.5SD ~ +0.5SD",
+                ),
             ),
             OccupationGeoJSONFeature(
                 geometry={"type": "Point", "coordinates": [-96.3838, 32.7399]},
@@ -120,9 +125,9 @@ class TestFullRequestResponseCycle:
                     category="51-3091",
                     openings_2024_zscore=-0.2926,
                     jobs_2024_zscore=-0.2762,
-                    openings_2024_zscore_color="-0.5SD ~ +0.5SD"
-                )
-            )
+                    openings_2024_zscore_color="-0.5SD ~ +0.5SD",
+                ),
+            ),
         ]
         mock_service.return_value = test_features
 
@@ -147,7 +152,7 @@ class TestFullRequestResponseCycle:
         args = mock_service.call_args[0]
         assert args[0] == "51-3091"  # First argument is the category
 
-    @patch('app.services.OccupationService.get_occupation_spatial_data')
+    @patch("app.services.OccupationService.get_occupation_spatial_data")
     def test_occupation_spatial_data_not_found(self, mock_service, integration_client):
         """Test occupation spatial data endpoint with non-existent category."""
         # Mock service to return empty list
@@ -160,7 +165,7 @@ class TestFullRequestResponseCycle:
         assert response.status_code == 404
         assert "No data found" in response.json()["detail"]
 
-    @patch('app.services.SpatialService.get_geojson_features')
+    @patch("app.services.SpatialService.get_geojson_features")
     def test_geojson_full_cycle(self, mock_service, integration_client):
         """Test full GeoJSON cycle with spatial data."""
         # Create test spatial data
@@ -174,8 +179,8 @@ class TestFullRequestResponseCycle:
                     living_wage_zscore=0.8,
                     living_wage_zscore_cat="Medium",
                     not_living_wage_zscore=-0.5,
-                    not_living_wage_zscore_cat="Low"
-                )
+                    not_living_wage_zscore_cat="Low",
+                ),
             )
         ]
         mock_service.return_value = test_features
@@ -189,8 +194,7 @@ class TestFullRequestResponseCycle:
         assert len(data["features"]) == 1
         assert data["features"][0]["properties"]["geoid"] == "12345"
 
-
-    @patch('app.services.IsochroneService.get_isochrones_by_geoid')
+    @patch("app.services.IsochroneService.get_isochrones_by_geoid")
     def test_isochrone_full_cycle(self, mock_service, integration_client):
         """Test full cycle for isochrone endpoint."""
         # Import the model we need
@@ -199,21 +203,37 @@ class TestFullRequestResponseCycle:
         # Create test isochrone data
         test_features = [
             IsochroneFeature(
-                geometry={"type": "Polygon", "coordinates": [[[-96.7970, 32.7767], [-96.7960, 32.7757], [-96.7950, 32.7767], [-96.7970, 32.7767]]]},
+                geometry={
+                    "type": "Polygon",
+                    "coordinates": [
+                        [
+                            [-96.7970, 32.7767],
+                            [-96.7960, 32.7757],
+                            [-96.7950, 32.7767],
+                            [-96.7970, 32.7767],
+                        ]
+                    ],
+                },
                 properties=IsochroneProperties(
-                    geoid="12345",
-                    time_category="< 5",
-                    color="#1a9850"
-                )
+                    geoid="12345", time_category="< 5", color="#1a9850"
+                ),
             ),
             IsochroneFeature(
-                geometry={"type": "Polygon", "coordinates": [[[-96.8070, 32.7867], [-96.8060, 32.7857], [-96.8050, 32.7867], [-96.8070, 32.7867]]]},
+                geometry={
+                    "type": "Polygon",
+                    "coordinates": [
+                        [
+                            [-96.8070, 32.7867],
+                            [-96.8060, 32.7857],
+                            [-96.8050, 32.7867],
+                            [-96.8070, 32.7867],
+                        ]
+                    ],
+                },
                 properties=IsochroneProperties(
-                    geoid="12345",
-                    time_category="5~10",
-                    color="#66bd63"
-                )
-            )
+                    geoid="12345", time_category="5~10", color="#66bd63"
+                ),
+            ),
         ]
         mock_service.return_value = test_features
 
@@ -238,7 +258,7 @@ class TestFullRequestResponseCycle:
         args = mock_service.call_args[0]
         assert args[0] == "12345"  # First argument is the geoid
 
-    @patch('app.services.IsochroneService.get_isochrones_by_geoid')
+    @patch("app.services.IsochroneService.get_isochrones_by_geoid")
     def test_isochrone_not_found(self, mock_service, integration_client):
         """Test isochrone endpoint with non-existent geoid."""
         # Mock service to return empty list
@@ -260,7 +280,7 @@ class TestFullRequestResponseCycle:
         assert response.status_code == 400
         assert "Invalid geoid format" in response.json()["detail"]
 
-    @patch('app.services.IsochroneService.get_isochrones_by_geoid')
+    @patch("app.services.IsochroneService.get_isochrones_by_geoid")
     def test_isochrone_empty_geoid(self, mock_service, integration_client):
         """Test isochrone endpoint with empty geoid string."""
         # This should be caught by FastAPI path validation
@@ -269,7 +289,7 @@ class TestFullRequestResponseCycle:
         # Verify 404 response (path not found)
         assert response.status_code == 404
 
-    @patch('app.services.IsochroneService.get_isochrones_by_geoid')
+    @patch("app.services.IsochroneService.get_isochrones_by_geoid")
     def test_isochrone_special_characters_geoid(self, mock_service, integration_client):
         """Test isochrone endpoint with special characters in geoid."""
         # Test various invalid geoid formats
@@ -282,7 +302,7 @@ class TestFullRequestResponseCycle:
             if response.status_code == 400:
                 assert "Invalid geoid format" in response.json()["detail"]
 
-    @patch('app.services.IsochroneService.get_isochrones_by_geoid')
+    @patch("app.services.IsochroneService.get_isochrones_by_geoid")
     def test_isochrone_valid_numeric_geoids(self, mock_service, integration_client):
         """Test isochrone endpoint with various valid numeric geoids."""
         # Import the model we need
@@ -291,12 +311,20 @@ class TestFullRequestResponseCycle:
         # Mock service return value
         test_features = [
             IsochroneFeature(
-                geometry={"type": "Polygon", "coordinates": [[[-96.7970, 32.7767], [-96.7960, 32.7757], [-96.7950, 32.7767], [-96.7970, 32.7767]]]},
+                geometry={
+                    "type": "Polygon",
+                    "coordinates": [
+                        [
+                            [-96.7970, 32.7767],
+                            [-96.7960, 32.7757],
+                            [-96.7950, 32.7767],
+                            [-96.7970, 32.7767],
+                        ]
+                    ],
+                },
                 properties=IsochroneProperties(
-                    geoid="12345",
-                    time_category="< 5",
-                    color="#1a9850"
-                )
+                    geoid="12345", time_category="< 5", color="#1a9850"
+                ),
             )
         ]
         mock_service.return_value = test_features
@@ -311,7 +339,7 @@ class TestFullRequestResponseCycle:
             data = response.json()
             assert data["type"] == "FeatureCollection"
 
-    @patch('app.services.IsochroneService.get_isochrones_by_geoid')
+    @patch("app.services.IsochroneService.get_isochrones_by_geoid")
     def test_isochrone_geojson_structure(self, mock_service, integration_client):
         """Test that isochrone endpoint returns proper GeoJSON structure."""
         # Import the model we need
@@ -319,25 +347,43 @@ class TestFullRequestResponseCycle:
 
         # Create test isochrone data with all time categories
         test_features = []
-        time_categories = ["< 5", "5~10", "10~15", "15~20", "20~25", "25~30", "30~45", "> 45"]
-        colors = ["#1a9850", "#66bd63", "#a6d96a", "#fdae61", "#fee08b", "#f46d43", "#d73027", "#a50026"]
+        time_categories = [
+            "< 5",
+            "5~10",
+            "10~15",
+            "15~20",
+            "20~25",
+            "25~30",
+            "30~45",
+            "> 45",
+        ]
+        colors = [
+            "#1a9850",
+            "#66bd63",
+            "#a6d96a",
+            "#fdae61",
+            "#fee08b",
+            "#f46d43",
+            "#d73027",
+            "#a50026",
+        ]
 
         for i, (category, color) in enumerate(zip(time_categories, colors)):
             feature = IsochroneFeature(
                 geometry={
                     "type": "Polygon",
-                    "coordinates": [[
-                        [-96.7970 + i*0.01, 32.7767 + i*0.01],
-                        [-96.7960 + i*0.01, 32.7757 + i*0.01],
-                        [-96.7950 + i*0.01, 32.7767 + i*0.01],
-                        [-96.7970 + i*0.01, 32.7767 + i*0.01]
-                    ]]
+                    "coordinates": [
+                        [
+                            [-96.7970 + i * 0.01, 32.7767 + i * 0.01],
+                            [-96.7960 + i * 0.01, 32.7757 + i * 0.01],
+                            [-96.7950 + i * 0.01, 32.7767 + i * 0.01],
+                            [-96.7970 + i * 0.01, 32.7767 + i * 0.01],
+                        ]
+                    ],
                 },
                 properties=IsochroneProperties(
-                    geoid="48113123456",
-                    time_category=category,
-                    color=color
-                )
+                    geoid="48113123456", time_category=category, color=color
+                ),
             )
             test_features.append(feature)
 
@@ -372,8 +418,10 @@ class TestFullRequestResponseCycle:
             assert props["time_category"] == time_categories[i]
             assert props["color"] == colors[i]
 
-    @patch('app.services.IsochroneService.get_isochrones_by_geoid')
-    def test_isochrone_service_exception_handling(self, mock_service, integration_client):
+    @patch("app.services.IsochroneService.get_isochrones_by_geoid")
+    def test_isochrone_service_exception_handling(
+        self, mock_service, integration_client
+    ):
         """Test isochrone endpoint handling of service exceptions."""
         # Mock service to raise a generic exception
         mock_service.side_effect = Exception("Unexpected database error")
@@ -385,10 +433,11 @@ class TestFullRequestResponseCycle:
         assert response.status_code == 500
         assert "Internal server error" in response.json()["detail"]
 
+
 class TestDatabaseIntegration:
     """Test database integration scenarios."""
 
-    @patch('app.services.OccupationService.get_occupations_with_names')
+    @patch("app.services.OccupationService.get_occupations_with_names")
     def test_database_connection_pool(self, mock_service, integration_client):
         """Test that connection pooling works correctly."""
         mock_service.return_value = []
@@ -408,19 +457,21 @@ class TestDatabaseIntegration:
         assert success_count + rate_limited_count == len(responses)
         assert success_count > 0  # At least some should succeed
 
-    @patch('app.services.OccupationService.get_occupations_with_names')
+    @patch("app.services.OccupationService.get_occupations_with_names")
     def test_database_transaction_isolation(self, mock_service, integration_client):
         """Test that transactions are properly isolated."""
         # Simulate different responses for different "transactions"
         mock_service.side_effect = [
             ["Initial Category"],
             ["Initial Category"],  # Should not see uncommitted data
-            ["Initial Category", "Committed Category"]
+            ["Initial Category", "Committed Category"],
         ]
 
         # Get initial state
         response1 = integration_client.get("/occupation_ids")
-        initial_data = response1.json()["occupations"] if response1.status_code == 200 else []
+        initial_data = (
+            response1.json()["occupations"] if response1.status_code == 200 else []
+        )
 
         # Make another request - simulating isolation
         response2 = integration_client.get("/occupation_ids")
@@ -436,7 +487,9 @@ class TestDatabaseIntegration:
 
     def test_database_error_recovery(self, integration_client):
         """Test that the application recovers from database errors."""
-        with patch('app.services.OccupationService.get_occupations_with_names') as mock_service:
+        with patch(
+            "app.services.OccupationService.get_occupations_with_names"
+        ) as mock_service:
             # First, ensure normal operation works
             mock_service.return_value = []
             response1 = integration_client.get("/occupation_ids")
@@ -458,7 +511,7 @@ class TestDatabaseIntegration:
 class TestPerformance:
     """Test performance characteristics of the API."""
 
-    @patch('app.services.OccupationService.get_occupations_with_names')
+    @patch("app.services.OccupationService.get_occupations_with_names")
     def test_response_time_occupation_ids(self, mock_service, integration_client):
         """Test that occupation_ids endpoint responds quickly."""
         mock_service.return_value = ["Test1", "Test2"]
@@ -481,14 +534,17 @@ class TestPerformance:
             # Should respond in less than 100ms on average
             assert avg_response_time < 0.1
 
-    @patch('app.services.SpatialService.get_geojson_features')
+    @patch("app.services.SpatialService.get_geojson_features")
     def test_response_time_geojson(self, mock_service, integration_client):
         """Test that geojson endpoint responds in reasonable time."""
         # Create 100 features
         features = []
         for i in range(100):
             feature = GeoJSONFeature(
-                geometry={"type": "Point", "coordinates": [-96.7970 + i*0.01, 32.7767 + i*0.01]},
+                geometry={
+                    "type": "Point",
+                    "coordinates": [-96.7970 + i * 0.01, 32.7767 + i * 0.01],
+                },
                 properties=SpatialFeatureProperties(
                     geoid=str(i),
                     all_jobs_zscore=1.5,
@@ -496,8 +552,8 @@ class TestPerformance:
                     living_wage_zscore=0.8,
                     living_wage_zscore_cat="Medium",
                     not_living_wage_zscore=-0.5,
-                    not_living_wage_zscore_cat="Low"
-                )
+                    not_living_wage_zscore_cat="Low",
+                ),
             )
             features.append(feature)
 
@@ -513,16 +569,19 @@ class TestPerformance:
         # Should respond in less than 500ms even with 100 features
         assert response_time < 0.5
 
-    @patch('app.services.SpatialService.get_geojson_features')
+    @patch("app.services.SpatialService.get_geojson_features")
     def test_memory_usage_large_geojson(self, mock_service, integration_client):
         """Test memory efficiency with large GeoJSON responses."""
         # Create 1000 features
         features = []
         for i in range(1000):
             feature = GeoJSONFeature(
-                geometry={"type": "Polygon", "coordinates": [
-                    [[-96.7970 + j*0.001, 32.7767 + j*0.001] for j in range(10)]
-                ]},
+                geometry={
+                    "type": "Polygon",
+                    "coordinates": [
+                        [[-96.7970 + j * 0.001, 32.7767 + j * 0.001] for j in range(10)]
+                    ],
+                },
                 properties=SpatialFeatureProperties(
                     geoid=str(i),
                     all_jobs_zscore=1.5,
@@ -530,8 +589,8 @@ class TestPerformance:
                     living_wage_zscore=0.8,
                     living_wage_zscore_cat="Medium",
                     not_living_wage_zscore=-0.5,
-                    not_living_wage_zscore_cat="Low"
-                )
+                    not_living_wage_zscore_cat="Low",
+                ),
             )
             features.append(feature)
 
@@ -546,7 +605,7 @@ class TestPerformance:
         # Should be able to handle 1000 features
         assert content_length > 0
 
-    @patch('app.services.IsochroneService.get_isochrones_by_geoid')
+    @patch("app.services.IsochroneService.get_isochrones_by_geoid")
     def test_response_time_isochrone(self, mock_service, integration_client):
         """Test that isochrone endpoint responds in reasonable time."""
         # Import the model we need
@@ -554,8 +613,26 @@ class TestPerformance:
 
         # Create test data with multiple isochrone bands
         features = []
-        time_categories = ["< 5", "5~10", "10~15", "15~20", "20~25", "25~30", "30~45", "> 45"]
-        colors = ["#1a9850", "#66bd63", "#a6d96a", "#fdae61", "#fee08b", "#f46d43", "#d73027", "#a50026"]
+        time_categories = [
+            "< 5",
+            "5~10",
+            "10~15",
+            "15~20",
+            "20~25",
+            "25~30",
+            "30~45",
+            "> 45",
+        ]
+        colors = [
+            "#1a9850",
+            "#66bd63",
+            "#a6d96a",
+            "#fdae61",
+            "#fee08b",
+            "#f46d43",
+            "#d73027",
+            "#a50026",
+        ]
 
         for i, (category, color) in enumerate(zip(time_categories, colors)):
             # Create a complex polygon for each band
@@ -571,10 +648,8 @@ class TestPerformance:
             feature = IsochroneFeature(
                 geometry={"type": "Polygon", "coordinates": [coords]},
                 properties=IsochroneProperties(
-                    geoid="48113123456",
-                    time_category=category,
-                    color=color
-                )
+                    geoid="48113123456", time_category=category, color=color
+                ),
             )
             features.append(feature)
 
@@ -598,7 +673,7 @@ class TestPerformance:
             # Should respond in less than 200ms on average even with complex polygons
             assert avg_response_time < 0.2
 
-    @patch('app.services.IsochroneService.get_isochrones_by_geoid')
+    @patch("app.services.IsochroneService.get_isochrones_by_geoid")
     def test_memory_usage_large_isochrone(self, mock_service, integration_client):
         """Test memory efficiency with large isochrone responses."""
         # Import the model we need
@@ -625,8 +700,8 @@ class TestPerformance:
                 properties=IsochroneProperties(
                     geoid="48113999999",
                     time_category=f"Band {i}",
-                    color="#808080"  # Default gray
-                )
+                    color="#808080",  # Default gray
+                ),
             )
             features.append(feature)
 
@@ -649,7 +724,7 @@ class TestPerformance:
 class TestConcurrentRequests:
     """Test behavior under concurrent load."""
 
-    @patch('app.services.OccupationService.get_occupations_with_names')
+    @patch("app.services.OccupationService.get_occupations_with_names")
     def test_concurrent_occupation_requests(self, mock_service, integration_client):
         """Test multiple concurrent requests to occupation_ids endpoint."""
         mock_service.return_value = [{"code": "11-1021", "name": "Test"}]
@@ -683,18 +758,20 @@ class TestConcurrentRequests:
         assert success_count + rate_limited_count == 20
         assert success_count > 0  # At least some should succeed
 
-    @patch('app.services.OccupationService.get_occupations_with_names')
-    @patch('app.services.SpatialService.get_geojson_features')
-    def test_mixed_endpoint_concurrent_requests(self, mock_spatial, mock_occupation, integration_client):
+    @patch("app.services.OccupationService.get_occupations_with_names")
+    @patch("app.services.SpatialService.get_geojson_features")
+    def test_mixed_endpoint_concurrent_requests(
+        self, mock_spatial, mock_occupation, integration_client
+    ):
         """Test concurrent requests to different endpoints."""
         mock_occupation.return_value = [{"code": "11-1021", "name": "Test"}]
         mock_spatial.return_value = []
 
         def make_occupation_request(client):
-            return ('occupation', client.get("/occupation_ids"))
+            return ("occupation", client.get("/occupation_ids"))
 
         def make_geojson_request(client):
-            return ('geojson', client.get("/geojson"))
+            return ("geojson", client.get("/geojson"))
 
         with ThreadPoolExecutor(max_workers=10) as executor:
             futures = []
@@ -702,13 +779,15 @@ class TestConcurrentRequests:
             # Mix of requests to both endpoints
             for i in range(20):
                 if i % 2 == 0:
-                    future = executor.submit(make_occupation_request, integration_client)
+                    future = executor.submit(
+                        make_occupation_request, integration_client
+                    )
                 else:
                     future = executor.submit(make_geojson_request, integration_client)
                 futures.append(future)
 
             # Collect results
-            results = {'occupation': [], 'geojson': []}
+            results = {"occupation": [], "geojson": []}
             for future in as_completed(futures):
                 try:
                     endpoint_type, response = future.result()
@@ -717,14 +796,19 @@ class TestConcurrentRequests:
                     pass
 
         # Both endpoints should handle concurrent load
-        occupation_success = sum(1 for s in results['occupation'] if s == 200)
-        geojson_success = sum(1 for s in results['geojson'] if s == 200)
+        occupation_success = sum(1 for s in results["occupation"] if s == 200)
+        geojson_success = sum(1 for s in results["geojson"] if s == 200)
 
-        assert occupation_success > 0 or sum(1 for s in results['occupation'] if s == 429) > 0
-        assert geojson_success > 0 or sum(1 for s in results['geojson'] if s == 429) > 0
+        assert (
+            occupation_success > 0
+            or sum(1 for s in results["occupation"] if s == 429) > 0
+        )
+        assert geojson_success > 0 or sum(1 for s in results["geojson"] if s == 429) > 0
 
-    @patch('app.services.OccupationService.get_occupation_spatial_data')
-    def test_concurrent_occupation_data_requests(self, mock_service, integration_client):
+    @patch("app.services.OccupationService.get_occupation_spatial_data")
+    def test_concurrent_occupation_data_requests(
+        self, mock_service, integration_client
+    ):
         """Test concurrent requests to occupation_data endpoint."""
         # Mock service return value
         test_features = [
@@ -735,8 +819,8 @@ class TestConcurrentRequests:
                     category="51-3091",
                     openings_2024_zscore=-0.1,
                     jobs_2024_zscore=0.1,
-                    openings_2024_zscore_color="-0.5SD ~ +0.5SD"
-                )
+                    openings_2024_zscore_color="-0.5SD ~ +0.5SD",
+                ),
             )
         ]
         mock_service.return_value = test_features
@@ -771,8 +855,7 @@ class TestConcurrentRequests:
         assert len(results) == 10
         assert success_count + rate_limited_count == 10
 
-
-    @patch('app.services.IsochroneService.get_isochrones_by_geoid')
+    @patch("app.services.IsochroneService.get_isochrones_by_geoid")
     def test_concurrent_isochrone_requests(self, mock_service, integration_client):
         """Test concurrent requests to isochrone endpoint."""
         # Import the model we need
@@ -781,12 +864,20 @@ class TestConcurrentRequests:
         # Mock service return value
         test_features = [
             IsochroneFeature(
-                geometry={"type": "Polygon", "coordinates": [[[-96.7970, 32.7767], [-96.7960, 32.7757], [-96.7950, 32.7767], [-96.7970, 32.7767]]]},
+                geometry={
+                    "type": "Polygon",
+                    "coordinates": [
+                        [
+                            [-96.7970, 32.7767],
+                            [-96.7960, 32.7757],
+                            [-96.7950, 32.7767],
+                            [-96.7970, 32.7767],
+                        ]
+                    ],
+                },
                 properties=IsochroneProperties(
-                    geoid="48001",
-                    time_category="< 5",
-                    color="#1a9850"
-                )
+                    geoid="48001", time_category="< 5", color="#1a9850"
+                ),
             )
         ]
         mock_service.return_value = test_features
@@ -822,9 +913,11 @@ class TestConcurrentRequests:
         assert success_count + rate_limited_count == 10
 
     @pytest.mark.asyncio
-    @patch('app.services.OccupationService.get_occupations_with_names')
-    @patch('app.services.SpatialService.get_geojson_features')
-    async def test_async_concurrent_requests(self, mock_spatial, mock_occupation, async_integration_client):
+    @patch("app.services.OccupationService.get_occupations_with_names")
+    @patch("app.services.SpatialService.get_geojson_features")
+    async def test_async_concurrent_requests(
+        self, mock_spatial, mock_occupation, async_integration_client
+    ):
         """Test async concurrent requests."""
         mock_occupation.return_value = [{"code": "11-1021", "name": "Test"}]
         mock_spatial.return_value = []
@@ -860,7 +953,7 @@ class TestConcurrentRequests:
 class TestRateLimiting:
     """Test rate limiting functionality for endpoints."""
 
-    @patch('app.services.IsochroneService.get_isochrones_by_geoid')
+    @patch("app.services.IsochroneService.get_isochrones_by_geoid")
     def test_isochrone_rate_limiting(self, mock_service, integration_client):
         """Test that isochrone endpoint properly enforces rate limiting."""
         # Import the model we need
@@ -869,12 +962,20 @@ class TestRateLimiting:
         # Mock service return value
         test_features = [
             IsochroneFeature(
-                geometry={"type": "Polygon", "coordinates": [[[-96.7970, 32.7767], [-96.7960, 32.7757], [-96.7950, 32.7767], [-96.7970, 32.7767]]]},
+                geometry={
+                    "type": "Polygon",
+                    "coordinates": [
+                        [
+                            [-96.7970, 32.7767],
+                            [-96.7960, 32.7757],
+                            [-96.7950, 32.7767],
+                            [-96.7970, 32.7767],
+                        ]
+                    ],
+                },
                 properties=IsochroneProperties(
-                    geoid="12345",
-                    time_category="< 5",
-                    color="#1a9850"
-                )
+                    geoid="12345", time_category="< 5", color="#1a9850"
+                ),
             )
         ]
         mock_service.return_value = test_features
@@ -898,7 +999,7 @@ class TestRateLimiting:
         # The testclient may not include all headers that the real server would
         # Just verify we got rate limited responses
 
-    @patch('app.services.IsochroneService.get_isochrones_by_geoid')
+    @patch("app.services.IsochroneService.get_isochrones_by_geoid")
     def test_isochrone_rate_limit_per_endpoint(self, mock_service, integration_client):
         """Test that rate limits are per-endpoint, not global."""
         # Import the model we need
@@ -907,18 +1008,28 @@ class TestRateLimiting:
         # Mock service for isochrone
         test_features = [
             IsochroneFeature(
-                geometry={"type": "Polygon", "coordinates": [[[-96.7970, 32.7767], [-96.7960, 32.7757], [-96.7950, 32.7767], [-96.7970, 32.7767]]]},
+                geometry={
+                    "type": "Polygon",
+                    "coordinates": [
+                        [
+                            [-96.7970, 32.7767],
+                            [-96.7960, 32.7757],
+                            [-96.7950, 32.7767],
+                            [-96.7970, 32.7767],
+                        ]
+                    ],
+                },
                 properties=IsochroneProperties(
-                    geoid="12345",
-                    time_category="< 5",
-                    color="#1a9850"
-                )
+                    geoid="12345", time_category="< 5", color="#1a9850"
+                ),
             )
         ]
         mock_service.return_value = test_features
 
         # Also mock occupation service
-        with patch('app.services.OccupationService.get_occupations_with_names') as mock_occupation:
+        with patch(
+            "app.services.OccupationService.get_occupations_with_names"
+        ) as mock_occupation:
             mock_occupation.return_value = [{"code": "11-1021", "name": "Test"}]
 
             # Make many requests to isochrone endpoint
@@ -932,13 +1043,16 @@ class TestRateLimiting:
 
             # But occupation_ids should still work
             occupation_response = integration_client.get("/occupation_ids")
-            assert occupation_response.status_code in [200, 429]  # Might be rate limited from other tests
+            assert occupation_response.status_code in [
+                200,
+                429,
+            ]  # Might be rate limited from other tests
 
 
 class TestRealWorldScenarios:
     """Test real-world usage patterns."""
 
-    @patch('app.services.OccupationService.get_occupations_with_names')
+    @patch("app.services.OccupationService.get_occupations_with_names")
     def test_browser_like_request_pattern(self, mock_service, integration_client):
         """Test request pattern similar to a web browser."""
         mock_service.return_value = [{"code": "11-1021", "name": "Test"}]
@@ -948,8 +1062,8 @@ class TestRealWorldScenarios:
             "/occupation_ids",
             headers={
                 "Origin": "http://localhost:5173",
-                "Access-Control-Request-Method": "GET"
-            }
+                "Access-Control-Request-Method": "GET",
+            },
         )
         assert response.status_code == 200
 
@@ -960,36 +1074,38 @@ class TestRealWorldScenarios:
                 "Origin": "http://localhost:5173",
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
                 "Accept": "application/json",
-                "Accept-Language": "en-US,en;q=0.9"
-            }
+                "Accept-Language": "en-US,en;q=0.9",
+            },
         )
         assert response.status_code in [200, 429]
 
         # 3. Follow-up request for geojson
-        with patch('app.services.SpatialService.get_geojson_features') as mock_spatial:
+        with patch("app.services.SpatialService.get_geojson_features") as mock_spatial:
             mock_spatial.return_value = []
             response = integration_client.get(
                 "/geojson",
                 headers={
                     "Origin": "http://localhost:5173",
                     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-                    "Accept": "application/geo+json,application/json;q=0.9"
-                }
+                    "Accept": "application/geo+json,application/json;q=0.9",
+                },
             )
             assert response.status_code in [200, 429]
 
-    @patch('app.services.OccupationService.get_occupations_with_names')
-    @patch('app.services.SpatialService.get_geojson_features')
-    def test_api_client_usage_pattern(self, mock_spatial, mock_occupation, integration_client):
+    @patch("app.services.OccupationService.get_occupations_with_names")
+    @patch("app.services.SpatialService.get_geojson_features")
+    def test_api_client_usage_pattern(
+        self, mock_spatial, mock_occupation, integration_client
+    ):
         """Test usage pattern typical of an API client."""
-        mock_occupation.return_value = [{"code": "11-1021", "name": "Test1"}, {"code": "15-1251", "name": "Test2"}]
+        mock_occupation.return_value = [
+            {"code": "11-1021", "name": "Test1"},
+            {"code": "15-1251", "name": "Test2"},
+        ]
         mock_spatial.return_value = []
 
         # API clients often make repeated requests with consistent headers
-        headers = {
-            "User-Agent": "SpatialIndexClient/1.0",
-            "Accept": "application/json"
-        }
+        headers = {"User-Agent": "SpatialIndexClient/1.0", "Accept": "application/json"}
 
         # Get occupation IDs first
         response1 = integration_client.get("/occupation_ids", headers=headers)
@@ -1010,9 +1126,11 @@ class TestRealWorldScenarios:
             assert data["type"] == "FeatureCollection"
             assert "features" in data
 
-    @patch('app.services.OccupationService.get_occupations_with_names')
-    @patch('app.services.SpatialService.get_geojson_features')
-    def test_mobile_app_usage_pattern(self, mock_spatial, mock_occupation, integration_client):
+    @patch("app.services.OccupationService.get_occupations_with_names")
+    @patch("app.services.SpatialService.get_geojson_features")
+    def test_mobile_app_usage_pattern(
+        self, mock_spatial, mock_occupation, integration_client
+    ):
         """Test usage pattern typical of a mobile application."""
         mock_occupation.return_value = [{"code": "11-1021", "name": "Test"}]
         mock_spatial.return_value = []
@@ -1022,7 +1140,7 @@ class TestRealWorldScenarios:
             "User-Agent": "SpatialIndex-iOS/2.0 (iPhone; iOS 15.0)",
             "Accept": "application/json",
             "Accept-Encoding": "gzip, deflate",
-            "Connection": "keep-alive"
+            "Connection": "keep-alive",
         }
 
         # Mobile apps might check connectivity first with a light request
@@ -1034,12 +1152,18 @@ class TestRealWorldScenarios:
             response = integration_client.get("/geojson", headers=headers)
             assert response.status_code in [200, 429]
 
-    @patch('app.services.OccupationService.get_occupations_with_names')
-    @patch('app.services.SpatialService.get_geojson_features')
-    def test_data_visualization_usage_pattern(self, mock_spatial, mock_occupation, integration_client):
+    @patch("app.services.OccupationService.get_occupations_with_names")
+    @patch("app.services.SpatialService.get_geojson_features")
+    def test_data_visualization_usage_pattern(
+        self, mock_spatial, mock_occupation, integration_client
+    ):
         """Test usage pattern for data visualization applications."""
         # Visualization apps often need both metadata and spatial data
-        mock_occupation.return_value = [{"code": "29-1141", "name": "Healthcare"}, {"code": "15-1251", "name": "Technology"}, {"code": "25-1021", "name": "Education"}]
+        mock_occupation.return_value = [
+            {"code": "29-1141", "name": "Healthcare"},
+            {"code": "15-1251", "name": "Technology"},
+            {"code": "25-1021", "name": "Education"},
+        ]
 
         # 1. Get available occupation categories
         response = integration_client.get("/occupation_ids")
@@ -1059,8 +1183,8 @@ class TestRealWorldScenarios:
                     living_wage_zscore=0.8,
                     living_wage_zscore_cat="Medium",
                     not_living_wage_zscore=-0.5,
-                    not_living_wage_zscore_cat="Low"
-                )
+                    not_living_wage_zscore_cat="Low",
+                ),
             )
         ]
         mock_spatial.return_value = test_features
@@ -1083,8 +1207,10 @@ class TestRealWorldScenarios:
                 assert any(key.endswith("_zscore") for key in props)
                 assert any(key.endswith("_zscore_cat") for key in props)
 
-    @patch('app.services.IsochroneService.get_isochrones_by_geoid')
-    def test_isochrone_visualization_usage_pattern(self, mock_service, integration_client):
+    @patch("app.services.IsochroneService.get_isochrones_by_geoid")
+    def test_isochrone_visualization_usage_pattern(
+        self, mock_service, integration_client
+    ):
         """Test usage pattern for isochrone visualization applications."""
         # Import the model we need
         from app.models import IsochroneFeature, IsochroneProperties
@@ -1111,10 +1237,8 @@ class TestRealWorldScenarios:
             feature = IsochroneFeature(
                 geometry={"type": "Polygon", "coordinates": [coords]},
                 properties=IsochroneProperties(
-                    geoid="48113123456",
-                    time_category=category,
-                    color=color
-                )
+                    geoid="48113123456", time_category=category, color=color
+                ),
             )
             test_features.append(feature)
 
@@ -1125,7 +1249,7 @@ class TestRealWorldScenarios:
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
             "Accept": "application/geo+json,application/json;q=0.9",
             "Accept-Encoding": "gzip, deflate",
-            "Referer": "http://localhost:5173/map"
+            "Referer": "http://localhost:5173/map",
         }
 
         # 1. Get isochrone data for selected census tract
@@ -1156,9 +1280,11 @@ class TestRealWorldScenarios:
             assert "time_category" in feature["properties"]
             assert feature["properties"]["time_category"] in time_categories
 
-    @patch('app.services.IsochroneService.get_isochrones_by_geoid')
-    @patch('app.services.SpatialService.get_geojson_features')
-    def test_combined_map_data_usage_pattern(self, mock_spatial, mock_isochrone, integration_client):
+    @patch("app.services.IsochroneService.get_isochrones_by_geoid")
+    @patch("app.services.SpatialService.get_geojson_features")
+    def test_combined_map_data_usage_pattern(
+        self, mock_spatial, mock_isochrone, integration_client
+    ):
         """Test usage pattern for apps that combine multiple data layers."""
         # Import models
         from app.models import IsochroneFeature, IsochroneProperties
@@ -1174,8 +1300,8 @@ class TestRealWorldScenarios:
                     living_wage_zscore=0.8,
                     living_wage_zscore_cat="Medium",
                     not_living_wage_zscore=-0.5,
-                    not_living_wage_zscore_cat="Low"
-                )
+                    not_living_wage_zscore_cat="Low",
+                ),
             )
         ]
         mock_spatial.return_value = spatial_features
@@ -1183,15 +1309,21 @@ class TestRealWorldScenarios:
         # Mock isochrone data
         isochrone_features = [
             IsochroneFeature(
-                geometry={"type": "Polygon", "coordinates": [[
-                    [-96.807, 32.787], [-96.787, 32.787],
-                    [-96.787, 32.767], [-96.807, 32.767], [-96.807, 32.787]
-                ]]},
+                geometry={
+                    "type": "Polygon",
+                    "coordinates": [
+                        [
+                            [-96.807, 32.787],
+                            [-96.787, 32.787],
+                            [-96.787, 32.767],
+                            [-96.807, 32.767],
+                            [-96.807, 32.787],
+                        ]
+                    ],
+                },
                 properties=IsochroneProperties(
-                    geoid="48113123456",
-                    time_category="< 5",
-                    color="#1a9850"
-                )
+                    geoid="48113123456", time_category="< 5", color="#1a9850"
+                ),
             )
         ]
         mock_isochrone.return_value = isochrone_features
@@ -1217,8 +1349,10 @@ class TestRealWorldScenarios:
             assert isochrone_data["type"] == "FeatureCollection"
 
             # Both should reference the same geoid
-            assert spatial_data["features"][0]["properties"]["geoid"] == \
-                   isochrone_data["features"][0]["properties"]["geoid"]
+            assert (
+                spatial_data["features"][0]["properties"]["geoid"]
+                == isochrone_data["features"][0]["properties"]["geoid"]
+            )
 
 
 class TestErrorScenarios:
@@ -1234,9 +1368,11 @@ class TestErrorScenarios:
         response = integration_client.get("/occupation_ids/invalid")
         assert response.status_code == 404
 
-    @patch('app.services.OccupationService.get_occupations_with_names')
-    @patch('app.services.SpatialService.get_geojson_features')
-    def test_partial_service_failure(self, mock_spatial, mock_occupation, integration_client):
+    @patch("app.services.OccupationService.get_occupations_with_names")
+    @patch("app.services.SpatialService.get_geojson_features")
+    def test_partial_service_failure(
+        self, mock_spatial, mock_occupation, integration_client
+    ):
         """Test behavior when one service fails but others work."""
         # Mock occupation service to fail
         mock_occupation.side_effect = Exception("Occupation service down")
@@ -1250,9 +1386,11 @@ class TestErrorScenarios:
         response = integration_client.get("/geojson")
         assert response.status_code in [200, 429]
 
-    @patch('app.services.OccupationService.get_occupations_with_names')
-    @patch('app.services.SpatialService.get_geojson_features')
-    def test_recovery_after_errors(self, mock_spatial, mock_occupation, integration_client):
+    @patch("app.services.OccupationService.get_occupations_with_names")
+    @patch("app.services.SpatialService.get_geojson_features")
+    def test_recovery_after_errors(
+        self, mock_spatial, mock_occupation, integration_client
+    ):
         """Test that the API recovers properly after errors."""
         # Initially both services work
         mock_occupation.return_value = [{"code": "11-1021", "name": "Test"}]

@@ -801,17 +801,16 @@ dependencies = [
 [package.dev-dependencies]
 dev = [
     { name = "debugpy" },
-    { name = "mypy" },
-    { name = "python-lsp-server" },
-    { name = "ruff" },
-]
-test = [
     { name = "factory-boy" },
     { name = "faker" },
     { name = "httpx" },
+    { name = "mypy" },
     { name = "pytest" },
     { name = "pytest-asyncio" },
     { name = "pytest-cov" },
+    { name = "python-lsp-server" },
+    { name = "ruff" },
+    { name = "tdd-guard" },
 ]
 
 [package.metadata]
@@ -830,17 +829,16 @@ requires-dist = [
 [package.metadata.requires-dev]
 dev = [
     { name = "debugpy", specifier = ">=1.8.13" },
-    { name = "mypy", specifier = ">=1.13.0" },
-    { name = "python-lsp-server", specifier = ">=1.12.0" },
-    { name = "ruff", specifier = ">=0.8.0" },
-]
-test = [
     { name = "factory-boy", specifier = ">=3.3.0" },
     { name = "faker", specifier = ">=30.0.0" },
     { name = "httpx", specifier = ">=0.27.0" },
+    { name = "mypy", specifier = ">=1.13.0" },
     { name = "pytest", specifier = ">=8.0.0" },
     { name = "pytest-asyncio", specifier = ">=0.24.0" },
     { name = "pytest-cov", specifier = ">=5.0.0" },
+    { name = "python-lsp-server", specifier = ">=1.12.0" },
+    { name = "ruff", specifier = ">=0.8.0" },
+    { name = "tdd-guard", specifier = ">=0.5.3" },
 ]
 
 [[package]]
@@ -879,6 +877,18 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/ff/fb/2984a686808b89a6781526129a4b51266f678b2d2b97ab2d325e56116df8/starlette-0.45.3.tar.gz", hash = "sha256:2cbcba2a75806f8a41c722141486f37c28e30a0921c5f6fe4346cb0dcee1302f", size = 2574076, upload-time = "2025-01-24T11:17:36.535Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/d9/61/f2b52e107b1fc8944b33ef56bf6ac4ebbe16d91b94d2b87ce013bf63fb84/starlette-0.45.3-py3-none-any.whl", hash = "sha256:dfb6d332576f136ec740296c7e8bb8c8a7125044e7c6da30744718880cdd059d", size = 71507, upload-time = "2025-01-24T11:17:34.182Z" },
+]
+
+[[package]]
+name = "tdd-guard"
+version = "0.5.3"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pytest" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/49/5b/43f484dab023bbf730c7798841202811f0f417b131704878be3aa5f225ba/tdd_guard-0.5.3.tar.gz", hash = "sha256:2da053e50dde5563fdda829a872557ea779f0d7379c3342a1bf4d2c334ad6a35", size = 5891, upload-time = "2025-07-21T11:27:32.439Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/57/19/5cf4e5d908c5e7cf0536f11794e9bfa517e5903c78cdfbb00e98dd8ced1d/tdd_guard-0.5.3-py3-none-any.whl", hash = "sha256:13b8acf665d32843534b4c1c8689d9d3984030ede8a2620cbf30c932b7514050", size = 6229, upload-time = "2025-07-21T11:27:31.289Z" },
 ]
 
 [[package]]
