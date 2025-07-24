@@ -28,7 +28,7 @@ dev = [
     "httpx>=0.27.0",
     "faker>=30.0.0",
     "factory-boy>=3.3.0",
-    "tdd-guard>=0.5.3",
+    "tdd-guard-pytest>=0.1.0",
 ]
 
 [tool.mypy]

@@ -810,7 +810,7 @@ dev = [
     { name = "pytest-cov" },
     { name = "python-lsp-server" },
     { name = "ruff" },
-    { name = "tdd-guard" },
+    { name = "tdd-guard-pytest" },
 ]
 
 [package.metadata]
@@ -838,7 +838,7 @@ dev = [
     { name = "pytest-cov", specifier = ">=5.0.0" },
     { name = "python-lsp-server", specifier = ">=1.12.0" },
     { name = "ruff", specifier = ">=0.8.0" },
-    { name = "tdd-guard", specifier = ">=0.5.3" },
+    { name = "tdd-guard-pytest", specifier = ">=0.1.0" },
 ]
 
 [[package]]
@@ -880,15 +880,15 @@ wheels = [
 ]
 
 [[package]]
-name = "tdd-guard"
-version = "0.5.3"
+name = "tdd-guard-pytest"
+version = "0.1.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pytest" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/49/5b/43f484dab023bbf730c7798841202811f0f417b131704878be3aa5f225ba/tdd_guard-0.5.3.tar.gz", hash = "sha256:2da053e50dde5563fdda829a872557ea779f0d7379c3342a1bf4d2c334ad6a35", size = 5891, upload-time = "2025-07-21T11:27:32.439Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/f7/71/60eba799940cdf27b787df8bff326867b5598ac02a646f63c926c46209ee/tdd_guard_pytest-0.1.0.tar.gz", hash = "sha256:5bfe77be648a99d29c497f6eaffc7982b6274de91109f81570bc85520f98b695", size = 4213, upload-time = "2025-07-24T15:39:00.522Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/57/19/5cf4e5d908c5e7cf0536f11794e9bfa517e5903c78cdfbb00e98dd8ced1d/tdd_guard-0.5.3-py3-none-any.whl", hash = "sha256:13b8acf665d32843534b4c1c8689d9d3984030ede8a2620cbf30c932b7514050", size = 6229, upload-time = "2025-07-21T11:27:31.289Z" },
+    { url = "https://files.pythonhosted.org/packages/2c/3e/9c5c647bc8ec9571d5e1dc99ca9b63443530fb4f64ffd3c5186bc6daa266/tdd_guard_pytest-0.1.0-py3-none-any.whl", hash = "sha256:818ea7368da2d61bb5966619ea26a56fa0ae2e1cd22998a032c2a595a250879a", size = 3553, upload-time = "2025-07-24T15:38:59.546Z" },
 ]
 
 [[package]]

@@ -1,5 +1,6 @@
 import { defineConfig } from 'vitest/config';
 import { resolve } from 'path';
+import { VitestReporter } from 'tdd-guard-vitest';
 
 export default defineConfig({
   // Reuse vite config
@@ -48,7 +49,17 @@ export default defineConfig({
     exclude: ['node_modules', 'dist', '.idea', '.git', '.cache'],
 
     // Reporter
-    reporters: ['default'],
+    reporters: [
+      'default',
+      new VitestReporter('/home/ammar/Documents/projects/work/spatial-jobs-index'),
+
+      //new VitestReporter({
+      //  resolve: (path) => {
+      //   const projectRoot = process.env.PROJECT_ROOT || resolve(__dirname, '..');
+      //  return resolve(projectRoot, path);
+      //   },
+      // }),
+    ],
 
     // Test timeout
     testTimeout: 10000,

@@ -108,6 +108,27 @@
           '';
         };
 
+        # TDD Guard CLI tool
+        tddGuard = pkgs.buildNpmPackage {
+          pname = "tdd-guard";
+          version = "0.6.0";
+
+          src = pkgs.fetchFromGitHub {
+            owner = "nizos";
+            repo = "tdd-guard";
+            rev = "v0.6.0";
+            hash = "sha256-LdkirCpSC4mZres7BCT7n8msbk8rJx9G1V/dsfZcYjo=";
+          };
+
+          npmDepsHash = "sha256-iSuxIvXesfge+OYXx3Th2sqezfceoMnyWKDedH54314=";
+
+          # Fix broken symlinks
+          postInstall = ''
+            # Remove broken symlink that causes build failure
+            rm -f $out/lib/node_modules/tdd-guard/node_modules/tdd-guard-vitest
+          '';
+        };
+
         # Frontend build for local testing (with root base path)
         frontendBuildLocal = pkgs.buildNpmPackage {
           pname = "sji-webapp-local";
@@ -259,6 +280,8 @@
               pkgs.pre-commit
               # Database tools
               pkgs.postgresql
+              # TDD tools
+              tddGuard
             ];
 
             env = {
