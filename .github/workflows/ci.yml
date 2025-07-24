@@ -66,7 +66,7 @@ jobs:
 
       - name: Run linting
         run: |
-          nix develop .#backend -c bash -c "cd backend && ruff check"
+          nix develop -c bash -c "cd backend && ruff check"
 
   typecheck-backend:
     needs: changes
@@ -87,7 +87,7 @@ jobs:
 
       - name: Run type checking
         run: |
-          nix develop .#backend -c bash -c "cd backend && mypy app/"
+          nix develop -c bash -c "cd backend && mypy app/"
 
   test-backend:
     needs: changes
@@ -108,7 +108,7 @@ jobs:
 
       - name: Run backend tests with coverage
         run: |
-          nix develop .#backend -c bash -c "cd backend && pytest --cov=app --cov-report=xml --cov-report=term-missing"
+          nix develop -c bash -c "cd backend && pytest --cov=app --cov-report=xml --cov-report=term-missing"
 
       - name: Upload coverage to Codecov
         if: github.ref == 'refs/heads/master'
@@ -138,19 +138,19 @@ jobs:
 
       - name: Install dependencies
         run: |
-          nix develop .#frontend -c bash -c "cd frontend && npm ci"
+          nix develop -c bash -c "cd frontend && npm ci"
 
       - name: Run linting
         run: |
-          nix develop .#frontend -c bash -c "cd frontend && npm run lint"
+          nix develop -c bash -c "cd frontend && npm run lint"
 
       - name: Run type checking
         run: |
-          nix develop .#frontend -c bash -c "cd frontend && npm run type-check"
+          nix develop -c bash -c "cd frontend && npm run type-check"
 
       - name: Run tests with coverage
         run: |
-          nix develop .#frontend -c bash -c "cd frontend && npm run test:coverage"
+          nix develop -c bash -c "cd frontend && npm run test:coverage"
 
       - name: Upload coverage to Codecov
         if: github.ref == 'refs/heads/master'
