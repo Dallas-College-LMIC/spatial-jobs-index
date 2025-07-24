@@ -48,6 +48,7 @@ repos:
         language: system
         files: ^backend/.*\.py$
         require_serial: true
+        pass_filenames: false
 
   # Frontend hooks
   - repo: local
@@ -72,6 +73,7 @@ repos:
         language: system
         files: ^frontend/src/.*\.(js|ts|jsx|tsx)$
         require_serial: true
+        pass_filenames: false
 
 # Configuration
 default_stages: [pre-commit]
