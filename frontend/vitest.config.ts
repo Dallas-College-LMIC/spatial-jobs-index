@@ -49,15 +49,7 @@ export default defineConfig({
     exclude: ['node_modules', 'dist', '.idea', '.git', '.cache'],
 
     // Reporter
-    reporters: [
-      'default',
-      new VitestReporter({
-        resolve: (path) => {
-          const projectRoot = process.env.PROJECT_ROOT || resolve(__dirname, '..');
-          return resolve(projectRoot, path);
-        },
-      }),
-    ],
+    reporters: ['default', new VitestReporter(resolve(__dirname, '..'))],
 
     // Test timeout
     testTimeout: 10000,
