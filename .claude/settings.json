@@ -31,7 +31,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "tdd-guard"
+            "command": "tdd-guard",
+            "timeout": 60000
           }
         ]
       }
