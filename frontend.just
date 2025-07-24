@@ -1,7 +1,7 @@
 set working-directory := 'frontend'
 
-lint:
-    npm run lint
+lint *FILES:
+    npm run lint{{if FILES != "" { " -- " + FILES } else { "" }}}
 
 test:
     npm run test:run -- --reporter=verbose --passWithNoTests

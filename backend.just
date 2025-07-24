@@ -6,11 +6,11 @@ test:
 unit-test:
     pytest tests/unit/ -x --tb=short -q
 
-lint:
-    ruff check . --fix
+lint *FILES:
+    ruff check {{if FILES == "" { "." } else { FILES }}} --fix
 
-format:
-    ruff format .
+format *FILES:
+    ruff format {{if FILES == "" { "." } else { FILES }}}
 
-type-check:
-    mypy .
+type-check *FILES:
+    mypy {{if FILES == "" { "." } else { FILES }}}

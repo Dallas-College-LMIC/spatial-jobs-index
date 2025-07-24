@@ -27,7 +27,6 @@ repos:
         language: system
         types: [python]
         files: ^backend/.*\.py$
-        pass_filenames: false
 
   # MyPy for backend type checking
   - repo: local
@@ -38,7 +37,6 @@ repos:
         language: system
         types: [python]
         files: ^backend/.*\.py$
-        pass_filenames: false
         require_serial: true
 
   # Backend unit tests (fast)
@@ -49,7 +47,6 @@ repos:
         entry: just backend::unit-test
         language: system
         files: ^backend/.*\.py$
-        pass_filenames: false
         require_serial: true
 
   # Frontend hooks
@@ -60,7 +57,6 @@ repos:
         entry: just frontend::lint
         language: system
         files: ^frontend/src/.*\.(js|ts|jsx|tsx)$
-        pass_filenames: false
         require_serial: true
 
       - id: frontend-type-check
@@ -68,7 +64,6 @@ repos:
         entry: just frontend::type-check
         language: system
         files: ^frontend/.*\.(ts|tsx)$
-        pass_filenames: false
         require_serial: true
 
       - id: frontend-tests
@@ -76,7 +71,6 @@ repos:
         entry: just frontend::test
         language: system
         files: ^frontend/src/.*\.(js|ts|jsx|tsx)$
-        pass_filenames: false
         require_serial: true
 
 # Configuration
