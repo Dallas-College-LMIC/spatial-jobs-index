@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 class SimpleCache:
     """Simple in-memory cache with TTL support."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._cache: Dict[str, tuple[Any, float]] = {}
 
     def get(self, key: str) -> Optional[Any]:
@@ -25,12 +25,12 @@ class SimpleCache:
                 del self._cache[key]
         return None
 
-    def set(self, key: str, value: Any, ttl_seconds: int):
+    def set(self, key: str, value: Any, ttl_seconds: int) -> None:
         """Set value in cache with TTL."""
         expiry = time.time() + ttl_seconds
         self._cache[key] = (value, expiry)
 
-    def clear(self):
+    def clear(self) -> None:
         """Clear all cache entries."""
         self._cache.clear()
 
@@ -39,12 +39,12 @@ class SimpleCache:
 _cache = SimpleCache()
 
 
-def cache_with_ttl(ttl_seconds: int = 86400):  # Default 24 hours
+def cache_with_ttl(ttl_seconds: int = 86400) -> Any:  # Default 24 hours
     """Decorator to cache function results with TTL."""
 
-    def decorator(func):
+    def decorator(func: Any) -> Any:
         @wraps(func)
-        def wrapper(*args, **kwargs):
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
             # Create cache key from function name and arguments
             cache_key = f"{func.__name__}:{str(args)}:{str(kwargs)}"
 

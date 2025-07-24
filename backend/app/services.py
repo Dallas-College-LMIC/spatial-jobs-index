@@ -51,7 +51,7 @@ class OccupationService:
         if not is_testing:
             cached_value = _cache.get(cache_key)
             if cached_value is not None:
-                return cached_value
+                return cached_value  # type: ignore[no-any-return]
 
         # Get occupation categories from repository
         occupations = self.repository.get_occupation_categories()

@@ -46,7 +46,7 @@ engine: Optional[Engine] = None
 session_maker: Optional[SessionMaker[Session]] = None
 
 
-def init_database(config: DatabaseConfig):
+def init_database(config: DatabaseConfig) -> None:
     """Initialize the database engine and session maker"""
     global engine, session_maker
 
@@ -72,7 +72,7 @@ def get_db_session() -> Generator[Session, None, None]:
         session.close()
 
 
-def close_database():
+def close_database() -> None:
     """Close database connections"""
     if engine:
         engine.dispose()
