@@ -51,14 +51,12 @@ export default defineConfig({
     // Reporter
     reporters: [
       'default',
-      new VitestReporter('/home/ammar/Documents/projects/work/spatial-jobs-index'),
-
-      //new VitestReporter({
-      //  resolve: (path) => {
-      //   const projectRoot = process.env.PROJECT_ROOT || resolve(__dirname, '..');
-      //  return resolve(projectRoot, path);
-      //   },
-      // }),
+      new VitestReporter({
+        resolve: (path) => {
+          const projectRoot = process.env.PROJECT_ROOT || resolve(__dirname, '..');
+          return resolve(projectRoot, path);
+        },
+      }),
     ],
 
     // Test timeout
