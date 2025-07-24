@@ -6,5 +6,5 @@ lint:
 test:
     npm run test:run -- --reporter=verbose --passWithNoTests
 
-typecheck:
-    npm run typecheck
+type-check:
+    npm run type-check

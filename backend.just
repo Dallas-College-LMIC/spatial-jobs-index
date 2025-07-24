@@ -12,5 +12,5 @@ lint:
 format:
     ruff format .
 
-typecheck:
+type-check:
     mypy .

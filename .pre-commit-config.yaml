@@ -34,7 +34,7 @@ repos:
     hooks:
       - id: mypy
         name: mypy
-        entry: just backend::typecheck
+        entry: just backend::type-check
         language: system
         types: [python]
         files: ^backend/.*\.py$
@@ -63,9 +63,9 @@ repos:
         pass_filenames: false
         require_serial: true
 
-      - id: frontend-typecheck
+      - id: frontend-type-check
         name: Frontend TypeScript Check
-        entry: just frontend::typecheck
+        entry: just frontend::type-check
         language: system
         files: ^frontend/.*\.(ts|tsx)$
         pass_filenames: false

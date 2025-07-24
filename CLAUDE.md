@@ -29,7 +29,7 @@ just backend::unit-test     # Unit tests only
 # Code quality
 just backend::lint          # Auto-fix linting (ruff)
 just backend::format        # Format code
-just backend::typecheck     # Type checking (mypy)
+just backend::type-check     # Type checking (mypy)
 
 # Development server
 cd backend && uv run python -m uvicorn app.main:app --reload
@@ -44,7 +44,7 @@ cd frontend && npm run test:coverage # With coverage
 
 # Code quality
 just frontend::lint         # ESLint
-just frontend::typecheck    # TypeScript checking
+just frontend::type-check    # TypeScript checking
 
 # Development server
 cd frontend && npm run dev
