@@ -25,8 +25,17 @@
     };
   };
 
-  outputs = { self, nixpkgs, flake-utils, uv2nix, pyproject-nix, pyproject-build-systems }:
-    flake-utils.lib.eachDefaultSystem (system:
+  outputs =
+    {
+      self,
+      nixpkgs,
+      flake-utils,
+      uv2nix,
+      pyproject-nix,
+      pyproject-build-systems,
+    }:
+    flake-utils.lib.eachDefaultSystem (
+      system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
         inherit (nixpkgs) lib;
@@ -41,35 +50,47 @@
         };
         pyprojectOverrides = final: prev: {
           pyghtcast = prev.pyghtcast.overrideAttrs (old: {
-            nativeBuildInputs = (old.nativeBuildInputs or []) ++ [
+            nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [
               final.poetry-core
             ];
           });
         };
 
-        pythonSet = (pkgs.callPackage pyproject-nix.build.packages {
-          inherit python;
-        }).overrideScope (lib.composeManyExtensions [
-          pyproject-build-systems.overlays.default
-          backendOverlay
-          pyprojectOverrides
-        ]);
+        pythonSet =
+          (pkgs.callPackage pyproject-nix.build.packages {
+            inherit python;
+          }).overrideScope
+            (
+              lib.composeManyExtensions [
+                pyproject-build-systems.overlays.default
+                backendOverlay
+                pyprojectOverrides
+              ]
+            );
 
         # Backend virtual environment for production
-        backendVenv = (pythonSet.mkVirtualEnv "spatial-index-api-env"
-          backendWorkspace.deps.default).overrideAttrs
-          (old: { venvIgnoreCollisions = [ "*" ]; });
+        backendVenv =
+          (pythonSet.mkVirtualEnv "spatial-index-api-env" backendWorkspace.deps.default).overrideAttrs
+            (old: {
+              venvIgnoreCollisions = [ "*" ];
+            });
 
         # Backend development virtual environment with all dependencies
-        backendDevVenv = (pythonSet.mkVirtualEnv "spatial-index-api-dev-env"
-          backendWorkspace.deps.all).overrideAttrs
-          (old: { venvIgnoreCollisions = [ "*" ]; });
+        backendDevVenv =
+          (pythonSet.mkVirtualEnv "spatial-index-api-dev-env" backendWorkspace.deps.all).overrideAttrs
+            (old: {
+              venvIgnoreCollisions = [ "*" ];
+            });
 
         # Docker image for backend
         backendDocker = pkgs.dockerTools.buildLayeredImage {
           name = "spatial-jobs-index-api";
           tag = "latest";
-          contents = [ backendVenv pkgs.bash pkgs.coreutils ];
+          contents = [
+            backendVenv
+            pkgs.bash
+            pkgs.coreutils
+          ];
           config = {
             Cmd = [
               "${backendVenv}/bin/uvicorn"
@@ -80,7 +101,9 @@
               "8000"
             ];
             WorkingDir = "/app";
-            ExposedPorts = { "8000/tcp" = { }; };
+            ExposedPorts = {
+              "8000/tcp" = { };
+            };
           };
         };
 
@@ -179,7 +202,8 @@
           '';
         };
 
-      in {
+      in
+      {
         packages = {
           # Backend packages
           backend = backendVenv;
@@ -284,13 +308,6 @@
               tddGuard
             ];
 
-            env = {
-              # Set project directories to actual working paths
-              PROJECT_ROOT = toString ./.;
-              BACKEND_DIR = toString ./backend;
-              FRONTEND_DIR = toString ./frontend;
-            };
-
             shellHook = ''
               # The Nix-managed Python environment is automatically available
               echo "Spatial Jobs Index Monorepo Development Shell"
@@ -317,5 +334,6 @@
             '';
           };
         };
-      });
+      }
+    );
 }
