@@ -32,7 +32,7 @@ class TestDatabaseConfig:
             username="testuser",
             password="testpass",
             url="localhost:5432",
-            database="testdb"
+            database="testdb",
         )
         assert config.username == "testuser"
         assert config.password == "testpass"
@@ -45,7 +45,7 @@ class TestDatabaseConfig:
             username="user",
             password="pass@123",
             url="db.example.com:5432",
-            database="mydb"
+            database="mydb",
         )
         expected_url = "postgresql://user:pass@123@db.example.com:5432/mydb"
         assert config.database_url == expected_url
@@ -53,17 +53,17 @@ class TestDatabaseConfig:
     def test_from_env_success(self):
         """Test creating DatabaseConfig from environment variables."""
         env_vars = {
-            'USERNAME': 'envuser',
-            'PASS': 'envpass',
-            'URL': 'envhost:5432',
-            'DB': 'envdb'
+            "USERNAME": "envuser",
+            "PASS": "envpass",
+            "URL": "envhost:5432",
+            "DB": "envdb",
         }
         with patch.dict(os.environ, env_vars):
             config = DatabaseConfig.from_env()
-            assert config.username == 'envuser'
-            assert config.password == 'envpass'
-            assert config.url == 'envhost:5432'
-            assert config.database == 'envdb'
+            assert config.username == "envuser"
+            assert config.password == "envpass"
+            assert config.url == "envhost:5432"
+            assert config.database == "envdb"
 
     def test_from_env_missing_variables(self):
         """Test from_env raises error when environment variables are missing."""
@@ -71,13 +71,18 @@ class TestDatabaseConfig:
         with patch.dict(os.environ, {}, clear=True):
             with pytest.raises(RuntimeError) as exc_info:
                 DatabaseConfig.from_env()
-            assert "Missing required environment variables: USERNAME, PASS, URL, DB" in str(exc_info.value)
+            assert (
+                "Missing required environment variables: USERNAME, PASS, URL, DB"
+                in str(exc_info.value)
+            )
 
         # Test with partial variables
-        with patch.dict(os.environ, {'USERNAME': 'user', 'DB': 'db'}, clear=True):
+        with patch.dict(os.environ, {"USERNAME": "user", "DB": "db"}, clear=True):
             with pytest.raises(RuntimeError) as exc_info:
                 DatabaseConfig.from_env()
-            assert "Missing required environment variables: PASS, URL" in str(exc_info.value)
+            assert "Missing required environment variables: PASS, URL" in str(
+                exc_info.value
+            )
 
     def test_database_config_validation_errors(self):
         """Test DatabaseConfig validation with invalid types."""
@@ -86,7 +91,7 @@ class TestDatabaseConfig:
                 username=123,  # Should be string
                 password="pass",
                 url="localhost",
-                database="db"
+                database="db",
             )
 
 
@@ -95,13 +100,13 @@ class TestOccupationLvlData:
 
     def test_table_name_and_schema(self):
         """Test table name and schema are correctly set."""
-        assert OccupationLvlData.__tablename__ == 'occupation_lvl_data'
+        assert OccupationLvlData.__tablename__ == "occupation_lvl_data"
         # During testing, __table_args__ is empty dict (no schema)
         assert OccupationLvlData.__table_args__ == {}
 
     def test_category_column(self):
         """Test category column properties."""
-        assert hasattr(OccupationLvlData, 'category')
+        assert hasattr(OccupationLvlData, "category")
         assert isinstance(OccupationLvlData.category.property.columns[0], Column)
         assert OccupationLvlData.category.property.columns[0].primary_key is True
         assert OccupationLvlData.category.property.columns[0].type.python_type is str
@@ -117,20 +122,22 @@ class TestTTIClone:
 
     def test_table_name_and_schema(self):
         """Test table name and schema are correctly set."""
-        assert TTIClone.__tablename__ == 'tti_clone'
+        assert TTIClone.__tablename__ == "tti_clone"
         # During testing, __table_args__ is empty dict (no schema)
         assert TTIClone.__table_args__ == {}
 
     def test_column_definitions(self):
         """Test all column definitions."""
         # Check geoid primary key
-        assert hasattr(TTIClone, 'geoid')
+        assert hasattr(TTIClone, "geoid")
         assert TTIClone.geoid.property.columns[0].primary_key is True
         assert TTIClone.geoid.property.columns[0].type.python_type is str
 
         # Check float columns
         float_columns = [
-            'all_jobs_zscore', 'living_wage_zscore', 'not_living_wage_zscore'
+            "all_jobs_zscore",
+            "living_wage_zscore",
+            "not_living_wage_zscore",
         ]
         for col_name in float_columns:
             assert hasattr(TTIClone, col_name)
@@ -138,14 +145,16 @@ class TestTTIClone:
 
         # Check string columns
         string_columns = [
-            'all_jobs_zscore_cat', 'living_wage_zscore_cat', 'not_living_wage_zscore_cat'
+            "all_jobs_zscore_cat",
+            "living_wage_zscore_cat",
+            "not_living_wage_zscore_cat",
         ]
         for col_name in string_columns:
             assert hasattr(TTIClone, col_name)
             assert TTIClone.__table__.columns[col_name].type.python_type is str
 
         # Check geometry column
-        assert hasattr(TTIClone, 'geom')
+        assert hasattr(TTIClone, "geom")
 
     def test_tti_instance_creation(self):
         """Test creating an instance of TTIClone with all fields."""
@@ -160,7 +169,7 @@ class TestTTIClone:
             living_wage_zscore_cat="Low",
             not_living_wage_zscore=0.0,
             not_living_wage_zscore_cat="Medium",
-            geom=mock_geom
+            geom=mock_geom,
         )
 
         assert tti.geoid == "12345"
@@ -178,45 +187,44 @@ class TestOccupationCode:
 
     def test_table_name_and_schema(self):
         """Test table name and schema are correctly set."""
-        assert OccupationCode.__tablename__ == 'occupation_codes'
+        assert OccupationCode.__tablename__ == "occupation_codes"
         # During testing, __table_args__ is empty dict (no schema)
         assert OccupationCode.__table_args__ == {}
 
     def test_column_definitions(self):
         """Test all column definitions."""
         # Check occupation_code column
-        assert hasattr(OccupationCode, 'occupation_code')
+        assert hasattr(OccupationCode, "occupation_code")
         assert isinstance(OccupationCode.occupation_code.property.columns[0], Column)
-        assert OccupationCode.occupation_code.property.columns[0].type.python_type is str
+        assert (
+            OccupationCode.occupation_code.property.columns[0].type.python_type is str
+        )
 
         # Check occupation_name column
-        assert hasattr(OccupationCode, 'occupation_name')
+        assert hasattr(OccupationCode, "occupation_name")
         assert isinstance(OccupationCode.occupation_name.property.columns[0], Column)
-        assert OccupationCode.occupation_name.property.columns[0].type.python_type is str
+        assert (
+            OccupationCode.occupation_name.property.columns[0].type.python_type is str
+        )
 
     def test_occupation_code_instance_creation(self):
         """Test creating an instance of OccupationCode."""
         occupation_code = OccupationCode(
-            occupation_code="11-1021",
-            occupation_name="General and Operations Managers"
+            occupation_code="11-1021", occupation_name="General and Operations Managers"
         )
         assert occupation_code.occupation_code == "11-1021"
         assert occupation_code.occupation_name == "General and Operations Managers"
 
     def test_occupation_code_instance_with_empty_values(self):
         """Test creating an instance with empty string values."""
-        occupation_code = OccupationCode(
-            occupation_code="",
-            occupation_name=""
-        )
+        occupation_code = OccupationCode(occupation_code="", occupation_name="")
         assert occupation_code.occupation_code == ""
         assert occupation_code.occupation_name == ""
 
     def test_occupation_code_instance_with_special_characters(self):
         """Test creating an instance with special characters in the name."""
         occupation_code = OccupationCode(
-            occupation_code="29-1141",
-            occupation_name="Registered Nurses (RN's)"
+            occupation_code="29-1141", occupation_name="Registered Nurses (RN's)"
         )
         assert occupation_code.occupation_code == "29-1141"
         assert occupation_code.occupation_name == "Registered Nurses (RN's)"
@@ -227,41 +235,43 @@ class TestSchoolOfLvlData:
 
     def test_table_name_and_schema(self):
         """Test table name and schema are correctly set."""
-        assert SchoolOfLvlData.__tablename__ == 'school_of_lvl_data'
+        assert SchoolOfLvlData.__tablename__ == "school_of_lvl_data"
         # During testing, __table_args__ is empty dict (no schema)
         assert SchoolOfLvlData.__table_args__ == {}
 
     def test_column_definitions(self):
         """Test all column definitions."""
         # Check geoid primary key
-        assert hasattr(SchoolOfLvlData, 'geoid')
+        assert hasattr(SchoolOfLvlData, "geoid")
         assert SchoolOfLvlData.geoid.property.columns[0].primary_key is True
         assert SchoolOfLvlData.geoid.property.columns[0].type.python_type is str
 
         # Check category primary key
-        assert hasattr(SchoolOfLvlData, 'category')
+        assert hasattr(SchoolOfLvlData, "category")
         assert SchoolOfLvlData.category.property.columns[0].primary_key is True
         assert SchoolOfLvlData.category.property.columns[0].type.python_type is str
 
         # Check float columns
-        float_columns = ['openings_2024_zscore', 'jobs_2024_zscore']
+        float_columns = ["openings_2024_zscore", "jobs_2024_zscore"]
         for col_name in float_columns:
             assert hasattr(SchoolOfLvlData, col_name)
             assert SchoolOfLvlData.__table__.columns[col_name].type.python_type is float
 
         # Check string column
-        assert hasattr(SchoolOfLvlData, 'openings_2024_zscore_color')
-        assert SchoolOfLvlData.__table__.columns['openings_2024_zscore_color'].type.python_type is str
+        assert hasattr(SchoolOfLvlData, "openings_2024_zscore_color")
+        assert (
+            SchoolOfLvlData.__table__.columns[
+                "openings_2024_zscore_color"
+            ].type.python_type
+            is str
+        )
 
         # Check geometry column
-        assert hasattr(SchoolOfLvlData, 'geom')
+        assert hasattr(SchoolOfLvlData, "geom")
 
     def test_school_instance_creation(self):
         """Test creating an instance of SchoolOfLvlData."""
-        school = SchoolOfLvlData(
-            geoid="48113020100",
-            category="ETMS"
-        )
+        school = SchoolOfLvlData(geoid="48113020100", category="ETMS")
         assert school.geoid == "48113020100"
         assert school.category == "ETMS"
 
@@ -275,7 +285,7 @@ class TestSchoolOfLvlData:
             openings_2024_zscore=1.5,
             jobs_2024_zscore=-0.3,
             openings_2024_zscore_color="#FF0000",
-            geom=mock_geom
+            geom=mock_geom,
         )
 
         assert school.geoid == "48113020100"
@@ -336,7 +346,7 @@ class TestSpatialFeatureProperties:
             living_wage_zscore=-0.5,
             living_wage_zscore_cat="Low",
             not_living_wage_zscore=0.0,
-            not_living_wage_zscore_cat="Medium"
+            not_living_wage_zscore_cat="Medium",
         )
 
         assert props.geoid == "12345"
@@ -356,7 +366,7 @@ class TestSpatialFeatureProperties:
             living_wage_zscore=None,
             living_wage_zscore_cat=None,
             not_living_wage_zscore=None,
-            not_living_wage_zscore_cat=None
+            not_living_wage_zscore_cat=None,
         )
 
         assert props.geoid == "54321"
@@ -376,7 +386,7 @@ class TestSpatialFeatureProperties:
             living_wage_zscore=None,
             living_wage_zscore_cat="Very High",
             not_living_wage_zscore=None,
-            not_living_wage_zscore_cat=None
+            not_living_wage_zscore_cat=None,
         )
 
         assert props.geoid == "99999"
@@ -395,7 +405,7 @@ class TestSpatialFeatureProperties:
             living_wage_zscore=None,
             living_wage_zscore_cat=None,
             not_living_wage_zscore=None,
-            not_living_wage_zscore_cat=None
+            not_living_wage_zscore_cat=None,
         )
         assert props.geoid == "12345"
 
@@ -408,7 +418,7 @@ class TestSpatialFeatureProperties:
             living_wage_zscore=None,
             living_wage_zscore_cat=None,
             not_living_wage_zscore=None,
-            not_living_wage_zscore_cat=None
+            not_living_wage_zscore_cat=None,
         )
         assert props_with_leading_zero.geoid == "01234"
 
@@ -422,7 +432,7 @@ class TestSpatialFeatureProperties:
                 living_wage_zscore=None,
                 living_wage_zscore_cat=None,
                 not_living_wage_zscore=None,
-                not_living_wage_zscore_cat=None
+                not_living_wage_zscore_cat=None,
             )
 
     def test_serialization_with_none_values(self):
@@ -434,7 +444,7 @@ class TestSpatialFeatureProperties:
             living_wage_zscore=None,
             living_wage_zscore_cat=None,
             not_living_wage_zscore=None,
-            not_living_wage_zscore_cat=None
+            not_living_wage_zscore_cat=None,
         )
         data = props.model_dump()
 
@@ -452,10 +462,7 @@ class TestGeoJSONFeature:
 
     def test_valid_geojson_feature(self):
         """Test creating a valid GeoJSON feature."""
-        geometry = {
-            "type": "Point",
-            "coordinates": [-96.7969, 32.7763]
-        }
+        geometry = {"type": "Point", "coordinates": [-96.7969, 32.7763]}
         properties = SpatialFeatureProperties(
             geoid="12345",
             all_jobs_zscore=1.0,
@@ -463,13 +470,10 @@ class TestGeoJSONFeature:
             living_wage_zscore=None,
             living_wage_zscore_cat=None,
             not_living_wage_zscore=None,
-            not_living_wage_zscore_cat=None
+            not_living_wage_zscore_cat=None,
         )
 
-        feature = GeoJSONFeature(
-            geometry=geometry,
-            properties=properties
-        )
+        feature = GeoJSONFeature(geometry=geometry, properties=properties)
 
         assert feature.type == "Feature"
         assert feature.geometry == geometry
@@ -478,7 +482,10 @@ class TestGeoJSONFeature:
 
     def test_type_default_value(self):
         """Test that type field has correct default value."""
-        geometry = {"type": "Polygon", "coordinates": [[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]]}
+        geometry = {
+            "type": "Polygon",
+            "coordinates": [[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]],
+        }
         properties = SpatialFeatureProperties(
             geoid="54321",
             all_jobs_zscore=None,
@@ -486,7 +493,7 @@ class TestGeoJSONFeature:
             living_wage_zscore=None,
             living_wage_zscore_cat=None,
             not_living_wage_zscore=None,
-            not_living_wage_zscore_cat=None
+            not_living_wage_zscore_cat=None,
         )
 
         feature = GeoJSONFeature(geometry=geometry, properties=properties)
@@ -502,22 +509,17 @@ class TestGeoJSONFeature:
             living_wage_zscore=None,
             living_wage_zscore_cat=None,
             not_living_wage_zscore=None,
-            not_living_wage_zscore_cat=None
+            not_living_wage_zscore_cat=None,
         )
 
         # Pydantic allows overriding defaults
         feature = GeoJSONFeature(
-            type="CustomType",
-            geometry=geometry,
-            properties=properties
+            type="CustomType", geometry=geometry, properties=properties
         )
         assert feature.type == "CustomType"
 
         # But the default is still "Feature" when not provided
-        feature2 = GeoJSONFeature(
-            geometry=geometry,
-            properties=properties
-        )
+        feature2 = GeoJSONFeature(geometry=geometry, properties=properties)
         assert feature2.type == "Feature"
 
     def test_complex_geometry(self):
@@ -526,8 +528,8 @@ class TestGeoJSONFeature:
             "type": "MultiPolygon",
             "coordinates": [
                 [[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]],
-                [[[2, 2], [3, 2], [3, 3], [2, 3], [2, 2]]]
-            ]
+                [[[2, 2], [3, 2], [3, 3], [2, 3], [2, 2]]],
+            ],
         }
         properties = SpatialFeatureProperties(
             geoid="99999",
@@ -536,7 +538,7 @@ class TestGeoJSONFeature:
             living_wage_zscore=None,
             living_wage_zscore_cat=None,
             not_living_wage_zscore=None,
-            not_living_wage_zscore_cat=None
+            not_living_wage_zscore_cat=None,
         )
 
         feature = GeoJSONFeature(geometry=geometry, properties=properties)
@@ -553,7 +555,7 @@ class TestGeoJSONFeature:
             living_wage_zscore=None,
             living_wage_zscore_cat=None,
             not_living_wage_zscore=None,
-            not_living_wage_zscore_cat=None
+            not_living_wage_zscore_cat=None,
         )
 
         feature = GeoJSONFeature(geometry=geometry, properties=properties)
@@ -572,7 +574,7 @@ class TestGeoJSONFeature:
             living_wage_zscore=None,
             living_wage_zscore_cat=None,
             not_living_wage_zscore=None,
-            not_living_wage_zscore_cat=None
+            not_living_wage_zscore_cat=None,
         )
 
         # Missing geometry
@@ -600,7 +602,7 @@ class TestGeoJSONFeatureCollection:
                 living_wage_zscore=None,
                 living_wage_zscore_cat=None,
                 not_living_wage_zscore=None,
-                not_living_wage_zscore_cat=None
+                not_living_wage_zscore_cat=None,
             )
             feature = GeoJSONFeature(geometry=geometry, properties=properties)
             features.append(feature)
@@ -631,7 +633,9 @@ class TestGeoJSONFeatureCollection:
         for i in range(100):
             geometry = {
                 "type": "Polygon",
-                "coordinates": [[[i, i], [i+1, i], [i+1, i+1], [i, i+1], [i, i]]]
+                "coordinates": [
+                    [[i, i], [i + 1, i], [i + 1, i + 1], [i, i + 1], [i, i]]
+                ],
             }
             properties = SpatialFeatureProperties(
                 geoid=str(i),
@@ -640,7 +644,7 @@ class TestGeoJSONFeatureCollection:
                 living_wage_zscore=None,
                 living_wage_zscore_cat=None,
                 not_living_wage_zscore=None,
-                not_living_wage_zscore_cat=None
+                not_living_wage_zscore_cat=None,
             )
             feature = GeoJSONFeature(geometry=geometry, properties=properties)
             features.append(feature)
@@ -659,7 +663,7 @@ class TestGeoJSONFeatureCollection:
             living_wage_zscore=None,
             living_wage_zscore_cat=None,
             not_living_wage_zscore=None,
-            not_living_wage_zscore_cat=None
+            not_living_wage_zscore_cat=None,
         )
         feature = GeoJSONFeature(geometry=geometry, properties=properties)
 
@@ -693,7 +697,7 @@ class TestGeoJSONFeatureCollection:
                 living_wage_zscore=None,
                 living_wage_zscore_cat=None,
                 not_living_wage_zscore=None,
-                not_living_wage_zscore_cat=None
+                not_living_wage_zscore_cat=None,
             )
             feature = GeoJSONFeature(geometry=geometry, properties=properties)
             features.append(feature)
@@ -716,9 +720,7 @@ class TestSchoolOfStudyIdsResponse:
 
     def test_valid_school_ids_response(self):
         """Test creating valid SchoolOfStudyIdsResponse."""
-        response = SchoolOfStudyIdsResponse(
-            school_ids=["ETMS", "BHGT", "CE"]
-        )
+        response = SchoolOfStudyIdsResponse(school_ids=["ETMS", "BHGT", "CE"])
         assert response.school_ids == ["ETMS", "BHGT", "CE"]
         assert len(response.school_ids) == 3
 
@@ -759,7 +761,7 @@ class TestSchoolOfStudySpatialProperties:
             category="ETMS",
             openings_2024_zscore=1.5,
             jobs_2024_zscore=-0.3,
-            openings_2024_zscore_color="#FF0000"
+            openings_2024_zscore_color="#FF0000",
         )
 
         assert props.geoid == "48113020100"
@@ -775,7 +777,7 @@ class TestSchoolOfStudySpatialProperties:
             category="ETMS",
             openings_2024_zscore=None,
             jobs_2024_zscore=None,
-            openings_2024_zscore_color=None
+            openings_2024_zscore_color=None,
         )
 
         assert props.geoid == "48113020100"
@@ -792,7 +794,7 @@ class TestSchoolOfStudySpatialProperties:
             category="ETMS",
             openings_2024_zscore=None,
             jobs_2024_zscore=None,
-            openings_2024_zscore_color=None
+            openings_2024_zscore_color=None,
         )
         assert props.geoid == "48113020100"
         assert props.category == "ETMS"
@@ -805,7 +807,7 @@ class TestSchoolOfStudySpatialProperties:
                 category="ETMS",
                 openings_2024_zscore="not-a-float",
                 jobs_2024_zscore=None,
-                openings_2024_zscore_color=None
+                openings_2024_zscore_color=None,
             )
 
     def test_serialization_with_none_values(self):
@@ -815,7 +817,7 @@ class TestSchoolOfStudySpatialProperties:
             category="ETMS",
             openings_2024_zscore=None,
             jobs_2024_zscore=None,
-            openings_2024_zscore_color=None
+            openings_2024_zscore_color=None,
         )
         data = props.model_dump()
 
@@ -835,20 +837,17 @@ class TestSchoolOfStudyGeoJSONFeature:
         """Test creating a valid GeoJSON feature."""
         geometry = {
             "type": "Polygon",
-            "coordinates": [[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]]
+            "coordinates": [[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]],
         }
         properties = SchoolOfStudySpatialProperties(
             geoid="48113020100",
             category="ETMS",
             openings_2024_zscore=1.0,
             jobs_2024_zscore=None,
-            openings_2024_zscore_color=None
+            openings_2024_zscore_color=None,
         )
 
-        feature = SchoolOfStudyGeoJSONFeature(
-            geometry=geometry,
-            properties=properties
-        )
+        feature = SchoolOfStudyGeoJSONFeature(geometry=geometry, properties=properties)
 
         assert feature.type == "Feature"
         assert feature.geometry == geometry
@@ -864,7 +863,7 @@ class TestSchoolOfStudyGeoJSONFeature:
             category="ETMS",
             openings_2024_zscore=None,
             jobs_2024_zscore=None,
-            openings_2024_zscore_color=None
+            openings_2024_zscore_color=None,
         )
 
         feature = SchoolOfStudyGeoJSONFeature(geometry=geometry, properties=properties)
@@ -878,7 +877,7 @@ class TestSchoolOfStudyGeoJSONFeature:
             category="ETMS",
             openings_2024_zscore=None,
             jobs_2024_zscore=None,
-            openings_2024_zscore_color=None
+            openings_2024_zscore_color=None,
         )
 
         feature = SchoolOfStudyGeoJSONFeature(geometry=geometry, properties=properties)
@@ -896,7 +895,7 @@ class TestSchoolOfStudyGeoJSONFeature:
             category="ETMS",
             openings_2024_zscore=None,
             jobs_2024_zscore=None,
-            openings_2024_zscore_color=None
+            openings_2024_zscore_color=None,
         )
 
         # Missing geometry
@@ -922,9 +921,11 @@ class TestSchoolOfStudyGeoJSONFeatureCollection:
                 category=category,
                 openings_2024_zscore=None,
                 jobs_2024_zscore=None,
-                openings_2024_zscore_color=None
+                openings_2024_zscore_color=None,
             )
-            feature = SchoolOfStudyGeoJSONFeature(geometry=geometry, properties=properties)
+            feature = SchoolOfStudyGeoJSONFeature(
+                geometry=geometry, properties=properties
+            )
             features.append(feature)
 
         collection = SchoolOfStudyGeoJSONFeatureCollection(features=features)
@@ -955,7 +956,7 @@ class TestSchoolOfStudyGeoJSONFeatureCollection:
             category="ETMS",
             openings_2024_zscore=None,
             jobs_2024_zscore=None,
-            openings_2024_zscore_color=None
+            openings_2024_zscore_color=None,
         )
         feature = SchoolOfStudyGeoJSONFeature(geometry=geometry, properties=properties)
 
@@ -1001,7 +1002,7 @@ class TestModelIntegration:
             living_wage_zscore=mock_tti.living_wage_zscore,
             living_wage_zscore_cat=mock_tti.living_wage_zscore_cat,
             not_living_wage_zscore=mock_tti.not_living_wage_zscore,
-            not_living_wage_zscore_cat=mock_tti.not_living_wage_zscore_cat
+            not_living_wage_zscore_cat=mock_tti.not_living_wage_zscore_cat,
         )
 
         assert properties.geoid == "12345"
@@ -1013,7 +1014,7 @@ class TestModelIntegration:
         # Create a complete GeoJSON structure
         geometry = {
             "type": "Polygon",
-            "coordinates": [[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]]
+            "coordinates": [[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]],
         }
         properties = SpatialFeatureProperties(
             geoid="12345",
@@ -1022,7 +1023,7 @@ class TestModelIntegration:
             living_wage_zscore=None,
             living_wage_zscore_cat=None,
             not_living_wage_zscore=None,
-            not_living_wage_zscore_cat=None
+            not_living_wage_zscore_cat=None,
         )
         feature = GeoJSONFeature(geometry=geometry, properties=properties)
         collection = GeoJSONFeatureCollection(features=[feature])

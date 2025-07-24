@@ -7,11 +7,11 @@ repos:
       - id: end-of-file-fixer
       - id: check-merge-conflict
       - id: check-added-large-files
-        args: ['--maxkb=5000']
+        args: ["--maxkb=5000"]
       - id: check-yaml
-        exclude: '^frontend/.*\.ya?ml$'  # Frontend YAML files may have special syntax
+        exclude: '^frontend/.*\.ya?ml$' # Frontend YAML files may have special syntax
       - id: check-json
-        exclude: 'tsconfig.*\.json$'  # TSConfig files allow comments
+        exclude: 'tsconfig.*\.json$' # TSConfig files allow comments
       - id: check-toml
       - id: check-ast
         files: \.py$
@@ -23,10 +23,9 @@ repos:
     hooks:
       - id: ruff
         name: ruff
-        entry: ruff
+        entry: just backend::lint
         language: system
         types: [python]
-        args: [check, --fix]
         files: ^backend/.*\.py$
 
   # MyPy for backend type checking
@@ -34,12 +33,10 @@ repos:
     hooks:
       - id: mypy
         name: mypy
-        entry: mypy
+        entry: just backend::type-check
         language: system
         types: [python]
         files: ^backend/.*\.py$
-        args: [backend/app/]
-        pass_filenames: false
         require_serial: true
 
   # Backend unit tests (fast)
@@ -47,10 +44,9 @@ repos:
     hooks:
       - id: backend-unit-tests
         name: Backend Unit Tests
-        entry: scripts/pre-commit/backend-tests.sh
-        language: script
+        entry: just backend::unit-test
+        language: system
         files: ^backend/.*\.py$
-        pass_filenames: false
         require_serial: true
 
   # Frontend hooks
@@ -58,28 +54,25 @@ repos:
     hooks:
       - id: frontend-lint
         name: Frontend ESLint
-        entry: scripts/pre-commit/frontend-lint.sh
-        language: script
+        entry: just frontend::lint
+        language: system
         files: ^frontend/src/.*\.(js|ts|jsx|tsx)$
-        pass_filenames: false
         require_serial: true
 
-      - id: frontend-typecheck
+      - id: frontend-type-check
         name: Frontend TypeScript Check
-        entry: scripts/pre-commit/frontend-typecheck.sh
-        language: script
+        entry: just frontend::type-check
+        language: system
         files: ^frontend/.*\.(ts|tsx)$
-        pass_filenames: false
         require_serial: true
 
       - id: frontend-tests
         name: Frontend Unit Tests
-        entry: scripts/pre-commit/frontend-tests.sh
-        language: script
+        entry: just frontend::test
+        language: system
         files: ^frontend/src/.*\.(js|ts|jsx|tsx)$
-        pass_filenames: false
         require_serial: true
 
 # Configuration
 default_stages: [pre-commit]
-fail_fast: true
+fail_fast: false

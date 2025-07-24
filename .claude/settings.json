@@ -1,4 +1,7 @@
 {
+  "env": {
+    "CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR": "1"
+  },
   "hooks": {
     "PostToolUse": [
       {
@@ -6,7 +9,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/home/ammar/Documents/projects/work/spatial-jobs-index/.claude/hooks/post-edit-format.sh",
+            "command": ".claude/hooks/post-edit-format.sh",
             "timeout": 5000
           }
         ]
@@ -18,14 +21,21 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/home/ammar/Documents/projects/work/spatial-jobs-index/.claude/hooks/pre-bash-check.sh",
+            "command": ".claude/hooks/pre-bash-check.sh",
             "timeout": 2000
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit|MultiEdit|TodoWrite",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "tdd-guard",
+            "timeout": 60000
           }
         ]
       }
     ]
-  },
-  "environment": {
-    "preferNixShell": true
   }
 }

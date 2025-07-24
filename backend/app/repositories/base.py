@@ -48,7 +48,7 @@ class BaseRepository(ABC, Generic[T]):
             logging.error(f"Database error in get_all: {e}")
             raise
 
-    def create(self, **kwargs) -> T:
+    def create(self, **kwargs: Any) -> T:
         """
         Create a new record.
 
@@ -64,7 +64,7 @@ class BaseRepository(ABC, Generic[T]):
             self.session.rollback()
             raise
 
-    def update(self, instance: T, **kwargs) -> T:
+    def update(self, instance: T, **kwargs: Any) -> T:
         """
         Update an existing record.
 
@@ -94,7 +94,7 @@ class BaseRepository(ABC, Generic[T]):
             self.session.rollback()
             raise
 
-    def get_geojson_geometry(self, geom_column) -> Optional[dict]:
+    def get_geojson_geometry(self, geom_column: Any) -> Optional[dict]:
         """Convert PostGIS geometry to GeoJSON format"""
         try:
             geojson_str = self.session.scalar(func.ST_AsGeoJSON(geom_column))

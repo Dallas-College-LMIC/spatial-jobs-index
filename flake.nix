@@ -25,8 +25,17 @@
     };
   };
 
-  outputs = { self, nixpkgs, flake-utils, uv2nix, pyproject-nix, pyproject-build-systems }:
-    flake-utils.lib.eachDefaultSystem (system:
+  outputs =
+    {
+      self,
+      nixpkgs,
+      flake-utils,
+      uv2nix,
+      pyproject-nix,
+      pyproject-build-systems,
+    }:
+    flake-utils.lib.eachDefaultSystem (
+      system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
         inherit (nixpkgs) lib;
@@ -41,35 +50,47 @@
         };
         pyprojectOverrides = final: prev: {
           pyghtcast = prev.pyghtcast.overrideAttrs (old: {
-            nativeBuildInputs = (old.nativeBuildInputs or []) ++ [
+            nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [
               final.poetry-core
             ];
           });
         };
 
-        pythonSet = (pkgs.callPackage pyproject-nix.build.packages {
-          inherit python;
-        }).overrideScope (lib.composeManyExtensions [
-          pyproject-build-systems.overlays.default
-          backendOverlay
-          pyprojectOverrides
-        ]);
+        pythonSet =
+          (pkgs.callPackage pyproject-nix.build.packages {
+            inherit python;
+          }).overrideScope
+            (
+              lib.composeManyExtensions [
+                pyproject-build-systems.overlays.default
+                backendOverlay
+                pyprojectOverrides
+              ]
+            );
 
         # Backend virtual environment for production
-        backendVenv = (pythonSet.mkVirtualEnv "spatial-index-api-env"
-          backendWorkspace.deps.default).overrideAttrs
-          (old: { venvIgnoreCollisions = [ "*" ]; });
+        backendVenv =
+          (pythonSet.mkVirtualEnv "spatial-index-api-env" backendWorkspace.deps.default).overrideAttrs
+            (old: {
+              venvIgnoreCollisions = [ "*" ];
+            });
 
         # Backend development virtual environment with all dependencies
-        backendDevVenv = (pythonSet.mkVirtualEnv "spatial-index-api-dev-env"
-          backendWorkspace.deps.all).overrideAttrs
-          (old: { venvIgnoreCollisions = [ "*" ]; });
+        backendDevVenv =
+          (pythonSet.mkVirtualEnv "spatial-index-api-dev-env" backendWorkspace.deps.all).overrideAttrs
+            (old: {
+              venvIgnoreCollisions = [ "*" ];
+            });
 
         # Docker image for backend
         backendDocker = pkgs.dockerTools.buildLayeredImage {
           name = "spatial-jobs-index-api";
           tag = "latest";
-          contents = [ backendVenv pkgs.bash pkgs.coreutils ];
+          contents = [
+            backendVenv
+            pkgs.bash
+            pkgs.coreutils
+          ];
           config = {
             Cmd = [
               "${backendVenv}/bin/uvicorn"
@@ -80,7 +101,9 @@
               "8000"
             ];
             WorkingDir = "/app";
-            ExposedPorts = { "8000/tcp" = { }; };
+            ExposedPorts = {
+              "8000/tcp" = { };
+            };
           };
         };
 
@@ -105,6 +128,27 @@
             mkdir -p $out
             cp -r dist/* $out/
             runHook postInstall
+          '';
+        };
+
+        # TDD Guard CLI tool
+        tddGuard = pkgs.buildNpmPackage {
+          pname = "tdd-guard";
+          version = "0.6.0";
+
+          src = pkgs.fetchFromGitHub {
+            owner = "nizos";
+            repo = "tdd-guard";
+            rev = "v0.6.0";
+            hash = "sha256-LdkirCpSC4mZres7BCT7n8msbk8rJx9G1V/dsfZcYjo=";
+          };
+
+          npmDepsHash = "sha256-iSuxIvXesfge+OYXx3Th2sqezfceoMnyWKDedH54314=";
+
+          # Fix broken symlinks
+          postInstall = ''
+            # Remove broken symlink that causes build failure
+            rm -f $out/lib/node_modules/tdd-guard/node_modules/tdd-guard-vitest
           '';
         };
 
@@ -158,7 +202,8 @@
           '';
         };
 
-      in {
+      in
+      {
         packages = {
           # Backend packages
           backend = backendVenv;
@@ -243,116 +288,42 @@
         };
 
         devShells = {
-          # Backend development shell with pre-installed dependencies (uv2nix)
-          backend = pkgs.mkShell {
-            buildInputs = [
-              backendDevVenv  # Virtual environment with all dependencies
-              pkgs.ruff
-              pkgs.uv
-              pkgs.gcc
-              pkgs.stdenv.cc.cc.lib
-              pkgs.pre-commit
-            ];
-
-            env = {
-              # Don't create venv using uv
-              UV_NO_SYNC = "1";
-              # Force uv to use Python interpreter from venv
-              UV_PYTHON = "${backendDevVenv}/bin/python";
-              # Prevent uv from downloading managed Python's
-              UV_PYTHON_DOWNLOADS = "never";
-            };
-
-            shellHook = ''
-              unset PYTHONPATH
-              echo "Backend development shell activated (pure uv2nix)"
-              echo "All Python dependencies are pre-installed via Nix"
-              echo "Run 'cd backend' to enter the backend directory"
-              echo "Run 'python -m uvicorn app.main:app --reload' to start the API"
-              echo "Run 'pytest' to run tests (all dependencies available)"
-            '';
-          };
-
-          # Backend development shell - impure (manual dependency management)
-          backend-impure = pkgs.mkShell {
-            buildInputs = [
-              python
-              pkgs.ruff
-              pkgs.uv
-              pkgs.gcc
-              pkgs.stdenv.cc.cc.lib
-              pkgs.pre-commit
-            ] ++ (with pkgs.python313Packages; [
-              mypy
-              python-lsp-server
-              python-lsp-ruff
-              pylsp-mypy
-            ]);
-
-            env = {
-              UV_PYTHON_DOWNLOADS = "never";
-              UV_PYTHON = python.interpreter;
-            };
-
-            shellHook = ''
-              unset PYTHONPATH
-              echo "Backend development shell activated (impure)"
-              echo "Run 'cd backend' to enter the backend directory"
-              echo "Run 'uv sync' to install dependencies"
-              echo "Run 'uv run python -m uvicorn app.main:app --reload' to start the API"
-            '';
-          };
-
-          # Frontend development shell
-          frontend = pkgs.mkShell {
-            buildInputs = with pkgs; [
-              nodejs
-              nodePackages.npm
-            ];
-
-            shellHook = ''
-              echo "Frontend development shell activated"
-              echo "Run 'cd frontend' to enter the frontend directory"
-              echo "Run 'npm install' to install dependencies"
-              echo "Run 'npm run dev' to start the development server"
-            '';
-          };
-
-          # Combined development shell
+          # Combined development shell (impure approach for faster iteration)
           default = pkgs.mkShell {
             buildInputs = [
-              # Backend with pre-installed dependencies
+              # Use the Nix-managed Python virtual environment
               backendDevVenv
-              # Backend tools
-              pkgs.ruff
-              pkgs.uv
-              pkgs.gcc
-              pkgs.stdenv.cc.cc.lib
-              pkgs.pre-commit
               # Frontend tools
               pkgs.nodejs
               pkgs.nodePackages.npm
               # General tools
-              pkgs.git
-              pkgs.direnv
+              pkgs.just
+              pkgs.ruff
+              pkgs.gcc
+              pkgs.stdenv.cc.cc.lib
+              pkgs.pre-commit
               # Database tools
               pkgs.postgresql
+              # TDD tools
+              tddGuard
             ];
 
-            env = {
-              # Don't create venv using uv
-              UV_NO_SYNC = "1";
-              # Force uv to use Python interpreter from venv
-              UV_PYTHON = "${backendDevVenv}/bin/python";
-              # Prevent uv from downloading managed Python's
-              UV_PYTHON_DOWNLOADS = "never";
-            };
-
             shellHook = ''
-              unset PYTHONPATH
+              # The Nix-managed Python environment is automatically available
               echo "Spatial Jobs Index Monorepo Development Shell"
               echo ""
-              echo "Available commands:"
+              echo "Python environment: Nix-managed (no uv sync needed)"
+              echo "Python: $(which python)"
+              echo ""
+              echo "Backend commands:"
+              echo "  pytest                    - Run backend tests"
+              echo "  python -m uvicorn app.main:app --reload - Start API server"
+              echo ""
+              echo "Frontend setup:"
+              echo "  cd frontend && npm install - Install frontend dependencies"
+              echo "  npm run dev               - Start frontend dev server"
+              echo ""
+              echo "Available nix commands:"
               echo "  nix run .#backend    - Run the backend API server"
               echo "  nix run .#frontend   - Run the frontend dev server"
               echo "  nix run              - Run both services"
@@ -360,14 +331,9 @@
               echo "  nix build .#backend        - Build backend package"
               echo "  nix build .#frontend       - Build frontend for production"
               echo "  nix build .#backend-docker - Build backend Docker image"
-              echo ""
-              echo "  nix develop .#backend  - Enter backend-only dev shell (with deps)"
-              echo "  nix develop .#backend-impure - Enter backend shell (manual deps)"
-              echo "  nix develop .#frontend - Enter frontend-only dev shell"
-              echo ""
-              echo "Backend Python dependencies are pre-installed via Nix"
             '';
           };
         };
-      });
+      }
+    );
 }

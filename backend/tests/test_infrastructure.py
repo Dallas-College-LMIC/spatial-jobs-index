@@ -1,6 +1,7 @@
 """
 Test to verify the test infrastructure is working correctly.
 """
+
 import pytest
 from sqlalchemy.orm import Session
 from sqlalchemy import text
@@ -11,7 +12,7 @@ from tests.factories import (
     OccupationLvlDataFactory,
     TTICloneFactory,
     create_sample_occupation_data,
-    create_sample_spatial_data
+    create_sample_spatial_data,
 )
 
 
@@ -43,9 +44,11 @@ class TestInfrastructure:
 
         # Verify it's in the session
         test_session.commit()
-        found = test_session.query(OccupationLvlData).filter_by(
-            category=occupation.category
-        ).first()
+        found = (
+            test_session.query(OccupationLvlData)
+            .filter_by(category=occupation.category)
+            .first()
+        )
         assert found is not None
 
     @pytest.mark.skip(reason="Requires PostgreSQL with schema support")
@@ -85,6 +88,7 @@ class TestInfrastructure:
     def test_mock_env_vars(self, mock_env_vars):
         """Test environment variable mocking."""
         import os
+
         assert os.getenv("USERNAME") == "test_user"
         assert os.getenv("PASS") == "test_pass"
         assert os.getenv("URL") == "test_host:5432"

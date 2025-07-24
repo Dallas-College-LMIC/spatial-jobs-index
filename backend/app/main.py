@@ -75,7 +75,7 @@ app.add_middleware(
 
 
 @app.on_event("startup")
-async def startup_event():
+async def startup_event() -> None:
     """Initialize database on application startup"""
     import os
 
@@ -87,7 +87,9 @@ async def startup_event():
 
 @app.get("/occupation_ids", response_model=OccupationsResponse, tags=["Occupations"])
 @limiter.limit("30/minute")
-def get_occupation_ids(request: Request, session: Session = Depends(get_db_session)):
+def get_occupation_ids(
+    request: Request, session: Session = Depends(get_db_session)
+) -> OccupationsResponse:
     """
     Get all occupation IDs and names from the database.
 
@@ -105,7 +107,9 @@ def get_occupation_ids(request: Request, session: Session = Depends(get_db_sessi
 
 @app.get("/geojson")
 @limiter.limit("10/minute")
-def get_geojson(request: Request, session: Session = Depends(get_db_session)):
+def get_geojson(
+    request: Request, session: Session = Depends(get_db_session)
+) -> Response:
     try:
         service = SpatialService(session)
         features = service.get_geojson_features()
@@ -125,7 +129,7 @@ def get_geojson(request: Request, session: Session = Depends(get_db_session)):
 @limiter.limit("30/minute")
 def get_occupation_spatial_data(
     category: str, request: Request, session: Session = Depends(get_db_session)
-):
+) -> Response:
     """Get spatial data for a specific occupation category"""
     try:
         service = OccupationService(session)
@@ -154,7 +158,7 @@ def get_occupation_spatial_data(
 @limiter.limit("30/minute")
 def get_isochrones(
     geoid: str, request: Request, session: Session = Depends(get_db_session)
-):
+) -> Response:
     """Get isochrone travel time bands for a specific census tract"""
     try:
         # Validate geoid format (should be numeric)
@@ -192,7 +196,7 @@ def get_isochrones(
 @limiter.limit("30/minute")
 def get_school_of_study_ids(
     request: Request, session: Session = Depends(get_db_session)
-):
+) -> SchoolOfStudyIdsResponse:
     """
     Get all available school of study categories.
 
@@ -224,7 +228,7 @@ def get_school_of_study_ids(
 @limiter.limit("30/minute")
 def get_school_of_study_spatial_data(
     category: str, request: Request, session: Session = Depends(get_db_session)
-):
+) -> Response:
     """
     Get spatial GeoJSON data for a specific school of study category.
 
