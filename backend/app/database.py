@@ -1,5 +1,5 @@
 from sqlalchemy import create_engine, Engine
-from sqlalchemy.orm import sessionmaker, Session, sessionmaker as SessionMaker
+from sqlalchemy.orm import sessionmaker, Session
 from pydantic import BaseModel
 import os
 from typing import Generator, Optional
@@ -43,7 +43,7 @@ class DatabaseConfig(BaseModel):
 
 # Global variables for database
 engine: Optional[Engine] = None
-session_maker: Optional[SessionMaker[Session]] = None
+session_maker: Optional[sessionmaker[Session]] = None
 
 
 def init_database(config: DatabaseConfig) -> None:
