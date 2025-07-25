@@ -59,6 +59,7 @@ repos:
         language: system
         files: ^frontend/src/.*\.(js|ts|jsx|tsx)$
         require_serial: true
+        pass_filenames: true
 
       - id: frontend-type-check
         name: Frontend TypeScript Check
