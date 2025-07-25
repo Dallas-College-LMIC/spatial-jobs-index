@@ -1,7 +1,7 @@
 /**
  * Tests for API type safety improvements
  */
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { ApiService } from '../../../js/api';
 
 describe('API Type Safety', () => {
@@ -21,7 +21,7 @@ describe('API Type Safety', () => {
       expect(result).toHaveProperty('type', 'FeatureCollection');
       expect(result).toHaveProperty('features');
       expect(Array.isArray(result.features)).toBe(true);
-    } catch (error) {
+    } catch {
       // Test the shape we expect even if API call fails
       expect(true).toBe(true); // Placeholder - we're testing the return type
     }
