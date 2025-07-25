@@ -66,6 +66,7 @@ repos:
         language: system
         files: ^frontend/.*\.(ts|tsx)$
         require_serial: true
+        pass_filenames: false
 
       - id: frontend-tests
         name: Frontend Unit Tests
