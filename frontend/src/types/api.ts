@@ -82,3 +82,5 @@ export interface ApiError extends Error {
   endpoint?: string;
   url?: string;
 }
+
+// Test comment to trigger ESLint hook
