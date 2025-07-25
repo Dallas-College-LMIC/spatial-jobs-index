@@ -47,3 +47,24 @@ export interface LayerConfig {
   title: string;
   scoreProperty: string;
 }
+
+// Isochrone-specific types
+export interface IsochroneProperties {
+  geoid: string;
+  travel_time_minutes: number;
+  [key: string]: any;
+}
+
+export interface IsochroneFeature {
+  type: 'Feature';
+  geometry: {
+    type: 'Polygon' | 'MultiPolygon';
+    coordinates: any;
+  };
+  properties: IsochroneProperties;
+}
+
+export interface IsochroneResponse {
+  type: 'FeatureCollection';
+  features: IsochroneFeature[];
+}

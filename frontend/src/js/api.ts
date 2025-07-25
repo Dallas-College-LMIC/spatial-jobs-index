@@ -2,6 +2,7 @@ import type {
   OccupationIdsResponse,
   GeoJSONResponse,
   SchoolOfStudyIdsResponse,
+  IsochroneResponse,
 } from '../types/api';
 
 interface RequestConfig {
@@ -346,9 +347,9 @@ export class ApiService {
   /**
    * Get isochrone data for a specific census tract
    */
-  async getIsochroneData(geoid: string, signal?: AbortSignal): Promise<any> {
+  async getIsochroneData(geoid: string, signal?: AbortSignal): Promise<IsochroneResponse> {
     console.log(`[ApiService] Fetching isochrone data for tract: ${geoid}`);
-    return this.fetchData<any>(
+    return this.fetchData<IsochroneResponse>(
       `/isochrones/${geoid}`,
       {
         timeout: undefined, // No timeout - let the request complete

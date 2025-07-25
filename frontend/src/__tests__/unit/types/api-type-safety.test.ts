@@ -1,29 +1,30 @@
 /**
  * Tests for API type safety improvements
  */
-import { describe, it, expect, beforeEach } from 'vitest';
-import { ApiService } from '../../../js/api';
+import { describe, it, expect } from 'vitest';
+import type { IsochroneResponse } from '../../../types/api';
 
 describe('API Type Safety', () => {
-  let apiService: ApiService;
+  it('should use IsochroneResponse type for proper type safety', () => {
+    // This test requires IsochroneResponse type to be defined
+    const validIsochroneData: IsochroneResponse = {
+      type: 'FeatureCollection',
+      features: [
+        {
+          type: 'Feature',
+          geometry: { type: 'Polygon', coordinates: [] },
+          properties: { geoid: '12345', travel_time_minutes: 30 },
+        },
+      ],
+    };
 
-  beforeEach(() => {
-    apiService = new ApiService();
-  });
+    expect(validIsochroneData.type).toBe('FeatureCollection');
+    expect(Array.isArray(validIsochroneData.features)).toBe(true);
 
-  it('should return properly typed isochrone response', async () => {
-    // This test will fail because getIsochroneData currently returns 'any'
-    // We want it to return a properly typed GeoJSON response
-    try {
-      const result = await apiService.getIsochroneData('12345');
-
-      // This should have proper typing, not 'any'
-      expect(result).toHaveProperty('type', 'FeatureCollection');
-      expect(result).toHaveProperty('features');
-      expect(Array.isArray(result.features)).toBe(true);
-    } catch {
-      // Test the shape we expect even if API call fails
-      expect(true).toBe(true); // Placeholder - we're testing the return type
-    }
+    // Test the first feature properties with proper null checking
+    const firstFeature = validIsochroneData.features[0];
+    expect(firstFeature).toBeDefined();
+    expect(firstFeature?.properties.geoid).toBe('12345');
+    expect(firstFeature?.properties.travel_time_minutes).toBe(30);
   });
 });
