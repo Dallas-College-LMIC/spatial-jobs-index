@@ -27,6 +27,7 @@ repos:
         language: system
         types: [python]
         files: ^backend/.*\.py$
+        pass_filenames: false
 
   # MyPy for backend type checking
   - repo: local
@@ -38,6 +39,7 @@ repos:
         types: [python]
         files: ^backend/.*\.py$
         require_serial: true
+        pass_filenames: false
 
   # Backend unit tests (fast)
   - repo: local
