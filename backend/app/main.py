@@ -102,7 +102,12 @@ def get_occupation_ids(
         occupation_items = [OccupationItem(**occ) for occ in occupations]
         return OccupationsResponse(occupations=occupation_items)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+        error_detail = {
+            "message": f"Internal server error: {str(e)}",
+            "error_code": "INTERNAL_SERVER_ERROR",
+            "context": {},
+        }
+        raise HTTPException(status_code=500, detail=error_detail)
 
 
 @app.get("/geojson")
@@ -122,7 +127,12 @@ def get_geojson(
             headers={"Content-Disposition": "inline"},
         )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+        error_detail = {
+            "message": f"Internal server error: {str(e)}",
+            "error_code": "INTERNAL_SERVER_ERROR",
+            "context": {},
+        }
+        raise HTTPException(status_code=500, detail=error_detail)
 
 
 @app.get("/occupation_data/{category}")
