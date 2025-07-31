@@ -3,9 +3,9 @@
 import time
 from typing import Dict, Optional, Any
 from functools import wraps
-import logging
+from .logging_config import StructuredLogger
 
-logger = logging.getLogger(__name__)
+logger = StructuredLogger(__name__)
 
 
 class SimpleCache:
@@ -51,11 +51,17 @@ def cache_with_ttl(ttl_seconds: int = 86400) -> Any:  # Default 24 hours
             # Check cache first
             cached_value = _cache.get(cache_key)
             if cached_value is not None:
-                logger.info(f"Cache hit for {func.__name__}")
+                logger.info(
+                    "Cache hit",
+                    extra={"function": func.__name__, "cache_key": cache_key},
+                )
                 return cached_value
 
             # Call function and cache result
-            logger.info(f"Cache miss for {func.__name__}, calling function")
+            logger.info(
+                "Cache miss, calling function",
+                extra={"function": func.__name__, "cache_key": cache_key},
+            )
             result = func(*args, **kwargs)
             _cache.set(cache_key, result, ttl_seconds)
 

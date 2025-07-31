@@ -4,9 +4,11 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func
 from sqlalchemy.exc import SQLAlchemyError
 import json
-import logging
+from ..logging_config import StructuredLogger
 
 T = TypeVar("T")
+
+logger = StructuredLogger(__name__)
 
 
 class BaseRepository(ABC, Generic[T]):
@@ -36,16 +38,24 @@ class BaseRepository(ABC, Generic[T]):
                     "Override get_by_id() method in the repository subclass."
                 )
             return self.session.query(self.model).filter(self.model.id == id).first()  # type: ignore
-        except SQLAlchemyError as e:
-            logging.error(f"Database error in get_by_id: {e}")
+        except SQLAlchemyError:
+            logger.error(
+                "Database error in get_by_id",
+                exc_info=True,
+                extra={"operation": "get_by_id", "id": str(id)},
+            )
             raise
 
     def get_all(self) -> List[T]:
         """Get all records"""
         try:
             return self.session.query(self.model).all()
-        except SQLAlchemyError as e:
-            logging.error(f"Database error in get_all: {e}")
+        except SQLAlchemyError:
+            logger.error(
+                "Database error in get_all",
+                exc_info=True,
+                extra={"operation": "get_all"},
+            )
             raise
 
     def create(self, **kwargs: Any) -> T:
@@ -59,8 +69,12 @@ class BaseRepository(ABC, Generic[T]):
             instance = self.model(**kwargs)
             self.session.add(instance)
             return instance
-        except SQLAlchemyError as e:
-            logging.error(f"Database error in create: {e}")
+        except SQLAlchemyError:
+            logger.error(
+                "Database error in create",
+                exc_info=True,
+                extra={"operation": "create", "kwargs": str(kwargs)},
+            )
             self.session.rollback()
             raise
 
@@ -75,8 +89,12 @@ class BaseRepository(ABC, Generic[T]):
             for key, value in kwargs.items():
                 setattr(instance, key, value)
             return instance
-        except SQLAlchemyError as e:
-            logging.error(f"Database error in update: {e}")
+        except SQLAlchemyError:
+            logger.error(
+                "Database error in update",
+                exc_info=True,
+                extra={"operation": "update", "kwargs": str(kwargs)},
+            )
             self.session.rollback()
             raise
 
@@ -89,8 +107,10 @@ class BaseRepository(ABC, Generic[T]):
         """
         try:
             self.session.delete(instance)
-        except SQLAlchemyError as e:
-            logging.error(f"Database error in delete: {e}")
+        except SQLAlchemyError:
+            logger.error(
+                "Database error in delete", exc_info=True, extra={"operation": "delete"}
+            )
             self.session.rollback()
             raise
 
@@ -99,6 +119,10 @@ class BaseRepository(ABC, Generic[T]):
         try:
             geojson_str = self.session.scalar(func.ST_AsGeoJSON(geom_column))
             return json.loads(geojson_str) if geojson_str else None
-        except (SQLAlchemyError, json.JSONDecodeError) as e:
-            logging.error(f"Error converting geometry to GeoJSON: {e}")
+        except (SQLAlchemyError, json.JSONDecodeError):
+            logger.error(
+                "Error converting geometry to GeoJSON",
+                exc_info=True,
+                extra={"operation": "get_geojson_geometry"},
+            )
             return None
