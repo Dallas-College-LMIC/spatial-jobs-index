@@ -134,16 +134,16 @@
         # TDD Guard CLI tool
         tddGuard = pkgs.buildNpmPackage {
           pname = "tdd-guard";
-          version = "0.6.0";
+          version = "0.8.0";
 
           src = pkgs.fetchFromGitHub {
             owner = "nizos";
             repo = "tdd-guard";
-            rev = "v0.6.0";
-            hash = "sha256-LdkirCpSC4mZres7BCT7n8msbk8rJx9G1V/dsfZcYjo=";
+            rev = "v0.8.0";
+            hash = "sha256-vDanPHaRe1GbP9WIEltYrRlZMrzgozCiWtDIwA6KXlc=";
           };
 
-          npmDepsHash = "sha256-iSuxIvXesfge+OYXx3Th2sqezfceoMnyWKDedH54314=";
+          npmDepsHash = "sha256-gJ1rszURjkdGzCTdlHY8SPZjwUS/+1JCpxbDD9E1Pgo=";
 
           # Fix broken symlinks
           postInstall = ''
