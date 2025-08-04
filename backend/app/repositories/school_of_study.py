@@ -3,7 +3,7 @@ from sqlalchemy import func, distinct, cast, String
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 import json
-import logging
+from ..logging_config import StructuredLogger
 
 from .base import BaseRepository
 from ..models import SchoolOfLvlData
@@ -13,12 +13,13 @@ from ..config import DatabaseConfig
 class SchoolOfStudyRepository(BaseRepository[SchoolOfLvlData]):
     """Repository for school of study-related data access"""
 
+    def __init__(self, session: Session):
+        super().__init__(session)
+        self.logger = StructuredLogger(__name__)
+
     @property
     def model(self) -> type[SchoolOfLvlData]:
         return SchoolOfLvlData
-
-    def __init__(self, session: Session):
-        super().__init__(session)
 
     def get_school_of_study_categories(self) -> List[Dict[str, str]]:
         """Get all unique school of study categories with their codes"""
@@ -31,7 +32,10 @@ class SchoolOfStudyRepository(BaseRepository[SchoolOfLvlData]):
 
             return [{"code": r[0]} for r in results]
         except SQLAlchemyError as e:
-            logging.error(f"Database error in get_school_of_study_categories: {e}")
+            self.logger.error(
+                "Database error in get_school_of_study_categories",
+                extra={"error": str(e), "method": "get_school_of_study_categories"},
+            )
             raise
 
     def get_spatial_data_by_category(self, category: str) -> List[Dict]:
@@ -73,8 +77,14 @@ class SchoolOfStudyRepository(BaseRepository[SchoolOfLvlData]):
                 try:
                     geometry = json.loads(row.geometry) if row.geometry else None
                 except (json.JSONDecodeError, TypeError) as e:
-                    logging.warning(
-                        f"Failed to parse geometry for geoid {row.geoid}: {e}"
+                    self.logger.info(
+                        "Failed to parse geometry for geoid",
+                        extra={
+                            "geoid": row.geoid,
+                            "error": str(e),
+                            "method": "get_spatial_data_by_category",
+                            "level": "warning",
+                        },
                     )
                     geometry = None
 
@@ -94,7 +104,10 @@ class SchoolOfStudyRepository(BaseRepository[SchoolOfLvlData]):
 
             return features
         except SQLAlchemyError as e:
-            logging.error(f"Database error in get_spatial_data_by_category: {e}")
+            self.logger.error(
+                "Database error in get_spatial_data_by_category",
+                extra={"error": str(e), "method": "get_spatial_data_by_category"},
+            )
             raise
 
     def category_exists(self, category: str) -> bool:
@@ -106,5 +119,8 @@ class SchoolOfStudyRepository(BaseRepository[SchoolOfLvlData]):
                 .first()
             ) is not None
         except SQLAlchemyError as e:
-            logging.error(f"Database error in category_exists: {e}")
+            self.logger.error(
+                "Database error in category_exists",
+                extra={"error": str(e), "method": "category_exists"},
+            )
             raise

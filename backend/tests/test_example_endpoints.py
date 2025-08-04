@@ -154,4 +154,8 @@ class TestErrorHandling:
             assert response.status_code == 500
             error_data = response.json()
             assert "detail" in error_data
-            assert "Internal server error" in error_data["detail"]
+            error_detail = error_data["detail"]
+            assert isinstance(error_detail, dict)
+            assert "message" in error_detail
+            assert "Internal server error" in error_detail["message"]
+            assert error_detail["error_code"] == "INTERNAL_SERVER_ERROR"

@@ -499,7 +499,11 @@ class TestDatabaseIntegration:
             mock_service.side_effect = Exception("Database connection lost")
             response2 = integration_client.get("/occupation_ids")
             assert response2.status_code == 500
-            assert "Internal server error" in response2.json()["detail"]
+            error_detail = response2.json()["detail"]
+            assert isinstance(error_detail, dict)
+            assert "message" in error_detail
+            assert "Internal server error" in error_detail["message"]
+            assert error_detail["error_code"] == "INTERNAL_SERVER_ERROR"
 
             # Verify recovery - should work again
             mock_service.side_effect = None

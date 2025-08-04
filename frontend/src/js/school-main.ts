@@ -12,8 +12,14 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Initialize the school of study map controller
-AppInitializer.initialize('mainmap', SchoolOfStudyMapController, 'School of Study Map')
-  .then((controller) => {
+const initializeSchoolOfStudyMap = async () => {
+  try {
+    const controller = await AppInitializer.initialize(
+      'mainmap',
+      SchoolOfStudyMapController,
+      'School of Study Map'
+    );
+
     // Expose cache debugging to global scope for development
     if (
       process.env.NODE_ENV === 'development' &&
@@ -26,7 +32,9 @@ AppInitializer.initialize('mainmap', SchoolOfStudyMapController, 'School of Stud
       };
       console.log('🔧 Debug tools available at window.schoolOfStudyMapDebug');
     }
-  })
-  .catch((error) => {
+  } catch (error) {
     console.error('Failed to initialize school of study map:', error);
-  });
+  }
+};
+
+initializeSchoolOfStudyMap();

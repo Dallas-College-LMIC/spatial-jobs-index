@@ -47,3 +47,38 @@ export interface LayerConfig {
   title: string;
   scoreProperty: string;
 }
+
+// Coordinate types for GeoJSON geometry
+export type Position = [longitude: number, latitude: number];
+export type PolygonCoordinates = Position[][];
+export type MultiPolygonCoordinates = PolygonCoordinates[];
+
+// Isochrone-specific types
+export interface IsochroneProperties {
+  geoid: string;
+  travel_time_minutes: number;
+  [key: string]: string | number;
+}
+
+export interface IsochroneFeature {
+  type: 'Feature';
+  geometry: {
+    type: 'Polygon' | 'MultiPolygon';
+    coordinates: PolygonCoordinates | MultiPolygonCoordinates;
+  };
+  properties: IsochroneProperties;
+}
+
+export interface IsochroneResponse {
+  type: 'FeatureCollection';
+  features: IsochroneFeature[];
+}
+
+// Enhanced error type for API errors
+export interface ApiError extends Error {
+  status?: number;
+  statusText?: string;
+  body?: string;
+  endpoint?: string;
+  url?: string;
+}

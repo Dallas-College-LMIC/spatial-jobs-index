@@ -1,7 +1,7 @@
 import { BaseMapController } from './baseMapController';
 import { ErrorHandler } from '../utils/errorHandler';
 
-interface IsochroneResponse {
+interface LocalIsochroneResponse {
   type: 'FeatureCollection';
   features: Array<{
     type: 'Feature';
@@ -220,7 +220,10 @@ export class TravelTimeMapController extends BaseMapController {
 
     try {
       // Fetch isochrone data
-      const response = (await this.apiService.getIsochroneData(geoid, signal)) as IsochroneResponse;
+      const response = (await this.apiService.getIsochroneData(
+        geoid,
+        signal
+      )) as unknown as LocalIsochroneResponse;
 
       // Check if request was aborted
       if (signal.aborted) {

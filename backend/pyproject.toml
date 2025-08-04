@@ -28,7 +28,8 @@ dev = [
     "httpx>=0.27.0",
     "faker>=30.0.0",
     "factory-boy>=3.3.0",
-    "tdd-guard-pytest>=0.1.0",
+    "tdd-guard-pytest>=0.1.2",
+    "pytest-json-report>=1.5.0",
 ]
 
 [tool.mypy]

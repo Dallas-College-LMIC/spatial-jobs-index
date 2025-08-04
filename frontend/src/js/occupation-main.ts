@@ -12,8 +12,14 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Initialize the occupation map controller
-AppInitializer.initialize('mainmap', OccupationMapController, 'Occupation Map')
-  .then((controller) => {
+const initializeOccupationMap = async () => {
+  try {
+    const controller = await AppInitializer.initialize(
+      'mainmap',
+      OccupationMapController,
+      'Occupation Map'
+    );
+
     // Expose cache debugging to global scope for development
     if (process.env.NODE_ENV === 'development' && controller instanceof OccupationMapController) {
       (window as any).occupationMapDebug = {
@@ -23,7 +29,9 @@ AppInitializer.initialize('mainmap', OccupationMapController, 'Occupation Map')
       };
       console.log('🔧 Debug tools available at window.occupationMapDebug');
     }
-  })
-  .catch((error) => {
+  } catch (error) {
     console.error('Failed to initialize occupation map:', error);
-  });
+  }
+};
+
+initializeOccupationMap();

@@ -130,8 +130,9 @@ class TestOccupationIdsEndpoint:
         assert response.status_code == 500
         data = response.json()
         assert "detail" in data
-        assert "Internal server error" in data["detail"]
-        assert "Database connection failed" in data["detail"]
+        detail = data["detail"]
+        assert "Internal server error" in detail["message"]
+        assert "Database connection failed" in detail["message"]
 
     @patch("app.main.OccupationService.get_occupations_with_names")
     def test_get_occupation_ids_rate_limiting(self, mock_get_occupations, mock_client):
@@ -239,8 +240,9 @@ class TestGeojsonEndpoint:
 
         assert response.status_code == 500
         data = response.json()
-        assert "Internal server error" in data["detail"]
-        assert "Spatial query failed" in data["detail"]
+        detail = data["detail"]
+        assert "Internal server error" in detail["message"]
+        assert "Spatial query failed" in detail["message"]
 
     @patch("app.main.SpatialService.get_geojson_features")
     def test_get_geojson_rate_limiting(self, mock_get_features, mock_client):
@@ -313,6 +315,28 @@ class TestGeojsonEndpoint:
 
 class TestErrorHandling:
     """Test application-wide error handling."""
+
+    def test_structured_error_response_format(self, mock_client):
+        """Test that service errors return structured error responses."""
+        with patch(
+            "app.main.OccupationService.get_occupations_with_names"
+        ) as mock_service:
+            mock_service.side_effect = Exception("Database connection failed")
+
+            response = mock_client.get("/occupation_ids")
+
+            assert response.status_code == 500
+            data = response.json()
+
+            # Test structured error format
+            assert "detail" in data
+            detail = data["detail"]
+            assert isinstance(detail, dict)
+            assert "message" in detail
+            assert "error_code" in detail
+            assert "context" in detail
+            assert detail["error_code"] == "INTERNAL_SERVER_ERROR"
+            assert "Database connection failed" in detail["message"]
 
     def test_http_exception_handling(self, mock_client):
         """Test that HTTPExceptions are properly handled."""
@@ -464,7 +488,8 @@ class TestResponseFormats:
             assert response.status_code == 500
             error_data = response.json()
             assert "detail" in error_data
-            assert "Internal server error" in error_data["detail"]
+            detail = error_data["detail"]
+            assert "Internal server error" in detail["message"]
 
     @patch("app.main.OccupationService.get_occupations_with_names")
     @patch("app.main.SpatialService.get_geojson_features")

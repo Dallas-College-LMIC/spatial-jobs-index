@@ -2,6 +2,8 @@ import type {
   OccupationIdsResponse,
   GeoJSONResponse,
   SchoolOfStudyIdsResponse,
+  IsochroneResponse,
+  ApiError,
 } from '../types/api';
 
 interface RequestConfig {
@@ -268,10 +270,10 @@ export class ApiService {
 
       if (!response.ok) {
         const errorBody = await response.text();
-        const error = new Error(`HTTP ${response.status}: ${response.statusText}`);
-        (error as any).status = response.status;
-        (error as any).statusText = response.statusText;
-        (error as any).body = errorBody;
+        const error: ApiError = new Error(`HTTP ${response.status}: ${response.statusText}`);
+        error.status = response.status;
+        error.statusText = response.statusText;
+        error.body = errorBody;
         throw error;
       }
 
@@ -294,8 +296,9 @@ export class ApiService {
 
       // Enhance error with more context
       if (error instanceof Error) {
-        (error as any).endpoint = endpoint;
-        (error as any).url = url;
+        const apiError = error as ApiError;
+        apiError.endpoint = endpoint;
+        apiError.url = url;
       }
 
       throw error;
@@ -346,9 +349,9 @@ export class ApiService {
   /**
    * Get isochrone data for a specific census tract
    */
-  async getIsochroneData(geoid: string, signal?: AbortSignal): Promise<any> {
+  async getIsochroneData(geoid: string, signal?: AbortSignal): Promise<IsochroneResponse> {
     console.log(`[ApiService] Fetching isochrone data for tract: ${geoid}`);
-    return this.fetchData<any>(
+    return this.fetchData<IsochroneResponse>(
       `/isochrones/${geoid}`,
       {
         timeout: undefined, // No timeout - let the request complete
