@@ -431,7 +431,13 @@ class TestFullRequestResponseCycle:
 
         # Verify 500 response
         assert response.status_code == 500
-        assert "An internal error occurred. Please try again later." in response.json()["detail"]
+        # Error response is now a structured object, not a string
+        data = response.json()
+        assert (
+            data["detail"]["message"]
+            == "An internal error occurred. Please try again later."
+        )
+        assert data["detail"]["error_code"] == "INTERNAL_SERVER_ERROR"
 
 
 class TestDatabaseIntegration:
@@ -502,7 +508,10 @@ class TestDatabaseIntegration:
             error_detail = response2.json()["detail"]
             assert isinstance(error_detail, dict)
             assert "message" in error_detail
-            assert "An internal error occurred. Please try again later." in error_detail["message"]
+            assert (
+                "An internal error occurred. Please try again later."
+                in error_detail["message"]
+            )
             assert error_detail["error_code"] == "INTERNAL_SERVER_ERROR"
 
             # Verify recovery - should work again
