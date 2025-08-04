@@ -1,3 +1,4 @@
+import logging
 from fastapi import FastAPI, HTTPException, Response, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -6,7 +7,7 @@ from dotenv import load_dotenv
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
-from typing import cast, Any
+from typing import cast, Any, NoReturn
 from .database import DatabaseConfig, init_database, get_db_session
 from .logging_config import CorrelationIdMiddleware
 from .models import (
@@ -26,6 +27,21 @@ from .services import (
 )
 
 load_dotenv()
+
+# Configure logging
+logger = logging.getLogger(__name__)
+
+
+def handle_internal_error(error: Exception, context: str) -> NoReturn:
+    """Log error details and raise generic HTTPException with structured error format."""
+    logger.error(f"Error in {context}: {str(error)}", exc_info=True)
+    error_detail = {
+        "message": "An internal error occurred. Please try again later.",
+        "error_code": "INTERNAL_SERVER_ERROR",
+        "context": {},
+    }
+    raise HTTPException(status_code=500, detail=error_detail)
+
 
 limiter = Limiter(key_func=get_remote_address)
 app = FastAPI(
@@ -107,12 +123,7 @@ def get_occupation_ids(
         occupation_items = [OccupationItem(**occ) for occ in occupations]
         return OccupationsResponse(occupations=occupation_items)
     except Exception as e:
-        error_detail = {
-            "message": f"Internal server error: {str(e)}",
-            "error_code": "INTERNAL_SERVER_ERROR",
-            "context": {},
-        }
-        raise HTTPException(status_code=500, detail=error_detail)
+        handle_internal_error(e, "get_occupation_ids")
 
 
 @app.get("/geojson")
@@ -132,12 +143,7 @@ def get_geojson(
             headers={"Content-Disposition": "inline"},
         )
     except Exception as e:
-        error_detail = {
-            "message": f"Internal server error: {str(e)}",
-            "error_code": "INTERNAL_SERVER_ERROR",
-            "context": {},
-        }
-        raise HTTPException(status_code=500, detail=error_detail)
+        handle_internal_error(e, "get_geojson")
 
 
 @app.get("/occupation_data/{category}")
@@ -166,7 +172,7 @@ def get_occupation_spatial_data(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+        handle_internal_error(e, "get_occupation_spatial_data")
 
 
 @app.get("/isochrones/{geoid}")
@@ -200,7 +206,7 @@ def get_isochrones(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+        handle_internal_error(e, "get_isochrones")
 
 
 @app.get(
@@ -236,7 +242,7 @@ def get_school_of_study_ids(
         school_ids = service.get_school_ids()
         return SchoolOfStudyIdsResponse(school_ids=school_ids)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+        handle_internal_error(e, "get_school_of_study_ids")
 
 
 @app.get("/school_of_study_data/{category}", tags=["School of Study"])
@@ -285,4 +291,4 @@ def get_school_of_study_spatial_data(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+        handle_internal_error(e, "get_school_of_study_spatial_data")
