@@ -83,26 +83,72 @@ class TestStructuredLogging:
                 assert log_data["operation"] == "test_op"
                 assert "exception" in log_data
 
-    def test_correlation_id_middleware_functionality(self):
-        """Test that correlation ID middleware generates and sets correlation IDs."""
+    async def test_correlation_id_middleware_generates_new_id(self):
+        """Test that correlation ID middleware generates new correlation ID when not present."""
         from app.logging_config import CorrelationIdMiddleware
 
         # Mock FastAPI Request and Response
         request = MagicMock()
         request.headers = {}
-        call_next = MagicMock()
+
         response = MagicMock()
-        call_next.return_value = response
+        response.headers = {}
+
+        async def mock_call_next(req):
+            return response
 
         middleware = CorrelationIdMiddleware(None)
 
-        # Test middleware functionality
-        with patch("uuid.uuid4", return_value=MagicMock(hex="test-correlation-id")):
-            result = middleware.dispatch(request, call_next)
+        # Test middleware generates a new correlation ID
+        test_uuid = "test-correlation-id-123"
+        with patch("uuid.uuid4", return_value=MagicMock(hex=test_uuid)):
+            with patch("app.logging_config.correlation_id_var") as mock_var:
+                mock_var.set = MagicMock()
+                result = await middleware.dispatch(request, mock_call_next)
 
-            # Check that call_next was called
-            call_next.assert_called_once_with(request)
+                # Check that correlation ID was set in context and then cleared
+                assert mock_var.set.call_count == 2
+                mock_var.set.assert_any_call(test_uuid)
+                mock_var.set.assert_any_call(None)
+
+                # Check that response was returned
+                assert result == response
+
+                # Check that correlation ID was added to response headers
+                assert response.headers["X-Correlation-ID"] == test_uuid
+
+    async def test_correlation_id_middleware_uses_existing_header(self):
+        """Test that middleware uses existing X-Correlation-ID header if present."""
+        from app.logging_config import CorrelationIdMiddleware
+
+        # Mock FastAPI Request with existing correlation ID
+        existing_id = "existing-correlation-id-456"
+        request = MagicMock()
+        request.headers = {"X-Correlation-ID": existing_id}
+
+        response = MagicMock()
+        response.headers = {}
+
+        async def mock_call_next(req):
+            return response
+
+        middleware = CorrelationIdMiddleware(None)
+
+        # Test middleware uses existing correlation ID
+        with patch("app.logging_config.correlation_id_var") as mock_var:
+            mock_var.set = MagicMock()
+            result = await middleware.dispatch(request, mock_call_next)
+
+            # Check that existing correlation ID was used
+            assert mock_var.set.call_count == 2
+            mock_var.set.assert_any_call(existing_id)
+            mock_var.set.assert_any_call(None)
+
+            # Check that response was returned
             assert result == response
+
+            # Check that correlation ID was added to response headers
+            assert response.headers["X-Correlation-ID"] == existing_id
 
     def test_structured_logger_includes_correlation_id(self):
         """Test that structured logger includes correlation ID when available."""
