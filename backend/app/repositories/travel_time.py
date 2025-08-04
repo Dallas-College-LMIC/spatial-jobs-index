@@ -58,7 +58,9 @@ class TravelTimeRepository(BaseRepository[TTIClone]):
                     "type": "Feature",
                     "geometry": json.loads(row.geometry) if row.geometry else None,
                     "properties": {
-                        "geoid": row.geoid,
+                        "geoid": str(int(float(row.geoid)))
+                        if row.geoid is not None
+                        else None,
                         f"{wage_type}_zscore": row.zscore,
                         f"{wage_type}_zscore_cat": row.zscore_cat,
                     },
@@ -92,7 +94,9 @@ class TravelTimeRepository(BaseRepository[TTIClone]):
                     "type": "Feature",
                     "geometry": json.loads(row.geometry) if row.geometry else None,
                     "properties": {
-                        "geoid": row.geoid,
+                        "geoid": str(int(float(row.geoid)))
+                        if row.geoid is not None
+                        else None,
                         "all_jobs_zscore": row.all_jobs_zscore,
                         "all_jobs_zscore_cat": row.all_jobs_zscore_cat,
                         "living_wage_zscore": row.living_wage_zscore,

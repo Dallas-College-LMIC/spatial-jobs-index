@@ -80,7 +80,9 @@ class SchoolOfStudyRepository(BaseRepository[SchoolOfLvlData]):
                     self.logger.info(
                         "Failed to parse geometry for geoid",
                         extra={
-                            "geoid": row.geoid,
+                            "geoid": str(int(float(row.geoid)))
+                            if row.geoid is not None
+                            else None,
                             "error": str(e),
                             "method": "get_spatial_data_by_category",
                             "level": "warning",
@@ -93,7 +95,9 @@ class SchoolOfStudyRepository(BaseRepository[SchoolOfLvlData]):
                         "type": "Feature",
                         "geometry": geometry,
                         "properties": {
-                            "geoid": row.geoid,
+                            "geoid": str(int(float(row.geoid)))
+                            if row.geoid is not None
+                            else None,
                             "category": category,
                             "openings_2024_zscore": row.openings_2024_zscore,
                             "jobs_2024_zscore": row.jobs_2024_zscore,
