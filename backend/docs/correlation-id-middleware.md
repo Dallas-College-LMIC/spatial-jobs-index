@@ -82,10 +82,10 @@ Clients can:
 Example with curl:
 ```bash
 # With custom correlation ID
-curl -H "X-Correlation-ID: my-custom-id-123" http://localhost:8000/api/occupation_ids
+curl -H "X-Correlation-ID: my-custom-id-123" http://localhost:8000/occupation_ids
 
 # Without correlation ID (one will be generated)
-curl -v http://localhost:8000/api/occupation_ids
+curl -v http://localhost:8000/occupation_ids
 ```
 
 ### Server-Side Usage
@@ -93,6 +93,15 @@ curl -v http://localhost:8000/api/occupation_ids
 The correlation ID is automatically available in:
 - **Log messages**: Via the `CorrelationIdFilter`
 - **Application code**: Via `correlation_id_var.get()`
+- **Structured logs**: The `StructuredLogger` class automatically includes correlation IDs in all JSON log messages
+
+Example with StructuredLogger:
+```python
+from app.logging_config import StructuredLogger
+
+logger = StructuredLogger("my_service")
+logger.info("Processing request")  # Will include correlation_id in JSON output
+```
 
 Example in application code:
 ```python

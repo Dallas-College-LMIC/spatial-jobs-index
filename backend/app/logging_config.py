@@ -3,6 +3,7 @@
 import logging
 import json
 import traceback
+import uuid
 from datetime import datetime, timezone
 from contextvars import ContextVar
 from typing import Optional, Dict, Any
@@ -51,9 +52,6 @@ class StructuredLogger:
         exc_info: bool = False,
         extra: Optional[Dict[str, Any]] = None,
     ) -> None:
-        import json
-        from datetime import datetime, timezone
-
         log_data = {
             "message": message,
             "service": self.service_name,
@@ -81,17 +79,11 @@ class CorrelationIdFilter:
 class CorrelationIdMiddleware:
     """Middleware to generate correlation IDs for requests."""
 
-    def __init__(self, app: Any) -> None:
-        self.app = app
-
-    async def __call__(self, request: Any, call_next: Any) -> Any:
-        """FastAPI middleware entrypoint."""
-        return await self.dispatch(request, call_next)
+    def __init__(self) -> None:
+        pass
 
     async def dispatch(self, request: Any, call_next: Any) -> Any:
         """Generate and set correlation IDs for requests."""
-        import uuid
-
         # Generate a new correlation ID if not present in headers
         correlation_id = request.headers.get("X-Correlation-ID")
         if not correlation_id:

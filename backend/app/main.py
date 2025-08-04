@@ -76,7 +76,7 @@ app.add_middleware(
 )
 
 # Add correlation ID middleware
-app.add_middleware(BaseHTTPMiddleware, dispatch=CorrelationIdMiddleware(app).dispatch)
+app.add_middleware(BaseHTTPMiddleware, dispatch=CorrelationIdMiddleware().dispatch)
 
 
 @app.on_event("startup")

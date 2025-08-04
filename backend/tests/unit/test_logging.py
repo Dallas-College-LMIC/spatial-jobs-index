@@ -97,7 +97,7 @@ class TestStructuredLogging:
         async def mock_call_next(req):
             return response
 
-        middleware = CorrelationIdMiddleware(None)
+        middleware = CorrelationIdMiddleware()
 
         # Test middleware generates a new correlation ID
         test_uuid = "test-correlation-id-123"
@@ -132,7 +132,7 @@ class TestStructuredLogging:
         async def mock_call_next(req):
             return response
 
-        middleware = CorrelationIdMiddleware(None)
+        middleware = CorrelationIdMiddleware()
 
         # Test middleware uses existing correlation ID
         with patch("app.logging_config.correlation_id_var") as mock_var:

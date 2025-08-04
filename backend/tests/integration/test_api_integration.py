@@ -1454,3 +1454,18 @@ class TestCorrelationIdMiddleware:
         # Check that the same correlation ID is returned
         assert "X-Correlation-ID" in response.headers
         assert response.headers["X-Correlation-ID"] == existing_id
+
+    @patch("app.services.OccupationService.get_occupations_with_names")
+    def test_correlation_id_with_invalid_format(self, mock_service, integration_client):
+        """Test that invalid correlation IDs are still preserved."""
+        # Mock the service to return test data
+        mock_service.return_value = []
+
+        # Send request with non-UUID format correlation ID
+        invalid_id = "not-a-uuid-!@#$%"
+        headers = {"X-Correlation-ID": invalid_id}
+        response = integration_client.get("/occupation_ids", headers=headers)
+
+        # Should still preserve the ID even if invalid format
+        assert "X-Correlation-ID" in response.headers
+        assert response.headers["X-Correlation-ID"] == invalid_id
