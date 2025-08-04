@@ -7,6 +7,7 @@ These tests verify end-to-end functionality including:
 - Performance testing
 - Concurrent requests
 - Real-world usage scenarios
+- Correlation ID middleware integration
 """
 
 import pytest
@@ -1414,3 +1415,57 @@ class TestErrorScenarios:
         # Other endpoints should not be affected
         response = integration_client.get("/geojson")
         assert response.status_code in [200, 429]
+
+
+class TestCorrelationIdMiddleware:
+    """Test correlation ID middleware integration with FastAPI."""
+
+    @patch("app.services.OccupationService.get_occupations_with_names")
+    def test_correlation_id_generated_for_request(
+        self, mock_service, integration_client
+    ):
+        """Test that correlation ID is generated and returned in response headers."""
+        # Mock the service to return test data
+        mock_service.return_value = []
+
+        response = integration_client.get("/occupation_ids")
+
+        # Check that correlation ID is present in response headers
+        assert "X-Correlation-ID" in response.headers
+        correlation_id = response.headers["X-Correlation-ID"]
+
+        # Verify it's a valid UUID hex string (32 characters)
+        assert len(correlation_id) == 32
+        assert all(c in "0123456789abcdef" for c in correlation_id.lower())
+
+    @patch("app.services.OccupationService.get_occupations_with_names")
+    def test_correlation_id_preserved_from_request_header(
+        self, mock_service, integration_client
+    ):
+        """Test that existing correlation ID from request header is preserved."""
+        # Mock the service to return test data
+        mock_service.return_value = []
+
+        # Send request with existing correlation ID
+        existing_id = "customcorrelationid1234567890abc"
+        headers = {"X-Correlation-ID": existing_id}
+        response = integration_client.get("/occupation_ids", headers=headers)
+
+        # Check that the same correlation ID is returned
+        assert "X-Correlation-ID" in response.headers
+        assert response.headers["X-Correlation-ID"] == existing_id
+
+    @patch("app.services.OccupationService.get_occupations_with_names")
+    def test_correlation_id_with_invalid_format(self, mock_service, integration_client):
+        """Test that invalid correlation IDs are still preserved."""
+        # Mock the service to return test data
+        mock_service.return_value = []
+
+        # Send request with non-UUID format correlation ID
+        invalid_id = "not-a-uuid-!@#$%"
+        headers = {"X-Correlation-ID": invalid_id}
+        response = integration_client.get("/occupation_ids", headers=headers)
+
+        # Should still preserve the ID even if invalid format
+        assert "X-Correlation-ID" in response.headers
+        assert response.headers["X-Correlation-ID"] == invalid_id

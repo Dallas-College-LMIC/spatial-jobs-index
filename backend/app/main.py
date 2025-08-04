@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException, Response, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
 from sqlalchemy.orm import Session
 from dotenv import load_dotenv
 from slowapi import Limiter, _rate_limit_exceeded_handler
@@ -7,6 +8,7 @@ from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 from typing import cast, Any
 from .database import DatabaseConfig, init_database, get_db_session
+from .logging_config import CorrelationIdMiddleware
 from .models import (
     OccupationsResponse,
     OccupationItem,
@@ -72,6 +74,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Add correlation ID middleware
+app.add_middleware(BaseHTTPMiddleware, dispatch=CorrelationIdMiddleware().dispatch)
 
 
 @app.on_event("startup")
