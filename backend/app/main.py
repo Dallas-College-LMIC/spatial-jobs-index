@@ -102,8 +102,15 @@ def get_occupation_ids(
         occupation_items = [OccupationItem(**occ) for occ in occupations]
         return OccupationsResponse(occupations=occupation_items)
     except Exception as e:
+        # Log the full error details server-side for debugging
+        import logging
+
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error in get_occupation_ids: {str(e)}", exc_info=True)
+
+        # Return generic error message to client
         error_detail = {
-            "message": f"Internal server error: {str(e)}",
+            "message": "An internal error occurred. Please try again later.",
             "error_code": "INTERNAL_SERVER_ERROR",
             "context": {},
         }
@@ -127,8 +134,15 @@ def get_geojson(
             headers={"Content-Disposition": "inline"},
         )
     except Exception as e:
+        # Log the full error details server-side for debugging
+        import logging
+
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error in get_geojson: {str(e)}", exc_info=True)
+
+        # Return generic error message to client
         error_detail = {
-            "message": f"Internal server error: {str(e)}",
+            "message": "An internal error occurred. Please try again later.",
             "error_code": "INTERNAL_SERVER_ERROR",
             "context": {},
         }
@@ -161,7 +175,17 @@ def get_occupation_spatial_data(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+        # Log the full error details server-side for debugging
+        import logging
+
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error in get_occupation_spatial_data: {str(e)}", exc_info=True)
+
+        # Return generic error message to client
+        raise HTTPException(
+            status_code=500,
+            detail="An internal error occurred. Please try again later.",
+        )
 
 
 @app.get("/isochrones/{geoid}")
@@ -195,7 +219,17 @@ def get_isochrones(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+        # Log the full error details server-side for debugging
+        import logging
+
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error in get_isochrones: {str(e)}", exc_info=True)
+
+        # Return generic error message to client
+        raise HTTPException(
+            status_code=500,
+            detail="An internal error occurred. Please try again later.",
+        )
 
 
 @app.get(
@@ -231,7 +265,17 @@ def get_school_of_study_ids(
         school_ids = service.get_school_ids()
         return SchoolOfStudyIdsResponse(school_ids=school_ids)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+        # Log the full error details server-side for debugging
+        import logging
+
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error in get_school_of_study_ids: {str(e)}", exc_info=True)
+
+        # Return generic error message to client
+        raise HTTPException(
+            status_code=500,
+            detail="An internal error occurred. Please try again later.",
+        )
 
 
 @app.get("/school_of_study_data/{category}", tags=["School of Study"])
@@ -280,4 +324,16 @@ def get_school_of_study_spatial_data(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+        # Log the full error details server-side for debugging
+        import logging
+
+        logger = logging.getLogger(__name__)
+        logger.error(
+            f"Error in get_school_of_study_spatial_data: {str(e)}", exc_info=True
+        )
+
+        # Return generic error message to client
+        raise HTTPException(
+            status_code=500,
+            detail="An internal error occurred. Please try again later.",
+        )

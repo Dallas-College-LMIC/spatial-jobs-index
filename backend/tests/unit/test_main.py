@@ -131,8 +131,9 @@ class TestOccupationIdsEndpoint:
         data = response.json()
         assert "detail" in data
         detail = data["detail"]
-        assert "Internal server error" in detail["message"]
-        assert "Database connection failed" in detail["message"]
+        # Security fix: should return generic error message
+        assert "An internal error occurred" in detail["message"]
+        assert "Database connection failed" not in detail["message"]
 
     @patch("app.main.OccupationService.get_occupations_with_names")
     def test_get_occupation_ids_rate_limiting(self, mock_get_occupations, mock_client):
@@ -241,8 +242,9 @@ class TestGeojsonEndpoint:
         assert response.status_code == 500
         data = response.json()
         detail = data["detail"]
-        assert "Internal server error" in detail["message"]
-        assert "Spatial query failed" in detail["message"]
+        # Security fix: should return generic error message
+        assert "An internal error occurred" in detail["message"]
+        assert "Spatial query failed" not in detail["message"]
 
     @patch("app.main.SpatialService.get_geojson_features")
     def test_get_geojson_rate_limiting(self, mock_get_features, mock_client):
@@ -336,7 +338,9 @@ class TestErrorHandling:
             assert "error_code" in detail
             assert "context" in detail
             assert detail["error_code"] == "INTERNAL_SERVER_ERROR"
-            assert "Database connection failed" in detail["message"]
+            # Security fix: should not expose internal error details
+            assert "An internal error occurred" in detail["message"]
+            assert "Database connection failed" not in detail["message"]
 
     def test_http_exception_handling(self, mock_client):
         """Test that HTTPExceptions are properly handled."""
@@ -489,7 +493,9 @@ class TestResponseFormats:
             error_data = response.json()
             assert "detail" in error_data
             detail = error_data["detail"]
-            assert "Internal server error" in detail["message"]
+            # Security fix: should return generic error message
+            assert "An internal error occurred" in detail["message"]
+            assert "Test error" not in detail["message"]
 
     @patch("app.main.OccupationService.get_occupations_with_names")
     @patch("app.main.SpatialService.get_geojson_features")

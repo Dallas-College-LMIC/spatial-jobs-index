@@ -80,8 +80,9 @@ class TestSchoolOfStudyIdsEndpoint:
         assert response.status_code == 500
         data = response.json()
         assert "detail" in data
-        assert "Internal server error" in data["detail"]
-        assert "Database connection failed" in data["detail"]
+        # Security fix: should return generic error message
+        assert "An internal error occurred" in data["detail"]
+        assert "Database connection failed" not in data["detail"]
 
     @patch("app.main.SchoolOfStudyService.get_school_ids")
     def test_get_school_of_study_ids_rate_limiting(
@@ -252,8 +253,9 @@ class TestSchoolOfStudyDataEndpoint:
 
         assert response.status_code == 500
         data = response.json()
-        assert "Internal server error" in data["detail"]
-        assert "Spatial query failed" in data["detail"]
+        # Security fix: should return generic error message
+        assert "An internal error occurred" in data["detail"]
+        assert "Spatial query failed" not in data["detail"]
 
     @patch("app.main.SchoolOfStudyService.get_school_spatial_data")
     def test_get_school_of_study_data_rate_limiting(
