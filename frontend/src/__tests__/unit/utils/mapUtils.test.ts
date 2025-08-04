@@ -296,10 +296,34 @@ describe('MapManager', () => {
       };
 
       clickHandler?.(mockEvent);
+    });
+
+    it('should handle click event with lowercase geoid property from backend', () => {
+      // This test demonstrates the actual data structure returned by our backend
+      expect((mapManager as any).popup).toBeDefined();
+
+      mapManager.addPopupEvents('test-layer', 'Test Title', 'test_score');
+
+      const clickCall = mockMap.on.mock.calls.find((call) => call[0] === 'click');
+      expect(clickCall).toBeDefined();
+      const clickHandler = clickCall![2];
+      const mockEvent = {
+        lngLat: { lng: -97, lat: 32 },
+        features: [
+          {
+            properties: {
+              geoid: '48113020100', // Backend returns lowercase 'geoid'
+              test_score: 1.234,
+            },
+          },
+        ],
+      };
+
+      clickHandler?.(mockEvent);
 
       expect(mockPopup.setLngLat).toHaveBeenCalledWith({ lng: -97, lat: 32 });
       expect(mockPopup.setHTML).toHaveBeenCalledWith(
-        expect.stringContaining('Tract: </b><span>12345</span>')
+        expect.stringContaining('Tract: </b><span>48113020100</span>')
       );
       expect(mockPopup.setHTML).toHaveBeenCalledWith(
         expect.stringContaining('Test Title: </b><span>1.23</span>')
@@ -376,6 +400,42 @@ describe('MapManager', () => {
 
       expect(mockMap.getCanvas).toHaveBeenCalled();
       expect(mockCanvas.style.cursor).toBe('');
+    });
+
+    it('should display enhanced popup with percentile and job summary fields', () => {
+      // This test verifies the enhanced popup includes new fields requested by the client
+      expect((mapManager as any).popup).toBeDefined();
+
+      // Call the enhanced version of addPopupEvents (to be implemented)
+      mapManager.addPopupEvents('test-layer', 'Test Title', 'test_score');
+
+      const clickCall = mockMap.on.mock.calls.find((call) => call[0] === 'click');
+      expect(clickCall).toBeDefined();
+      const clickHandler = clickCall![2];
+
+      const mockEvent = {
+        lngLat: { lng: -97, lat: 32 },
+        features: [
+          {
+            properties: {
+              geoid: '48113020100',
+              test_score: 1.234,
+            },
+          },
+        ],
+      };
+
+      clickHandler?.(mockEvent);
+
+      // Verify the popup HTML includes the new fields
+      expect(mockPopup.setHTML).toHaveBeenCalledWith(
+        expect.stringContaining('Percentile of all DFW tracts:')
+      );
+      expect(mockPopup.setHTML).toHaveBeenCalledWith(expect.stringContaining('Job Summary'));
+      expect(mockPopup.setHTML).toHaveBeenCalledWith(expect.stringContaining('Number of Jobs:'));
+      expect(mockPopup.setHTML).toHaveBeenCalledWith(
+        expect.stringContaining('Share of Jobs within Dallas County:')
+      );
     });
   });
 

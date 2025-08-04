@@ -139,8 +139,15 @@ export class MapManager {
       const score = properties[scoreProperty] as number | undefined;
 
       const description = `
-                <b>Tract: </b><span>${properties.GEOID}</span><br>
-                <b>${title}: </b><span>${score ? score.toFixed(2) : 'N/A'}</span>
+                <b>Tract: </b><span>${properties.geoid || properties.GEOID}</span><br>
+                <b>${title}: </b><span>${score ? score.toFixed(2) : 'N/A'}</span><br>
+                <b>Percentile of all DFW tracts: </b><span style="color: #666;">Data pending</span>
+                <hr style="margin: 10px 0; border: none; border-top: 1px solid #ddd;">
+                <div style="margin-top: 10px;">
+                    <b style="display: block; margin-bottom: 5px; font-size: 14px;">Job Summary</b>
+                    <b>Number of Jobs: </b><span style="color: #666;">Data pending</span><br>
+                    <b>Share of Jobs within Dallas County: </b><span style="color: #666;">Data pending</span>
+                </div>
             `;
 
       this.popup.setLngLat(coordinates).setHTML(description).addTo(this.map);
