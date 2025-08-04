@@ -62,7 +62,7 @@ class OccupationRepository(BaseRepository[OccupationLvlData]):
                     "type": "Feature",
                     "geometry": json.loads(row.geometry) if row.geometry else None,
                     "properties": {
-                        "geoid": row.geoid,
+                        "geoid": str(row.geoid) if row.geoid is not None else None,
                         "category": category,
                         "openings_2024_zscore": row.openings_2024_zscore,
                         "jobs_2024_zscore": row.jobs_2024_zscore,
