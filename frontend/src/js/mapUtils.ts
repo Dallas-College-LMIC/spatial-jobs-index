@@ -1,4 +1,7 @@
 import { MAP_CONFIG, COLOR_SCHEMES } from './constants';
+
+// Access mapboxgl from global scope for test compatibility
+declare const mapboxgl: any;
 import type { GeoJSONResponse } from '../types/api';
 import type {
   MapboxMap,
@@ -67,7 +70,7 @@ export class MapManager {
         data as
           | GeoJSON.FeatureCollection<GeoJSON.Geometry>
           | GeoJSON.Feature<GeoJSON.Geometry>
-          | String
+          | string
       );
     } else {
       this.map.addSource(sourceId, {

@@ -1,59 +1,93 @@
-import mapboxgl from 'mapbox-gl';
+import {
+  Map,
+  Popup,
+  LngLat,
+  LngLatLike,
+  MapMouseEvent,
+  MapLayerMouseEvent,
+  GeoJSONSource,
+  NavigationControl,
+  FullscreenControl,
+  Layer,
+  FillLayer,
+  LineLayer,
+  SymbolLayer,
+  CircleLayer,
+  HeatmapLayer,
+  FillExtrusionLayer,
+  RasterLayer,
+  HillshadeLayer,
+  BackgroundLayer,
+  Expression,
+  Source,
+  AnySourceData,
+  ImageSource,
+  VideoSource,
+  CanvasSource,
+  Style,
+  PointLike,
+  Anchor,
+} from 'mapbox-gl';
 
 // Re-export commonly used Mapbox types with cleaner aliases
-export type MapboxMap = mapboxgl.Map;
-export type MapboxPopup = mapboxgl.Popup;
-export type MapboxLngLat = mapboxgl.LngLat;
-export type MapboxLngLatLike = mapboxgl.LngLatLike;
-export type MapboxMapMouseEvent = mapboxgl.MapMouseEvent;
-export type MapboxMapLayerMouseEvent = mapboxgl.MapLayerMouseEvent;
-export type MapboxGeoJSONSource = mapboxgl.GeoJSONSource;
-export type MapboxGeoJSONSourceOptions = mapboxgl.GeoJSONSourceOptions;
-export type MapboxNavigationControl = mapboxgl.NavigationControl;
-export type MapboxFullscreenControl = mapboxgl.FullscreenControl;
-export type MapboxEventData = mapboxgl.EventData;
-export type MapboxErrorEvent = mapboxgl.ErrorEvent;
+export type MapboxMap = Map;
+export type MapboxPopup = Popup;
+export type MapboxLngLat = LngLat;
+export type MapboxLngLatLike = LngLatLike;
+export type MapboxMapMouseEvent = MapMouseEvent;
+export type MapboxMapLayerMouseEvent = MapLayerMouseEvent;
+export type MapboxGeoJSONSource = GeoJSONSource;
+// GeoJSONSourceOptions not available in v3, using any for compatibility
+export type MapboxGeoJSONSourceOptions = any;
+export type MapboxNavigationControl = NavigationControl;
+export type MapboxFullscreenControl = FullscreenControl;
+// EventData and ErrorEvent not available in v3, using any for compatibility
+export type MapboxEventData = any;
+export type MapboxErrorEvent = any;
 
 // Layer types
-export type MapboxLayer = mapboxgl.Layer;
-export type MapboxFillLayer = mapboxgl.FillLayer;
-export type MapboxLineLayer = mapboxgl.LineLayer;
-export type MapboxSymbolLayer = mapboxgl.SymbolLayer;
-export type MapboxCircleLayer = mapboxgl.CircleLayer;
-export type MapboxHeatmapLayer = mapboxgl.HeatmapLayer;
-export type MapboxFillExtrusionLayer = mapboxgl.FillExtrusionLayer;
-export type MapboxRasterLayer = mapboxgl.RasterLayer;
-export type MapboxHillshadeLayer = mapboxgl.HillshadeLayer;
-export type MapboxBackgroundLayer = mapboxgl.BackgroundLayer;
+export type MapboxLayer = Layer;
+export type MapboxFillLayer = FillLayer;
+export type MapboxLineLayer = LineLayer;
+export type MapboxSymbolLayer = SymbolLayer;
+export type MapboxCircleLayer = CircleLayer;
+export type MapboxHeatmapLayer = HeatmapLayer;
+export type MapboxFillExtrusionLayer = FillExtrusionLayer;
+export type MapboxRasterLayer = RasterLayer;
+export type MapboxHillshadeLayer = HillshadeLayer;
+export type MapboxBackgroundLayer = BackgroundLayer;
 
-// Paint and layout property types
-export type MapboxFillPaint = mapboxgl.FillPaint;
-export type MapboxFillLayout = mapboxgl.FillLayout;
-export type MapboxLinePaint = mapboxgl.LinePaint;
-export type MapboxLineLayout = mapboxgl.LineLayout;
-export type MapboxSymbolPaint = mapboxgl.SymbolPaint;
-export type MapboxSymbolLayout = mapboxgl.SymbolLayout;
-export type MapboxCirclePaint = mapboxgl.CirclePaint;
-export type MapboxCircleLayout = mapboxgl.CircleLayout;
+// Paint and layout property types not available in v3, using any for compatibility
+export type MapboxFillPaint = any;
+export type MapboxFillLayout = any;
+export type MapboxLinePaint = any;
+export type MapboxLineLayout = any;
+export type MapboxSymbolPaint = any;
+export type MapboxSymbolLayout = any;
+export type MapboxCirclePaint = any;
+export type MapboxCircleLayout = any;
 
 // Expression types
-export type MapboxExpression = mapboxgl.Expression;
-export type MapboxStyleFunction = mapboxgl.StyleFunction;
+export type MapboxExpression = Expression;
+// StyleFunction not available in v3, using any for compatibility
+export type MapboxStyleFunction = any;
 
 // Source types
-export type MapboxAnySource = mapboxgl.Source;
-export type MapboxAnySourceData = mapboxgl.AnySourceData;
-export type MapboxGeoJSONSourceRaw = mapboxgl.GeoJSONSourceRaw;
-export type MapboxVectorSource = mapboxgl.VectorSource;
-export type MapboxRasterSource = mapboxgl.RasterSource;
-export type MapboxRasterDemSource = mapboxgl.RasterDemSource;
-export type MapboxImageSource = mapboxgl.ImageSource;
-export type MapboxVideoSource = mapboxgl.VideoSource;
-export type MapboxCanvasSource = mapboxgl.CanvasSource;
+export type MapboxAnySource = Source;
+export type MapboxAnySourceData = AnySourceData;
+// These source types not available in v3, using any for compatibility
+export type MapboxGeoJSONSourceRaw = any;
+export type MapboxVectorSource = any;
+export type MapboxRasterSource = any;
+export type MapboxRasterDemSource = any;
+export type MapboxImageSource = ImageSource;
+export type MapboxVideoSource = VideoSource;
+export type MapboxCanvasSource = CanvasSource;
 
 // Style types
-export type MapboxStyle = mapboxgl.Style;
-export type MapboxStyleOptions = mapboxgl.StyleOptions;
+export type MapboxStyle = Style;
+// StyleOptions not available in v3, using any for compatibility
+export type MapboxStyleOptions = any;
 
 // Control position types
 export type MapboxControlPosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
@@ -78,7 +112,7 @@ export interface ChoroplethOutlineLayerConfig {
 }
 
 export interface MapClickEvent extends MapboxMapLayerMouseEvent {
-  features?: mapboxgl.MapboxGeoJSONFeature[];
+  features?: any; // MapboxGeoJSONFeature not available in v3
 }
 
 export interface MapLoadEvent {
@@ -101,12 +135,12 @@ export interface PopupOptions {
   coordinates: MapboxLngLatLike;
   html: string;
   className?: string;
-  offset?: mapboxgl.PointLike;
+  offset?: PointLike;
   closeButton?: boolean;
   closeOnClick?: boolean;
   closeOnMove?: boolean;
   focusAfterOpen?: boolean;
-  anchor?: mapboxgl.Anchor;
+  anchor?: Anchor;
   maxWidth?: string;
 }
 
@@ -187,7 +221,7 @@ export interface MapInitOptions {
   style: string;
   center: MapboxLngLatLike;
   zoom: number;
-  maxBounds?: mapboxgl.LngLatBoundsLike;
+  maxBounds?: any; // LngLatBoundsLike compatibility
   minZoom?: number;
   maxZoom?: number;
   bearing?: number;
@@ -201,8 +235,8 @@ export interface MapInitOptions {
   preserveDrawingBuffer?: boolean;
   antialias?: boolean;
   refreshExpiredTiles?: boolean;
-  bounds?: mapboxgl.LngLatBoundsLike;
-  fitBoundsOptions?: mapboxgl.FitBoundsOptions;
+  bounds?: any; // LngLatBoundsLike compatibility
+  fitBoundsOptions?: any; // FitBoundsOptions compatibility
   trackResize?: boolean;
   renderWorldCopies?: boolean;
   bearingSnap?: number;
