@@ -1,5 +1,6 @@
 import '@testing-library/jest-dom/vitest';
 import { afterEach, beforeAll, vi } from 'vitest';
+import './mocks/mapbox-gl';
 
 // Auto cleanup after each test
 afterEach(() => {

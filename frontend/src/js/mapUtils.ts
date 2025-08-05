@@ -1,16 +1,11 @@
 import { MAP_CONFIG, COLOR_SCHEMES } from './constants';
-
-// Access mapboxgl from global scope for test compatibility
-declare const mapboxgl: any;
+import mapboxgl from 'mapbox-gl';
 import type { GeoJSONResponse } from '../types/api';
 import type {
   MapboxMap,
   MapboxPopup,
   MapboxMapLayerMouseEvent,
-  MapboxFullscreenControl,
-  MapboxNavigationControl,
   MapboxExpression,
-  MapboxControlPosition,
 } from '../types/mapbox';
 import { isGeoJSONSource } from '../types/mapbox';
 
@@ -30,7 +25,7 @@ export class MapManager {
     this.map = new mapboxgl.Map({
       container: this.containerId,
       ...MAP_CONFIG,
-    });
+    }) as MapboxMap;
 
     this.popup = new mapboxgl.Popup({
       closeButton: true,
@@ -38,7 +33,7 @@ export class MapManager {
       anchor: 'bottom',
       offset: 0,
       maxWidth: 'none',
-    });
+    }) as MapboxPopup;
 
     this.addControls();
   }
@@ -46,17 +41,17 @@ export class MapManager {
   private addControls(): void {
     const fullscreenControl = new mapboxgl.FullscreenControl({
       container: document.querySelector('body') as HTMLElement,
-    }) as MapboxFullscreenControl;
+    });
 
-    this.map.addControl(fullscreenControl, 'bottom-left' as MapboxControlPosition);
+    this.map.addControl(fullscreenControl, 'bottom-left');
 
     const navigationControl = new mapboxgl.NavigationControl({
       showCompass: true,
       showZoom: true,
       visualizePitch: true,
-    }) as MapboxNavigationControl;
+    });
 
-    this.map.addControl(navigationControl, 'bottom-left' as MapboxControlPosition);
+    this.map.addControl(navigationControl, 'bottom-left');
   }
 
   addSource(

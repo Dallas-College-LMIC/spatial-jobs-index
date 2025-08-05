@@ -27,6 +27,21 @@ import {
   Style,
   PointLike,
   Anchor,
+  GeoJSONSourceSpecification,
+  VectorSourceSpecification,
+  RasterSourceSpecification,
+  RasterDEMSourceSpecification,
+  FillPaint,
+  FillLayout,
+  LinePaint,
+  LineLayout,
+  SymbolPaint,
+  SymbolLayout,
+  CirclePaint,
+  CircleLayout,
+  LngLatBoundsLike,
+  FitBoundsOptions,
+  GeoJSONFeature as MapboxGeoJSONFeature,
 } from 'mapbox-gl';
 
 // Re-export commonly used Mapbox types with cleaner aliases
@@ -37,13 +52,18 @@ export type MapboxLngLatLike = LngLatLike;
 export type MapboxMapMouseEvent = MapMouseEvent;
 export type MapboxMapLayerMouseEvent = MapLayerMouseEvent;
 export type MapboxGeoJSONSource = GeoJSONSource;
-// GeoJSONSourceOptions not available in v3, using any for compatibility
-export type MapboxGeoJSONSourceOptions = any;
+// Use GeoJSONSourceSpecification from v3
+export type MapboxGeoJSONSourceOptions = Partial<GeoJSONSourceSpecification>;
 export type MapboxNavigationControl = NavigationControl;
 export type MapboxFullscreenControl = FullscreenControl;
-// EventData and ErrorEvent not available in v3, using any for compatibility
-export type MapboxEventData = any;
-export type MapboxErrorEvent = any;
+// EventData is a simple object type in v3
+export type MapboxEventData = Record<string, any>;
+// ErrorEvent is handled differently in v3
+export interface MapboxErrorEvent {
+  error: Error;
+  target: Map;
+  type: 'error';
+}
 
 // Layer types
 export type MapboxLayer = Layer;
@@ -57,37 +77,41 @@ export type MapboxRasterLayer = RasterLayer;
 export type MapboxHillshadeLayer = HillshadeLayer;
 export type MapboxBackgroundLayer = BackgroundLayer;
 
-// Paint and layout property types not available in v3, using any for compatibility
-export type MapboxFillPaint = any;
-export type MapboxFillLayout = any;
-export type MapboxLinePaint = any;
-export type MapboxLineLayout = any;
-export type MapboxSymbolPaint = any;
-export type MapboxSymbolLayout = any;
-export type MapboxCirclePaint = any;
-export type MapboxCircleLayout = any;
+// Paint and layout property types are available in v3
+export type MapboxFillPaint = FillPaint;
+export type MapboxFillLayout = FillLayout;
+export type MapboxLinePaint = LinePaint;
+export type MapboxLineLayout = LineLayout;
+export type MapboxSymbolPaint = SymbolPaint;
+export type MapboxSymbolLayout = SymbolLayout;
+export type MapboxCirclePaint = CirclePaint;
+export type MapboxCircleLayout = CircleLayout;
 
 // Expression types
 export type MapboxExpression = Expression;
-// StyleFunction not available in v3, using any for compatibility
-export type MapboxStyleFunction = any;
+// StyleFunction replaced by expressions in v3
+export type MapboxStyleFunction = Expression;
 
 // Source types
 export type MapboxAnySource = Source;
 export type MapboxAnySourceData = AnySourceData;
-// These source types not available in v3, using any for compatibility
-export type MapboxGeoJSONSourceRaw = any;
-export type MapboxVectorSource = any;
-export type MapboxRasterSource = any;
-export type MapboxRasterDemSource = any;
+// Use source specification types from v3
+export type MapboxGeoJSONSourceRaw = GeoJSONSourceSpecification;
+export type MapboxVectorSource = VectorSourceSpecification;
+export type MapboxRasterSource = RasterSourceSpecification;
+export type MapboxRasterDemSource = RasterDEMSourceSpecification;
 export type MapboxImageSource = ImageSource;
 export type MapboxVideoSource = VideoSource;
 export type MapboxCanvasSource = CanvasSource;
 
 // Style types
 export type MapboxStyle = Style;
-// StyleOptions not available in v3, using any for compatibility
-export type MapboxStyleOptions = any;
+// StyleOptions not exported in v3, define a compatible interface
+export interface MapboxStyleOptions {
+  validate?: boolean;
+  localFontFamily?: string;
+  localIdeographFontFamily?: string;
+}
 
 // Control position types
 export type MapboxControlPosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
@@ -112,7 +136,7 @@ export interface ChoroplethOutlineLayerConfig {
 }
 
 export interface MapClickEvent extends MapboxMapLayerMouseEvent {
-  features?: any; // MapboxGeoJSONFeature not available in v3
+  features?: MapboxGeoJSONFeature[]; // Use GeoJSONFeature type from v3
 }
 
 export interface MapLoadEvent {
@@ -221,7 +245,7 @@ export interface MapInitOptions {
   style: string;
   center: MapboxLngLatLike;
   zoom: number;
-  maxBounds?: any; // LngLatBoundsLike compatibility
+  maxBounds?: LngLatBoundsLike;
   minZoom?: number;
   maxZoom?: number;
   bearing?: number;
@@ -235,8 +259,8 @@ export interface MapInitOptions {
   preserveDrawingBuffer?: boolean;
   antialias?: boolean;
   refreshExpiredTiles?: boolean;
-  bounds?: any; // LngLatBoundsLike compatibility
-  fitBoundsOptions?: any; // FitBoundsOptions compatibility
+  bounds?: LngLatBoundsLike;
+  fitBoundsOptions?: FitBoundsOptions;
   trackResize?: boolean;
   renderWorldCopies?: boolean;
   bearingSnap?: number;

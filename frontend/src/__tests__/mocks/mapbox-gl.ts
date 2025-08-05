@@ -1,6 +1,6 @@
 import { vi } from 'vitest';
 
-// Mock Mapbox GL JS
+// Mock map instance
 export const mockMap = {
   on: vi.fn((...args) => {
     const event = args[0];
@@ -42,6 +42,7 @@ export const mockMap = {
   unproject: vi.fn(),
 };
 
+// Mock popup instance
 export const mockPopup = {
   setLngLat: vi.fn().mockReturnThis(),
   setHTML: vi.fn().mockReturnThis(),
@@ -50,28 +51,20 @@ export const mockPopup = {
   isOpen: vi.fn(() => false),
 };
 
-export const mockNavigationControl = vi.fn();
-export const mockFullscreenControl = vi.fn();
-
-// Mock Map constructor to return our mockMap
-const MockMap = vi.fn().mockImplementation(() => mockMap);
-
-// Create the mock mapboxgl object
-export const mapboxgl = {
-  Map: MockMap,
-  Popup: vi.fn().mockImplementation(() => mockPopup),
-  NavigationControl: vi.fn().mockImplementation(() => ({})),
-  FullscreenControl: vi.fn().mockImplementation(() => ({})),
+// Create a reference that can be used in tests
+export const mockMapboxGL = {
+  Map: vi.fn(() => mockMap),
+  Popup: vi.fn(() => mockPopup),
+  NavigationControl: vi.fn(() => ({})),
+  FullscreenControl: vi.fn(() => ({})),
   accessToken: '',
   supported: vi.fn(() => true),
   LngLat: vi.fn((lng: number, lat: number) => ({ lng, lat })),
   LngLatBounds: vi.fn(),
 };
 
-// Make it available globally before any imports
-if (!(globalThis as any).mapboxgl) {
-  (globalThis as any).mapboxgl = mapboxgl;
-}
-
-// Also export for direct use
-export default mapboxgl;
+// Mock Mapbox GL JS module
+vi.mock('mapbox-gl', () => ({
+  default: mockMapboxGL,
+  ...mockMapboxGL,
+}));

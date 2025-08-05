@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import '../../mocks/mapbox-gl';
-import { mockMap, mockPopup } from '../../mocks/mapbox-gl';
+import { mockMap, mockPopup, mockMapboxGL } from '../../mocks/mapbox-gl';
 import { MapManager } from '../../../js/mapUtils';
 import { MAP_CONFIG, COLOR_SCHEMES } from '../../../js/constants';
 import type { GeoJSONResponse } from '../../../types/api';
@@ -44,9 +44,7 @@ describe('MapManager', () => {
     mockPopup.setHTML.mockClear().mockReturnThis();
     mockPopup.addTo.mockClear().mockReturnThis();
 
-    // Ensure Map constructor returns mockMap
-    (globalThis as any).mapboxgl.Map.mockImplementation(() => mockMap);
-    (globalThis as any).mapboxgl.Popup.mockImplementation(() => mockPopup);
+    // The mapbox-gl mock is already set up in the mocks file
 
     // Create MapManager instance
     mapManager = new MapManager('test-container');
@@ -62,18 +60,18 @@ describe('MapManager', () => {
   describe('constructor and initialization', () => {
     it('should initialize with correct container ID', () => {
       expect(mapManager).toBeDefined();
-      expect((globalThis as any).mapboxgl.accessToken).toBe('test-token');
+      expect(mockMapboxGL.accessToken).toBe('test-token');
     });
 
     it('should create map with correct configuration', () => {
-      expect((globalThis as any).mapboxgl.Map).toHaveBeenCalledWith({
+      expect(mockMapboxGL.Map).toHaveBeenCalledWith({
         container: 'test-container',
         ...MAP_CONFIG,
       });
     });
 
     it('should create popup with correct configuration', () => {
-      expect((globalThis as any).mapboxgl.Popup).toHaveBeenCalledWith({
+      expect(mockMapboxGL.Popup).toHaveBeenCalledWith({
         closeButton: true,
         closeOnClick: false,
         anchor: 'bottom',
@@ -83,10 +81,10 @@ describe('MapManager', () => {
     });
 
     it('should add navigation and fullscreen controls', () => {
-      expect((globalThis as any).mapboxgl.FullscreenControl).toHaveBeenCalledWith({
+      expect(mockMapboxGL.FullscreenControl).toHaveBeenCalledWith({
         container: document.querySelector('body'),
       });
-      expect((globalThis as any).mapboxgl.NavigationControl).toHaveBeenCalledWith({
+      expect(mockMapboxGL.NavigationControl).toHaveBeenCalledWith({
         showCompass: true,
         showZoom: true,
         visualizePitch: true,
