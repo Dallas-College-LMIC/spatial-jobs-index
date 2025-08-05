@@ -272,3 +272,4 @@ export interface MapInitOptions {
   locale?: any;
   testMode?: boolean;
 }
+// Test comment
