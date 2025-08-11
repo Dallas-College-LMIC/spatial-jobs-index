@@ -109,26 +109,26 @@ Incremental migration from vanilla TypeScript to Vue 3, organized into 4 phases 
 ### 2.1 Occupation Store
 - [x] Create `stores/occupation.ts`
 - [x] Migrate occupation data state
-- [ ] Migrate occupation cache logic
+- [x] Migrate occupation cache logic ✅ Basic in-memory cache implemented with tests
 - [x] Implement fetch actions (fetchOccupationIds, fetchOccupationData)
 - [x] Implement search functionality
 - [x] Implement filter actions (setFilterOptions)
 - [x] Add error handling
 - [x] Add loading states
-- [x] Write store tests (9 tests passing)
-- [ ] Integrate with persistence
+- [x] Write store tests (10 tests passing) ✅ Added caching test
+- [ ] Integrate with persistence (Pinia plugin for localStorage)
 
-### 2.2 School of Study Store
-- [ ] Create `stores/schoolOfStudy.ts`
-- [ ] Migrate school data state
-- [ ] Migrate cache management
-- [ ] Implement fetch actions
-- [ ] Implement filter logic
-- [ ] Add pagination support
-- [ ] Add error handling
-- [ ] Add loading states
-- [ ] Write store tests
-- [ ] Integrate with persistence
+### 2.2 School of Study Store ✅ Basic implementation complete
+- [x] Create `stores/schoolOfStudy.ts` ✅ Created with basic structure
+- [x] Migrate school data state ✅ State defined
+- [ ] Migrate cache management (deferred for later)
+- [x] Implement fetch actions ✅ fetchSchoolIds and fetchSchoolData implemented
+- [ ] Implement filter logic (deferred for later)
+- [ ] Add pagination support (deferred for later)
+- [ ] Add error handling (deferred for later)
+- [ ] Add loading states (deferred for later)
+- [x] Write store tests ✅ 3 tests passing
+- [ ] Integrate with persistence (deferred for later)
 
 ### 2.3 UI Store
 - [ ] Create `stores/ui.ts`
@@ -420,17 +420,23 @@ Incremental migration from vanilla TypeScript to Vue 3, organized into 4 phases 
 Track issues encountered, decisions made, technical debt, and future improvements here.
 
 ### Issues Encountered
--
+- Vitest configuration issue with @vue/test-utils resolved by using minimal config
 
 ### Decisions Made
--
+- Using simple in-memory cache for stores initially, will add persistence later via Pinia plugin
+- Focusing on core functionality first, deferring advanced features (pagination, filters, etc.)
+- School of Study Store implemented with basic functionality to maintain momentum
 
 ### Technical Debt
--
+- Need to add Pinia persistence plugin for localStorage integration
+- Cache management for School of Study store deferred
+- Error handling and loading states need to be added to stores
 
 ### Future Improvements
--
+- Implement proper cache service with TTL and LRU eviction
+- Add comprehensive error handling across all stores
+- Implement pagination for large datasets
 
 ---
 
-Last Updated: 2025-08-11
+Last Updated: 2025-08-11 17:21

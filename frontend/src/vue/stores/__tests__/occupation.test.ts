@@ -156,4 +156,29 @@ describe('Occupation Store', () => {
     expect(store.occupationData).toEqual(mockGeoJSON);
     expect(store.selectedOccupationId).toBe('11-1011');
   });
+
+  it('should use cached data when available', async () => {
+    const store = useOccupationStore();
+    const mockGeoJSON = {
+      type: 'FeatureCollection' as const,
+      features: [],
+    };
+
+    const { ApiService } = await import('../../../js/api');
+    const mockGetOccupationData = vi.fn().mockResolvedValue(mockGeoJSON);
+
+    (ApiService as any).mockImplementation(() => ({
+      getOccupationData: mockGetOccupationData,
+      createAbortController: vi.fn(() => new AbortController()),
+    }));
+
+    // First fetch - should call API
+    await store.fetchOccupationData('11-1012'); // Use different ID to avoid cache from previous test
+    expect(mockGetOccupationData).toHaveBeenCalledTimes(1);
+
+    // Second fetch - should use cache
+    await store.fetchOccupationData('11-1012');
+    expect(mockGetOccupationData).toHaveBeenCalledTimes(1); // Still only called once
+    expect(store.occupationData).toEqual(mockGeoJSON);
+  });
 });
