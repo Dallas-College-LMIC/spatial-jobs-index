@@ -62,7 +62,7 @@ describe('Occupation Store', () => {
     const filtered = store.filteredOccupations;
 
     expect(filtered).toHaveLength(1);
-    expect(filtered[0].name).toBe('General and Operations Managers');
+    expect(filtered[0]?.name).toBe('General and Operations Managers');
   });
 
   it('should fetch occupation IDs', async () => {
@@ -110,7 +110,7 @@ describe('Occupation Store', () => {
 
     const { ApiService } = await import('../../../js/api');
 
-    let resolvePromise: (value: any) => void;
+    let resolvePromise!: (value: any) => void;
     const promise = new Promise((resolve) => {
       resolvePromise = resolve;
     });

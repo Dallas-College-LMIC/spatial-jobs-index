@@ -43,8 +43,8 @@ describe('UI Store', () => {
       expect(id).toBeDefined();
       expect(store.notifications).toBeDefined();
       expect(store.notifications.length).toBe(1);
-      expect(store.notifications[0].type).toBe('success');
-      expect(store.notifications[0].message).toBe('Operation successful!');
+      expect(store.notifications[0]?.type).toBe('success');
+      expect(store.notifications[0]?.message).toBe('Operation successful!');
     });
 
     it('should show error notification', () => {
@@ -53,8 +53,8 @@ describe('UI Store', () => {
       const id = store.showError('Operation failed!');
       expect(id).toBeDefined();
       expect(store.notifications.length).toBe(1);
-      expect(store.notifications[0].type).toBe('error');
-      expect(store.notifications[0].message).toBe('Operation failed!');
+      expect(store.notifications[0]?.type).toBe('error');
+      expect(store.notifications[0]?.message).toBe('Operation failed!');
     });
   });
 
