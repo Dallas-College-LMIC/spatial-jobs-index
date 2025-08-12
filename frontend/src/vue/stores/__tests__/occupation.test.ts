@@ -14,6 +14,9 @@ vi.mock('../../../js/api', () => ({
 describe('Occupation Store', () => {
   beforeEach(() => {
     setActivePinia(createPinia());
+    localStorage.clear();
+    vi.clearAllMocks();
+    vi.resetModules();
   });
 
   it('should initialize with default state', () => {
@@ -180,5 +183,27 @@ describe('Occupation Store', () => {
     await store.fetchOccupationData('11-1012');
     expect(mockGetOccupationData).toHaveBeenCalledTimes(1); // Still only called once
     expect(store.occupationData).toEqual(mockGeoJSON);
+  });
+
+  it('should persist selected occupation to localStorage', () => {
+    // Create a mock for localStorage.setItem
+    const mockSetItem = vi.fn();
+    Object.defineProperty(window, 'localStorage', {
+      value: {
+        setItem: mockSetItem,
+        getItem: vi.fn(),
+        removeItem: vi.fn(),
+        clear: vi.fn(),
+      },
+      writable: true,
+    });
+
+    const store = useOccupationStore();
+    store.setSelectedOccupation('11-1011');
+
+    expect(mockSetItem).toHaveBeenCalledWith(
+      'occupation-selectedOccupationId',
+      JSON.stringify('11-1011')
+    );
   });
 });
