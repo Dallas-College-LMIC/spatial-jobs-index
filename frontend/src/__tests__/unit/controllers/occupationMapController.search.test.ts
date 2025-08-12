@@ -437,6 +437,12 @@ describe('OccupationMapController - Search Functionality', () => {
 
     it('should cache the new occupation format correctly', async () => {
       const cachedOccupations = mockOccupationIdsResponse.occupations;
+
+      // Reset the mock to clear any calls from initialization
+      mockApiService.getOccupationIds.mockClear();
+      mockCacheService.get.mockClear();
+
+      // Set up the cache to return data
       mockCacheService.get.mockReturnValue(cachedOccupations);
 
       await controller['loadOccupationIds']();

@@ -21,7 +21,7 @@ describe('SchoolOfStudyApiService', () => {
   describe('getSchoolOfStudyIds', () => {
     it('should fetch school of study IDs successfully', async () => {
       const mockResponse = createFetchResponse(mockSchoolOfStudyIdsResponse);
-      vi.mocked(global.fetch).mockResolvedValueOnce(mockResponse);
+      (global.fetch as any).mockResolvedValueOnce(mockResponse);
 
       const result = await apiService.getSchoolOfStudyIds();
 
@@ -43,7 +43,7 @@ describe('SchoolOfStudyApiService', () => {
     it('should fetch school of study data successfully', async () => {
       const categoryCode = 'BHGT';
       const mockResponse = createFetchResponse(mockSchoolOfStudyGeoJSONResponse);
-      vi.mocked(global.fetch).mockResolvedValueOnce(mockResponse);
+      (global.fetch as any).mockResolvedValueOnce(mockResponse);
 
       const result = await apiService.getSchoolOfStudyData(categoryCode);
 

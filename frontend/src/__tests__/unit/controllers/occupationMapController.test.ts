@@ -154,7 +154,17 @@ describe('OccupationMapController', () => {
 
   describe('loadOccupationIds', () => {
     it('should use cached occupation IDs when available', async () => {
-      const cachedIds = ['11-1011', '11-1021', '11-1031'];
+      const cachedIds = [
+        { code: '11-1011', name: 'Chief Executives' },
+        { code: '11-1021', name: 'General and Operations Managers' },
+        { code: '11-1031', name: 'Legislators' },
+      ];
+
+      // Reset the mock to clear any calls from initialization
+      mockApiService.getOccupationIds.mockClear();
+      mockCacheService.get.mockClear();
+
+      // Set up the cache to return data
       mockCacheService.get.mockReturnValue(cachedIds);
 
       await controller['loadOccupationIds']();
