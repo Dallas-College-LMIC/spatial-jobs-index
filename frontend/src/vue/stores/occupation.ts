@@ -47,6 +47,8 @@ export const useOccupationStore = defineStore('occupation', {
   actions: {
     setSelectedOccupation(occupationId: string) {
       this.selectedOccupationId = occupationId;
+      // Persist to localStorage
+      localStorage.setItem('occupation-selectedOccupationId', JSON.stringify(occupationId));
     },
 
     setSearchQuery(query: string) {
