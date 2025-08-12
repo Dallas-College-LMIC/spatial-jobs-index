@@ -141,16 +141,16 @@ Incremental migration from vanilla TypeScript to Vue 3, organized into 4 phases 
 - [ ] Add keyboard shortcuts support (deferred for later)
 - [x] Write store tests ✅ 6 tests passing
 
-### 2.4 Map Store
-- [ ] Create `stores/map.ts`
-- [ ] Define map instance state
-- [ ] Implement layer management
-- [ ] Implement source management
-- [ ] Add interaction states
-- [ ] Add popup management
-- [ ] Add drawing tools state
-- [ ] Implement export functionality
-- [ ] Write store tests
+### 2.4 Map Store ✅ Basic implementation complete
+- [x] Create `stores/map.ts` ✅ Created with TDD approach
+- [x] Define map instance state ✅ mapInstance and isMapLoaded refs
+- [x] Implement layer management ✅ addLayer/removeLayer functions
+- [x] Implement source management ✅ addSource function with dataSources ref
+- [x] Add interaction states ✅ Basic state added (can be expanded later)
+- [x] Add popup management ✅ isPopupOpen and popupContent refs
+- [ ] Add drawing tools state (deferred for later)
+- [ ] Implement export functionality (deferred for later)
+- [x] Write store tests ✅ 9 tests passing
 
 ### 2.5 API Composables
 - [ ] Create `composables/useApi.ts` base composable
