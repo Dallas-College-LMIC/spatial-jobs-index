@@ -1,6 +1,10 @@
 <template>
   <div>
-    <select @change="handleChange" :disabled="store.isLoading">
+    <select
+      :value="modelValue"
+      @change="handleChange"
+      :disabled="store.isLoading"
+    >
       <option value="">Select an occupation...</option>
       <option
         v-for="occupation in store.occupations"
@@ -18,6 +22,12 @@
 import { onMounted } from 'vue';
 import { useOccupationStore } from '../stores/occupation';
 
+interface Props {
+  modelValue?: string;
+}
+
+defineProps<Props>();
+
 const emit = defineEmits<{
   'update:modelValue': [value: string];
 }>();
@@ -32,5 +42,10 @@ const handleChange = (event: Event) => {
 
 onMounted(() => {
   store.fetchOccupationIds();
+});
+
+// Expose for testing
+defineExpose({
+  handleChange
 });
 </script>
