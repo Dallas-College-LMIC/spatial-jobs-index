@@ -13,7 +13,7 @@
             "args": ["mcp-nixos"]
         },
         "postgres": {
-            "command": "./scripts/postgres-mcp-wrapper.sh",
+            "command": "./tools/postgres-mcp-wrapper.sh",
             "args": ["--access-mode=restricted"]
         }
     }

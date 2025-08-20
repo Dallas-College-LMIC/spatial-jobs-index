@@ -11,15 +11,21 @@ Spatial Jobs Index is a full-stack web application for visualizing job accessibi
 
 ## Essential Development Commands
 
-### Quick Start
+Run the following to get commands:
 ```bash
-# Enter development environment
-nix develop
-
-# Run both frontend and backend
-nix run
+just --list
+just --list backend
+just --list frontend
 ```
 
+### Running Frontend and Backend
+```bash
+# Run both
+just run
+
+# Kill both
+just stop
+```
 ### Backend Development
 ```bash
 # Run tests

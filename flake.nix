@@ -263,7 +263,7 @@
               ${backendVenv}/bin/uvicorn app.main:app --reload --host 0.0.0.0 --port 8000 &
               BACKEND_PID=$!
 
-              echo "Starting frontend on port 5173..."
+              echo "Starting frontend on port 3000..."
               # Create a temporary writable directory for frontend
               WORK_DIR=$(mktemp -d)
               trap "rm -rf $WORK_DIR; kill $BACKEND_PID" EXIT

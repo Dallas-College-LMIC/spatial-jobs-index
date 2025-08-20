@@ -80,3 +80,4 @@ Thumbs.db
 .claude/tdd-guard/data
 backend/.claude
 frontend/.claude
+.envrc.local
