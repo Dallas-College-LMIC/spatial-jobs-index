@@ -81,3 +81,5 @@ Thumbs.db
 backend/.claude
 frontend/.claude
 .envrc.local
+
+tools/local/
