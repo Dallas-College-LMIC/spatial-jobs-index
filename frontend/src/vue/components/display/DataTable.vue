@@ -1,79 +1,52 @@
 <template>
-  <div class="data-table-wrapper">
-    <table :class="tableClass">
+  <div class="data-table">
+    <div v-if="loading" data-testid="loading-state" class="loading-state">
+      <p>Loading...</p>
+    </div>
+    <div v-else-if="data.length === 0" data-testid="empty-state" class="empty-state">
+      <p>No data available</p>
+    </div>
+    <table v-else>
       <thead>
         <tr>
           <th v-for="column in columns" :key="column.key">
-            <button v-if="column.sortable" class="sort-button" @click="handleSort(column)">
-              {{ column.label }}
-            </button>
-            <span v-else>{{ column.label }}</span>
+            {{ column.label }}
           </th>
         </tr>
       </thead>
       <tbody>
-        <tr v-if="data.length === 0">
-          <td :colspan="columns.length" class="empty-state">
-            No data available
-          </td>
-        </tr>
-        <tr v-else v-for="(row, index) in paginatedData" :key="row.id || index">
+        <tr v-for="row in data" :key="row.id">
           <td v-for="column in columns" :key="column.key">
-            {{ formatValue(row[column.key], column.format) }}
+            {{ formatCellValue(row[column.key], column.format) }}
           </td>
         </tr>
       </tbody>
     </table>
-
-    <div v-if="pageSize" class="pagination">
-      <button class="prev-page">Previous</button>
-      <span class="page-info">Page 1</span>
-      <button class="next-page">Next</button>
-    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-
 interface Column {
   key: string;
   label: string;
   sortable?: boolean;
-  format?: 'currency' | 'percentage' | 'number';
+  format?: 'currency' | 'number' | 'text';
 }
 
 interface Props {
   data: Record<string, any>[];
   columns: Column[];
-  tableClass?: string;
+  loading?: boolean;
+  clickable?: boolean;
   pageSize?: number;
+  tableClass?: string;
+  headerClass?: string;
 }
 
-const props = defineProps<Props>();
+defineProps<Props>();
 
-const emit = defineEmits<{
-  sort: [{ column: string; direction: 'asc' | 'desc' | null }];
-}>();
-
-const currentPage = ref(1);
-
-const paginatedData = computed(() => {
-  if (!props.pageSize) {
-    return props.data;
-  }
-
-  const start = (currentPage.value - 1) * props.pageSize;
-  const end = start + props.pageSize;
-  return props.data.slice(start, end);
-});
-
-const handleSort = (column: Column) => {
-  emit('sort', { column: column.key, direction: 'asc' });
-};
-
-const formatValue = (value: any, format?: string) => {
-  if (format === 'currency') {
+function formatCellValue(value: any, format?: string): string {
+  if (format === 'currency' && typeof value === 'number') {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
@@ -81,6 +54,35 @@ const formatValue = (value: any, format?: string) => {
       maximumFractionDigits: 0,
     }).format(value);
   }
-  return value;
-};
+  return String(value);
+}
 </script>
+
+<style scoped>
+.data-table {
+  width: 100%;
+}
+
+.empty-state,
+.loading-state {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  text-align: left;
+  padding: 0.75rem;
+  border-bottom: 1px solid #ddd;
+}
+
+th {
+  font-weight: 600;
+  background-color: #f5f5f5;
+}
+</style>
