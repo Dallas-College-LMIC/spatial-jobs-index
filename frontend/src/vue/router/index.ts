@@ -1,10 +1,11 @@
 import { createRouter as createVueRouter, createWebHistory } from 'vue-router';
+import HomePage from '../pages/HomePage.vue';
 
 const routes = [
   {
     path: '/',
     name: 'Home',
-    component: { template: '<div>Home</div>' }, // Placeholder component
+    component: HomePage,
   },
   {
     path: '/occupation',
