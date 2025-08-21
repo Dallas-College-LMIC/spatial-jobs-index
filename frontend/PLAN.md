@@ -315,14 +315,14 @@ Incremental migration from vanilla TypeScript to Vue 3, organized into 4 phases 
 - [x] Add 404 page ✅ Created NotFoundPage component with router integration (3 tests passing)
 - [x] Test all navigation paths ✅ All routes tested (4 tests passing)
 
-### 4.2 HTML File Updates
-- [ ] Update `index.html` for Vue
-- [ ] Update `access_occupation.html`
-- [ ] Update `access_school_of_study.html`
-- [ ] Update `access_wagelvl.html`
-- [ ] Update `travel_time.html`
-- [ ] Add Vue mount points
-- [ ] Update script tags
+### 4.2 HTML File Updates ✅ COMPLETE
+- [x] Update `index.html` for Vue ✅ Added Vue mount point and script
+- [x] Update `access_occupation.html` ✅ Added Vue mount point and script
+- [x] Update `access_school_of_study.html` ✅ Added Vue mount point and script
+- [x] Update `access_wagelvl.html` ✅ Added Vue mount point and script
+- [x] Update `travel_time.html` ✅ Added Vue mount point and script
+- [x] Add Vue mount points ✅ All pages have `<div id="app">` for Vue
+- [x] Update script tags ✅ Added Vue main.ts script to all HTML files
 
 ### 4.3 Migration Completion
 - [ ] Remove `controllers/BaseMapController.ts`
@@ -617,3 +617,25 @@ Last Updated: 2025-08-12 16:30
   - 4 navigation path tests passing
 - 📊 Total new tests added in session: 36 tests (18 from previous + 7 breadcrumbs + 4 deep linking + 4 navigation + 3 misc)
 - 🎯 Next: Phase 4.2 HTML File Updates or continue with other Phase 4 tasks
+
+### Session 8 Updates (2025-08-21)
+- ✅ **Completed Phase 4.2: HTML File Updates**
+- ✅ Created Vue main entry point file with TDD approach
+  - Created initVueApp function with tests
+  - Added Pinia store integration
+  - Router integration prepared for App component
+  - 2 tests passing for main.ts
+- ✅ Updated all HTML files with Vue mount points
+  - index.html - Added `<div id="app">` and Vue script
+  - access_occupation.html - Added Vue integration
+  - access_school_of_study.html - Added Vue integration
+  - access_wagelvl.html - Added Vue integration
+  - travel_time.html - Added Vue integration
+- ✅ Fixed vite.config.ts alias issue
+  - Removed conflicting @vue alias that was interfering with Vue/Pinia imports
+- ✅ Created Vue styles directory structure
+- ✅ Tested Vue mount points are working
+  - Development server running successfully
+  - All HTML pages serving with Vue mount points
+- 📊 Total new tests added in session: 2 tests (Vue main initialization)
+- 🎯 Next priorities: Continue with Phase 4.3 Migration Completion or other Phase 4 tasks

@@ -23,6 +23,8 @@
             crossorigin="anonymous"
         ></script>
         <script type="module" src="/src/js/travel-time-main.ts"></script>
+        <!-- Vue app mount point -->
+        <script type="module" src="/src/vue/main.ts"></script>
         <style>
             #legend {
                 position: absolute;
@@ -81,6 +83,10 @@
     </head>
 
     <body>
+        <!-- Vue app will mount here if present -->
+        <div id="app"></div>
+
+        <!-- Fallback for non-Vue content -->
         <div id="navigation-container"></div>
 
         <div class="container-fluid p-0" id="mainmap"></div>

@@ -7,8 +7,7 @@ export default defineConfig(({ mode }) => ({
 
   resolve: {
     alias: {
-      '@': resolve(__dirname, './src'),
-      '@vue': resolve(__dirname, './src/vue')
+      '@': resolve(__dirname, './src')
     }
   },
 

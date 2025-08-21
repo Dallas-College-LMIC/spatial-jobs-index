@@ -28,9 +28,15 @@
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
         <script type="module" src="/src/js/occupation-main.ts"></script>
+        <!-- Vue app mount point -->
+        <script type="module" src="/src/vue/main.ts"></script>
     </head>
 
     <body>
+        <!-- Vue app will mount here if present -->
+        <div id="app"></div>
+
+        <!-- Fallback for non-Vue content -->
         <div id="navigation-container"></div>
 
         <div class="container-fluid p-0" id="mainmap"></div>

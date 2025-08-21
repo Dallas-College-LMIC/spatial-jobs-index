@@ -15,11 +15,17 @@
         integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0"
         crossorigin="anonymous"></script>
     <script type="module" src="/src/js/main.ts"></script>
+    <!-- Vue app mount point -->
+    <script type="module" src="/src/vue/main.ts"></script>
 </head>
 
 
 
 <body>
+    <!-- Vue app will mount here if present -->
+    <div id="app"></div>
+
+    <!-- Fallback for non-Vue content -->
     <div id="navigation-container"></div>
 
     <div class="container-fluid g-0" id="main">
