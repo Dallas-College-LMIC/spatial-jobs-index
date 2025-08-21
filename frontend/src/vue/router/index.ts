@@ -1,10 +1,7 @@
 import { createRouter as createVueRouter, createWebHistory } from 'vue-router';
 import { setupNavigationGuards } from './guards';
+// Only eagerly load critical routes
 import HomePage from '../pages/HomePage.vue';
-import OccupationPage from '../pages/OccupationPage.vue';
-import SchoolOfStudyPage from '../pages/SchoolOfStudyPage.vue';
-import WagePage from '../pages/WagePage.vue';
-import TravelTimePage from '../pages/TravelTimePage.vue';
 import NotFoundPage from '../pages/NotFoundPage.vue';
 
 const routes = [
@@ -17,25 +14,25 @@ const routes = [
   {
     path: '/occupation',
     name: 'Occupation',
-    component: OccupationPage,
+    component: () => import('../pages/OccupationPage.vue'),
     meta: { breadcrumb: 'Occupations' },
   },
   {
     path: '/school-of-study',
     name: 'SchoolOfStudy',
-    component: SchoolOfStudyPage,
+    component: () => import('../pages/SchoolOfStudyPage.vue'),
     meta: { breadcrumb: 'Schools of Study' },
   },
   {
     path: '/wage-level',
     name: 'WageLevel',
-    component: WagePage,
+    component: () => import('../pages/WagePage.vue'),
     meta: { breadcrumb: 'Wage Levels' },
   },
   {
     path: '/travel-time',
     name: 'TravelTime',
-    component: TravelTimePage,
+    component: () => import('../pages/TravelTimePage.vue'),
     meta: { breadcrumb: 'Travel Time' },
   },
   {

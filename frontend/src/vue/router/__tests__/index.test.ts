@@ -14,10 +14,10 @@ describe('Router Configuration', () => {
       const occupationRoute = router.getRoutes().find((route) => route.name === 'Occupation');
       expect(occupationRoute).toBeDefined();
       expect(occupationRoute?.path).toBe('/occupation');
-      // Check that the component exists and is not a placeholder
+      // Check that the component exists (it's now lazy-loaded as a function)
       const component = occupationRoute?.components?.default;
       expect(component).toBeDefined();
-      expect(component?.name).toBe('OccupationPage');
+      expect(typeof component).toBe('function'); // Lazy-loaded components are functions
     });
 
     it('should have SchoolOfStudy route with SchoolOfStudyPage component', () => {
@@ -26,7 +26,7 @@ describe('Router Configuration', () => {
       expect(schoolRoute?.path).toBe('/school-of-study');
       const component = schoolRoute?.components?.default;
       expect(component).toBeDefined();
-      expect(component?.name).toBe('SchoolOfStudyPage');
+      expect(typeof component).toBe('function'); // Lazy-loaded components are functions
     });
 
     it('should have WageLevel route configured', () => {
