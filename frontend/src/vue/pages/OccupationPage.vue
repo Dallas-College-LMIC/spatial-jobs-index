@@ -7,4 +7,8 @@
 
 <script setup lang="ts">
 import OccupationSelect from '../components/OccupationSelect.vue';
+
+defineOptions({
+  name: 'OccupationPage',
+});
 </script>

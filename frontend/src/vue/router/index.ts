@@ -1,5 +1,7 @@
 import { createRouter as createVueRouter, createWebHistory } from 'vue-router';
 import HomePage from '../pages/HomePage.vue';
+import OccupationPage from '../pages/OccupationPage.vue';
+import SchoolOfStudyPage from '../pages/SchoolOfStudyPage.vue';
 
 const routes = [
   {
@@ -10,7 +12,22 @@ const routes = [
   {
     path: '/occupation',
     name: 'Occupation',
-    component: { template: '<div>Occupation</div>' }, // Placeholder component
+    component: OccupationPage,
+  },
+  {
+    path: '/school-of-study',
+    name: 'SchoolOfStudy',
+    component: SchoolOfStudyPage,
+  },
+  {
+    path: '/wage-level',
+    name: 'WageLevel',
+    component: { template: '<div>Wage Level Page</div>' }, // Placeholder
+  },
+  {
+    path: '/travel-time',
+    name: 'TravelTime',
+    component: { template: '<div>Travel Time Page</div>' }, // Placeholder
   },
 ];
 
