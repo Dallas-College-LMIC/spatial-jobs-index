@@ -206,4 +206,23 @@ describe('Occupation Store', () => {
       JSON.stringify('11-1011')
     );
   });
+
+  it('should handle fetch occupation data error', async () => {
+    const { ApiService } = await import('../../../js/api');
+    const mockGetOccupationData = vi.fn().mockRejectedValue(new Error('Network error'));
+
+    (ApiService as any).mockImplementation(() => ({
+      getOccupationData: mockGetOccupationData,
+      createAbortController: vi.fn(() => new AbortController()),
+    }));
+
+    const store = useOccupationStore();
+
+    // Use a unique ID to avoid cache interference
+    await store.fetchOccupationData('11-9999');
+
+    expect(store.error).toBe('Failed to load occupation data: Network error');
+    expect(store.isLoading).toBe(false);
+    expect(store.occupationData).toBeNull();
+  });
 });

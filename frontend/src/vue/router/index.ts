@@ -3,6 +3,8 @@ import { setupNavigationGuards } from './guards';
 import HomePage from '../pages/HomePage.vue';
 import OccupationPage from '../pages/OccupationPage.vue';
 import SchoolOfStudyPage from '../pages/SchoolOfStudyPage.vue';
+import WagePage from '../pages/WagePage.vue';
+import TravelTimePage from '../pages/TravelTimePage.vue';
 import NotFoundPage from '../pages/NotFoundPage.vue';
 
 const routes = [
@@ -27,12 +29,14 @@ const routes = [
   {
     path: '/wage-level',
     name: 'WageLevel',
-    component: { template: '<div>Wage Level Page</div>' }, // Placeholder
+    component: WagePage,
+    meta: { breadcrumb: 'Wage Levels' },
   },
   {
     path: '/travel-time',
     name: 'TravelTime',
-    component: { template: '<div>Travel Time Page</div>' }, // Placeholder
+    component: TravelTimePage,
+    meta: { breadcrumb: 'Travel Time' },
   },
   {
     path: '/:pathMatch(.*)*',

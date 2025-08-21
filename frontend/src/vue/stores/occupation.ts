@@ -75,24 +75,37 @@ export const useOccupationStore = defineStore('occupation', {
     },
 
     async fetchOccupationData(occupationId: string) {
+      this.isLoading = true;
+      this.error = null;
       this.selectedOccupationId = occupationId;
 
-      // Check cache first
-      if (occupationCache.has(occupationId)) {
-        const cachedData = occupationCache.get(occupationId);
-        if (cachedData) {
-          this.occupationData = cachedData;
-          return;
+      try {
+        // Check cache first
+        if (occupationCache.has(occupationId)) {
+          const cachedData = occupationCache.get(occupationId);
+          if (cachedData) {
+            this.occupationData = cachedData;
+            return;
+          }
         }
+
+        const apiService = new ApiService();
+        const controller = apiService.createAbortController('occupation-data');
+        const response = await apiService.getOccupationData(occupationId, controller.signal);
+
+        // Store in cache
+        occupationCache.set(occupationId, response);
+        this.occupationData = response;
+      } catch (error) {
+        this.occupationData = null;
+        if (error instanceof Error) {
+          this.error = `Failed to load occupation data: ${error.message}`;
+        } else {
+          this.error = 'Failed to load occupation data: Unknown error';
+        }
+      } finally {
+        this.isLoading = false;
       }
-
-      const apiService = new ApiService();
-      const controller = apiService.createAbortController('occupation-data');
-      const response = await apiService.getOccupationData(occupationId, controller.signal);
-
-      // Store in cache
-      occupationCache.set(occupationId, response);
-      this.occupationData = response;
     },
   },
 });

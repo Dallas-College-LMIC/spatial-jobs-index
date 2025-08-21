@@ -37,4 +37,22 @@ describe('Navigation Paths', () => {
     expect(router.currentRoute.value.name).toBe('NotFound');
     expect(router.currentRoute.value.path).toBe('/unknown-route');
   });
+
+  it('navigates to wage level page', async () => {
+    const router = createRouter();
+    await router.push('/wage-level');
+    await router.isReady();
+
+    expect(router.currentRoute.value.name).toBe('WageLevel');
+    expect(router.currentRoute.value.path).toBe('/wage-level');
+  });
+
+  it('navigates to travel time page', async () => {
+    const router = createRouter();
+    await router.push('/travel-time');
+    await router.isReady();
+
+    expect(router.currentRoute.value.name).toBe('TravelTime');
+    expect(router.currentRoute.value.path).toBe('/travel-time');
+  });
 });

@@ -66,4 +66,39 @@ describe('School of Study Store', () => {
     expect(store.schoolData).toEqual(mockGeoJSON);
     expect(store.selectedSchoolId).toBe('01.0101');
   });
+
+  it('should handle fetch school IDs error', async () => {
+    const store = useSchoolOfStudyStore();
+
+    const { ApiService } = await import('../../../js/api');
+    const mockGetSchoolOfStudyIds = vi.fn().mockRejectedValue(new Error('API error'));
+
+    (ApiService as any).mockImplementation(() => ({
+      getSchoolOfStudyIds: mockGetSchoolOfStudyIds,
+    }));
+
+    await store.fetchSchoolIds();
+
+    expect(store.error).toBe('Failed to load school IDs: API error');
+    expect(store.isLoading).toBe(false);
+    expect(store.schoolIds).toEqual([]);
+  });
+
+  it('should handle fetch school data error', async () => {
+    const store = useSchoolOfStudyStore();
+
+    const { ApiService } = await import('../../../js/api');
+    const mockGetSchoolOfStudyData = vi.fn().mockRejectedValue(new Error('Network error'));
+
+    (ApiService as any).mockImplementation(() => ({
+      getSchoolOfStudyData: mockGetSchoolOfStudyData,
+      createAbortController: vi.fn(() => new AbortController()),
+    }));
+
+    await store.fetchSchoolData('01.9999');
+
+    expect(store.error).toBe('Failed to load school data: Network error');
+    expect(store.isLoading).toBe(false);
+    expect(store.schoolData).toBeNull();
+  });
 });
