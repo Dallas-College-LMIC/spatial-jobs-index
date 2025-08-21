@@ -10,16 +10,19 @@ const routes = [
     path: '/',
     name: 'Home',
     component: HomePage,
+    meta: { breadcrumb: 'Home' },
   },
   {
     path: '/occupation',
     name: 'Occupation',
     component: OccupationPage,
+    meta: { breadcrumb: 'Occupations' },
   },
   {
     path: '/school-of-study',
     name: 'SchoolOfStudy',
     component: SchoolOfStudyPage,
+    meta: { breadcrumb: 'Schools of Study' },
   },
   {
     path: '/wage-level',
