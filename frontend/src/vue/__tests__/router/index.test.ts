@@ -7,4 +7,12 @@ describe('Router Configuration', () => {
     expect(router).toBeDefined();
     expect(router.getRoutes().length).toBeGreaterThan(0);
   });
+
+  it('should have a 404 catch-all route', () => {
+    const router = createRouter();
+    const routes = router.getRoutes();
+    const notFoundRoute = routes.find((route) => route.name === 'NotFound');
+    expect(notFoundRoute).toBeDefined();
+    expect(notFoundRoute?.path).toBe('/:pathMatch(.*)*');
+  });
 });

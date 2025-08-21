@@ -308,11 +308,11 @@ Incremental migration from vanilla TypeScript to Vue 3, organized into 4 phases 
 
 ### 4.1 Router Implementation 🚧 IN PROGRESS
 - [x] Configure all routes ✅ Configured routes for Home, Occupation, SchoolOfStudy pages
-- [ ] Add route transitions
-- [ ] Implement navigation guards
+- [x] Add route transitions ✅ Implemented fade-slide transitions with tests (5 tests passing)
+- [x] Implement navigation guards ✅ Added logging and scroll behavior guards (5 tests passing)
 - [ ] Add breadcrumbs
 - [ ] Set up deep linking
-- [ ] Add 404 page
+- [x] Add 404 page ✅ Created NotFoundPage component with router integration (3 tests passing)
 - [ ] Test all navigation paths
 
 ### 4.2 HTML File Updates
@@ -577,12 +577,28 @@ Last Updated: 2025-08-12 16:30
 - 📊 Total new tests added in session: 7 tests (2 HomePage + 2 OccupationPage + 1 SchoolOfStudyPage + 2 router)
 - 🎯 Next priorities: Phase 4 Integration & Cleanup or continue enhancing page components
 
-### Session 7 Updates (Current - 2025-08-21)
+### Session 7 Updates (2025-08-21)
 - 🚧 **Working on Phase 4.1: Router Implementation**
 - ✅ Configured all main routes with TDD approach
   - Added route tests for all pages (4 tests passing)
   - Connected OccupationPage and SchoolOfStudyPage components
   - Added placeholder components for WageLevel and TravelTime routes
   - Added component names for proper routing
-- 📊 Total new tests added in session: 4 tests (router configuration)
-- 🎯 Next: Continue with route transitions, navigation guards, and other Phase 4.1 tasks
+- ✅ Implemented route transitions with TDD
+  - Added RouterView to App component with tests
+  - Implemented fade-slide transitions with proper CSS
+  - Added transition wrapper with mode="out-in"
+  - 5 App component tests passing
+- ✅ Implemented navigation guards with TDD
+  - Created guards module with setupNavigationGuards function
+  - Added navigation logging guard
+  - Added scroll-to-top behavior after navigation
+  - Integrated guards into router
+  - 5 guard tests passing
+- ✅ Created 404 NotFound page with TDD
+  - Built NotFoundPage component with 404 message
+  - Added RouterLink back to home
+  - Configured catch-all route in router
+  - 3 NotFoundPage tests + 1 router test passing
+- 📊 Total new tests added in session: 18 tests (4 router + 5 App + 5 guards + 3 NotFound + 1 404 route)
+- 🎯 Next: Add breadcrumbs, deep linking, and test all navigation paths
