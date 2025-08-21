@@ -36,16 +36,16 @@ describe('access_school_of_study.html', () => {
   });
 
   describe('Navigation integration', () => {
-    it('should have navigation container for dynamic navigation component', () => {
+    it('should have Vue app container for mounting the application', () => {
       const htmlPath = path.join(process.cwd(), 'access_school_of_study.html');
       const htmlContent = fs.readFileSync(htmlPath, 'utf-8');
-      expect(htmlContent).toContain('<div id="navigation-container"></div>');
+      expect(htmlContent).toContain('<div id="app"></div>');
     });
 
-    it('should import the school-main.ts entry point', () => {
+    it('should import the Vue app entry point', () => {
       const htmlPath = path.join(process.cwd(), 'access_school_of_study.html');
       const htmlContent = fs.readFileSync(htmlPath, 'utf-8');
-      expect(htmlContent).toContain('src="/src/js/school-main.ts"');
+      expect(htmlContent).toContain('src="/src/vue/main.ts"');
     });
   });
 });
