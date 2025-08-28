@@ -4,6 +4,7 @@
       :value="modelValue"
       @change="handleChange"
       :disabled="store.isLoading"
+      aria-label="Select an occupation"
     >
       <option value="">Select an occupation...</option>
       <option
