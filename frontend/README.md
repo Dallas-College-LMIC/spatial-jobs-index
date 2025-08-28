@@ -15,11 +15,14 @@ The SJI WebApp is an interactive mapping application that visualizes employment 
 
 ## Technology Stack
 
+- **Framework**: Vue 3.5.18 with Composition API
 - **Build System**: Vite 6.3.5
 - **Language**: TypeScript 5.8.3 (strict mode)
-- **Mapping**: Mapbox GL JS v1.12.0
-- **UI Framework**: Bootstrap 5.0.0-beta2
-- **Testing**: Vitest 3.2.3 with 100% test pass rate
+- **State Management**: Pinia 3.0.3
+- **Routing**: Vue Router 4.5.1
+- **Mapping**: Mapbox GL JS with @studiometa/vue-mapbox-gl
+- **UI Framework**: Bootstrap 5.0.0-beta2 (CSS only)
+- **Testing**: Vitest 3.2.3 with Vue Test Utils
 - **Package Manager**: npm
 
 ## Quick Start
@@ -94,18 +97,69 @@ sji-webapp/
 |-- index.html                 # Landing page
 |-- access_occupation.html     # Occupation-based map
 |-- access_wagelvl.html        # Wage level map
+|-- access_school_of_study.html # School of study map
+|-- travel_time.html          # Travel time analysis
 |-- src/
-|   |-- js/                   # TypeScript source files
-|   |   |-- controllers/      # Map controllers
-|   |   |-- services/         # Caching and UI services
-|   |   |-- utils/            # Utilities
-|   |   `-- ...              # Entry points and core logic
+|   |-- vue/                  # Vue 3 application
+|   |   |-- components/       # Vue components
+|   |   |   |-- common/       # Shared components
+|   |   |   |-- display/      # Display components
+|   |   |   |-- forms/        # Form components
+|   |   |   `-- map/          # Map-related components
+|   |   |-- composables/      # Vue composables
+|   |   |-- stores/           # Pinia stores
+|   |   |-- router/           # Vue Router configuration
+|   |   |-- pages/            # Page components
+|   |   `-- main.ts          # Vue app entry point
+|   |-- js/                   # Legacy TypeScript (being migrated)
+|   |   |-- services/         # Service layers
+|   |   `-- utils/            # Utilities
 |   |-- styles/              # CSS files
 |   |-- types/               # TypeScript type definitions
 |   `-- __tests__/           # Test suite
 |-- public/                  # Static assets
 `-- vite.config.ts          # Vite configuration
 ```
+
+## Vue 3 Architecture
+
+### State Management with Pinia
+
+The application uses Pinia stores for centralized state management:
+
+- **`occupationStore`**: Manages occupation data, selection, and caching
+- **`schoolOfStudyStore`**: Handles school of study data and selection
+- **`mapStore`**: Controls map instance, layers, and interactions
+- **`uiStore`**: Manages UI state, modals, and notifications
+
+### Component Organization
+
+Components follow a hierarchical structure:
+
+- **Pages**: Top-level route components (`OccupationPage.vue`, `HomePage.vue`)
+- **Common**: Shared components (`AppHeader.vue`, `Navigation.vue`, `LoadingSpinner.vue`)
+- **Forms**: Input components (`OccupationSelect.vue`, `SearchForm.vue`, `FilterControls.vue`)
+- **Display**: Data presentation (`DataTable.vue`, `Legend.vue`, `StatsPanel.vue`)
+- **Map**: Map-specific components (`MapContainer.vue`, `MapControls.vue`, `OccupationMap.vue`)
+
+### Composables
+
+Reusable composition functions for common logic:
+
+- **`useApi`**: Base API composable with error handling
+- **`useMapbox`**: Map initialization and lifecycle management
+- **`useMapLayers`**: Layer management and visibility control
+- **`useMapInteractions`**: Click/hover handlers and popups
+
+### Routing
+
+Vue Router handles navigation with lazy-loaded routes for optimal performance:
+
+- `/` - Home page
+- `/occupation` - Occupation analysis
+- `/school-of-study` - Education program analysis
+- `/wage-level` - Wage level visualization
+- `/travel-time` - Travel time analysis
 
 ## API Integration
 
@@ -136,9 +190,14 @@ For production deployment:
 
 ## Performance Features
 
-- **Client-Side Caching**: Occupation IDs are cached for 24 hours
+- **Client-Side Caching**: Occupation IDs are cached for 24 hours using Pinia persistence
 - **Non-Blocking Loading**: Maps load immediately while data fetches in background
-- **Optimized Bundle**: Code splitting for faster initial load
+- **Optimized Bundle**: Advanced code splitting with manual chunks:
+  - Vendor chunks: `vue-vendor`, `mapbox-vendor`, `state-vendor`
+  - Application chunks: `components`, `stores`, `map-components`
+  - Lazy-loaded routes reduce initial bundle size
+- **Tree Shaking**: Production builds remove unused code
+- **Asset Optimization**: Images under 4KB are inlined, larger assets use content hashing
 
 ## Browser Support
 
