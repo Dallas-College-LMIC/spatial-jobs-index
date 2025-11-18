@@ -1,5 +1,6 @@
 <template>
   <div id="app">
+    <AppHeader />
     <RouterView v-slot="{ Component }">
       <Transition name="fade-slide" mode="out-in">
         <component :is="Component" />
@@ -10,6 +11,7 @@
 
 <script setup lang="ts">
 import { RouterView } from 'vue-router';
+import AppHeader from './AppHeader.vue';
 </script>
 
 <style scoped>
