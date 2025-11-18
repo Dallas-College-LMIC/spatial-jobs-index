@@ -132,26 +132,26 @@
         };
 
         # TDD Guard CLI tool
-        tddGuard = pkgs.buildNpmPackage {
-          pname = "tdd-guard";
-          version = "0.8.1";
+        # tddGuard = pkgs.buildNpmPackage {
+        #   pname = "tdd-guard";
+        #   version = "0.8.1";
 
-          src = pkgs.fetchFromGitHub {
-            owner = "nizos";
-            repo = "tdd-guard";
-            rev = "v0.8.1";
-            hash = "sha256-aPGtKCVfOd5J3C+iEPhTrLxNlEKs/FPn/5QNrkTX3T4=";
-          };
+        #   src = pkgs.fetchFromGitHub {
+        #     owner = "nizos";
+        #     repo = "tdd-guard";
+        #     rev = "v0.8.1";
+        #     hash = "sha256-aPGtKCVfOd5J3C+iEPhTrLxNlEKs/FPn/5QNrkTX3T4=";
+        #   };
 
-          npmDepsHash = "sha256-Vw4pJXKUHGV3eMSaqZJ1kd+2edh89ch78W5p0bMhwqw=";
+        #   npmDepsHash = "sha256-Vw4pJXKUHGV3eMSaqZJ1kd+2edh89ch78W5p0bMhwqw=";
 
-          # Fix broken symlinks
-          postInstall = ''
-            # Remove broken symlinks that cause build failure
-            rm -f $out/lib/node_modules/tdd-guard/node_modules/tdd-guard-vitest
-            rm -f $out/lib/node_modules/tdd-guard/node_modules/tdd-guard-jest
-          '';
-        };
+        #   # Fix broken symlinks
+        #   postInstall = ''
+        #     # Remove broken symlinks that cause build failure
+        #     rm -f $out/lib/node_modules/tdd-guard/node_modules/tdd-guard-vitest
+        #     rm -f $out/lib/node_modules/tdd-guard/node_modules/tdd-guard-jest
+        #   '';
+        # };
 
         # Frontend build for local testing (with root base path)
         frontendBuildLocal = pkgs.buildNpmPackage {
@@ -306,7 +306,7 @@
               # Database tools
               pkgs.postgresql
               # TDD tools
-              tddGuard
+              # tddGuard
             ];
 
             shellHook = ''
