@@ -139,10 +139,23 @@ export class MapManager {
       const openingsCount = properties.openings_2024_rawcount as number | undefined;
       const earnings = properties.percentile_50th_earnings_2023_rawcount as number | undefined;
 
+      // Calculate percentile from z-score using standard normal distribution
+      // Percentile = Φ(z) * 100, where Φ is the cumulative distribution function
+      const zScoreToPercentile = (z: number): number => {
+        // Using error function approximation for CDF of standard normal
+        const t = 1 / (1 + 0.2316419 * Math.abs(z));
+        const d = 0.3989423 * Math.exp((-z * z) / 2);
+        const prob =
+          d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274))));
+        return Math.round((z > 0 ? 1 - prob : prob) * 100);
+      };
+
+      const percentile = score !== undefined && score !== null ? zScoreToPercentile(score) : null;
+
       const description = `
                 <b>Tract: </b><span>${properties.geoid || properties.GEOID}</span><br>
                 <b>${title}: </b><span>${score ? score.toFixed(2) : 'N/A'}</span><br>
-                <b>Percentile of all DFW tracts: </b><span style="color: #666;">Data pending</span>
+                <b>Percentile of all DFW tracts: </b><span>${percentile !== null ? percentile + 'th' : 'N/A'}</span>
                 <hr style="margin: 10px 0; border: none; border-top: 1px solid #ddd;">
                 <div style="margin-top: 10px;">
                     <b style="display: block; margin-bottom: 5px; font-size: 14px;">Job Summary</b>
