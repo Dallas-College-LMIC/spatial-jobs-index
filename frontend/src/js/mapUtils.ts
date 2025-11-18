@@ -135,6 +135,9 @@ export class MapManager {
       }
 
       const score = properties[scoreProperty] as number | undefined;
+      const jobCount = properties.jobs_2024_rawcount as number | undefined;
+      const openingsCount = properties.openings_2024_rawcount as number | undefined;
+      const earnings = properties.percentile_50th_earnings_2023_rawcount as number | undefined;
 
       const description = `
                 <b>Tract: </b><span>${properties.geoid || properties.GEOID}</span><br>
@@ -143,7 +146,9 @@ export class MapManager {
                 <hr style="margin: 10px 0; border: none; border-top: 1px solid #ddd;">
                 <div style="margin-top: 10px;">
                     <b style="display: block; margin-bottom: 5px; font-size: 14px;">Job Summary</b>
-                    <b>Number of Jobs: </b><span style="color: #666;">Data pending</span><br>
+                    <b>Number of Jobs (2024): </b><span>${jobCount ? jobCount.toFixed(0) : 'N/A'}</span><br>
+                    <b>Job Openings (2024): </b><span>${openingsCount ? openingsCount.toFixed(0) : 'N/A'}</span><br>
+                    <b>Median Earnings (2023): </b><span>${earnings ? '$' + earnings.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',') : 'N/A'}</span><br>
                     <b>Share of Jobs within Dallas County: </b><span style="color: #666;">Data pending</span>
                 </div>
             `;

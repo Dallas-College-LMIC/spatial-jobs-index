@@ -430,7 +430,15 @@ describe('MapManager', () => {
         expect.stringContaining('Percentile of all DFW tracts:')
       );
       expect(mockPopup.setHTML).toHaveBeenCalledWith(expect.stringContaining('Job Summary'));
-      expect(mockPopup.setHTML).toHaveBeenCalledWith(expect.stringContaining('Number of Jobs:'));
+      expect(mockPopup.setHTML).toHaveBeenCalledWith(
+        expect.stringContaining('Number of Jobs (2024):')
+      );
+      expect(mockPopup.setHTML).toHaveBeenCalledWith(
+        expect.stringContaining('Job Openings (2024):')
+      );
+      expect(mockPopup.setHTML).toHaveBeenCalledWith(
+        expect.stringContaining('Median Earnings (2023):')
+      );
       expect(mockPopup.setHTML).toHaveBeenCalledWith(
         expect.stringContaining('Share of Jobs within Dallas County:')
       );

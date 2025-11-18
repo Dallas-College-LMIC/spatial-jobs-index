@@ -61,7 +61,9 @@ class OccupationRawCounts(Base):
     jobs_2019_rawcount = Column(Float)
     jobs_2024_rawcount = Column(Float)
     jobs_2029_rawcount = Column(Float)
-    percentile_50th_earnings_2023_rawcount = Column(Float)
+    percentile_50th_earnings_2023_rawcount = Column(
+        "50th_percentile_earnings_2023_rawcount", Float
+    )
     openings_2014_rawcount = Column(Float)
     openings_2019_rawcount = Column(Float)
     openings_2024_rawcount = Column(Float)
