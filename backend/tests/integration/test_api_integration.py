@@ -154,6 +154,64 @@ class TestFullRequestResponseCycle:
         assert args[0] == "51-3091"  # First argument is the category
 
     @patch("app.services.OccupationService.get_occupation_spatial_data")
+    def test_occupation_spatial_data_includes_raw_counts(
+        self, mock_service, integration_client
+    ):
+        """Test that occupation spatial data endpoint includes raw count fields from occupation_raw_counts table."""
+        # Create test occupation spatial data with raw counts
+        test_features = [
+            OccupationGeoJSONFeature(
+                geometry={"type": "Point", "coordinates": [-96.7970, 32.7767]},
+                properties=OccupationSpatialProperties(
+                    geoid="48085030304",
+                    category="39-1022",
+                    openings_2024_zscore=-0.0956,
+                    jobs_2024_zscore=0.0187,
+                    openings_2024_zscore_color="-0.5SD ~ +0.5SD",
+                    # Raw count fields
+                    jobs_2014_rawcount=174.73,
+                    jobs_2019_rawcount=337.32,
+                    jobs_2024_rawcount=387.62,
+                    jobs_2029_rawcount=445.13,
+                    percentile_50th_earnings_2023_rawcount=43650.25,
+                    openings_2014_rawcount=48.54,
+                    openings_2019_rawcount=48.22,
+                    openings_2024_rawcount=59.21,
+                    openings_2029_rawcount=56.45,
+                    distance_minutes=25,
+                ),
+            ),
+        ]
+        mock_service.return_value = test_features
+
+        # Make request
+        response = integration_client.get("/occupation_data/39-1022")
+
+        # Verify response
+        assert response.status_code == 200
+        assert response.headers["content-type"] == "application/geo+json"
+        data = response.json()
+        assert data["type"] == "FeatureCollection"
+        assert len(data["features"]) == 1
+
+        # Check that raw count fields are present in response
+        props = data["features"][0]["properties"]
+        assert props["geoid"] == "48085030304"
+        assert props["category"] == "39-1022"
+
+        # Verify all raw count fields are included
+        assert props["jobs_2014_rawcount"] == 174.73
+        assert props["jobs_2019_rawcount"] == 337.32
+        assert props["jobs_2024_rawcount"] == 387.62
+        assert props["jobs_2029_rawcount"] == 445.13
+        assert props["percentile_50th_earnings_2023_rawcount"] == 43650.25
+        assert props["openings_2014_rawcount"] == 48.54
+        assert props["openings_2019_rawcount"] == 48.22
+        assert props["openings_2024_rawcount"] == 59.21
+        assert props["openings_2029_rawcount"] == 56.45
+        assert props["distance_minutes"] == 25
+
+    @patch("app.services.OccupationService.get_occupation_spatial_data")
     def test_occupation_spatial_data_not_found(self, mock_service, integration_client):
         """Test occupation spatial data endpoint with non-existent category."""
         # Mock service to return empty list

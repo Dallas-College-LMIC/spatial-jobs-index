@@ -8,8 +8,6 @@ export const MAP_CONFIG = {
   zoom: 10.8,
   hash: true,
   attributionControl: true,
-  customAttribution:
-    '<b><a href="https://github.com/NYCPlanning/td-travelshed/blob/master/Transit%20Travelshed.pdf" target="_blank">Detailed Methodology</a></b>',
   preserveDrawingBuffer: true,
 } as const;
 

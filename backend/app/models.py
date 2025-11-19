@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Float
+from sqlalchemy import Column, String, Float, Integer
 from sqlalchemy.orm import DeclarativeBase
 from geoalchemy2 import Geometry
 from pydantic import BaseModel
@@ -48,6 +48,27 @@ class OccupationCode(Base):
 
     occupation_code = Column(String, primary_key=True)
     occupation_name = Column(String)
+
+
+class OccupationRawCounts(Base):
+    __tablename__ = "occupation_raw_counts"
+    __table_args__ = {} if TESTING else {"schema": "jsi_data"}
+
+    geoid = Column(Float, primary_key=True)
+    category = Column(String, primary_key=True)
+    category_type = Column(String)
+    jobs_2014_rawcount = Column(Float)
+    jobs_2019_rawcount = Column(Float)
+    jobs_2024_rawcount = Column(Float)
+    jobs_2029_rawcount = Column(Float)
+    percentile_50th_earnings_2023_rawcount = Column(
+        "50th_percentile_earnings_2023_rawcount", Float
+    )
+    openings_2014_rawcount = Column(Float)
+    openings_2019_rawcount = Column(Float)
+    openings_2024_rawcount = Column(Float)
+    openings_2029_rawcount = Column(Float)
+    distance_minutes = Column(Integer)
 
 
 class SchoolOfLvlData(Base):
@@ -109,6 +130,17 @@ class OccupationSpatialProperties(BaseModel):
     openings_2024_zscore: Optional[float]
     jobs_2024_zscore: Optional[float]
     openings_2024_zscore_color: Optional[str]
+    # Raw count fields from occupation_raw_counts table
+    jobs_2014_rawcount: Optional[float] = None
+    jobs_2019_rawcount: Optional[float] = None
+    jobs_2024_rawcount: Optional[float] = None
+    jobs_2029_rawcount: Optional[float] = None
+    percentile_50th_earnings_2023_rawcount: Optional[float] = None
+    openings_2014_rawcount: Optional[float] = None
+    openings_2019_rawcount: Optional[float] = None
+    openings_2024_rawcount: Optional[float] = None
+    openings_2029_rawcount: Optional[float] = None
+    distance_minutes: Optional[int] = None
 
 
 class OccupationGeoJSONFeature(BaseModel):

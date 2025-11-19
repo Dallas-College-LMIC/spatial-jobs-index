@@ -263,7 +263,7 @@ export class OccupationMapController extends BaseMapController {
         this.sourceId,
         'openings_2024_zscore_color', // Fixed property name for categories
         'visible',
-        `Occupation: ${occupationId}`,
+        'Job Openings Z-Score',
         'openings_2024_zscore' // Fixed property name for z-scores
       );
 
